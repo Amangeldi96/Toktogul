@@ -1,6 +1,6 @@
 import React from 'react';
 
-import song1 from './assets/song1.mp3';
+import song1 from './assets/song20.mp3';
 import song2 from './assets/song2.mp3';
 import song3 from './assets/song3.mp3';
 import song4 from './assets/song4.mp3';
@@ -19,9 +19,11 @@ import song16 from './assets/song16.mp3';
 import song17 from './assets/song17.mp3';
 import song18 from './assets/song18.mp3';
 import song19 from './assets/song19.mp3';
+import song20 from './assets/song1.mp3';
 
 const songs = [
-  { src: song1, artist: "Ulukmanapo & Bakr", title: "Мало и Мало" },
+  suran_sadybakas
+  { src: song1, artist: "Suran Sadybakasov", title: "Өзүмдү өзүм алдаймын" },
   { src: song2, artist: "Topic and A7S", title: "Out My Head" },
   { src: song3, artist: "Freeman 996", title: "Күтпөгүн" },
   { src: song4, artist: "Нурила", title: "Көлдүк жигитке" },
@@ -40,6 +42,7 @@ const songs = [
   { src: song17, artist: "Ulukmanapo x Jax 02.14", title: "Taranchym" },
   { src: song18, artist: "Freeman 996 x Jax 02.14", title: "Сагынам" },
   { src: song19, artist: "Елнур Наурызбек", title: "Толкын толкын" },
+  { src: song20, artist: "Ulukmanapo & Bakr", title: "Мало и Мало" },
 ];
 
 export default songs;
