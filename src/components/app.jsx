@@ -18,28 +18,21 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 import "firebase/compat/firestore";
 
+
+
 export default function App() {
   // ===== Firebase =====
   const firebaseConfig = {
     apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
     authDomain: "toktogul-b4bc8.firebaseapp.com",
     projectId: "toktogul-b4bc8",
-    storageBucket: "toktogul-b4bc8.appspot.com", // ← исправлено
+    storageBucket: "toktogul-b4bc8.appspot.com",
     messagingSenderId: "994223338100",
     appId: "1:994223338100:web:41f38224398bd4d21e5721",
     measurementId: "G-EGSEE12JPM"
   };
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  const storage = firebase.storage();
-
-  // дальше идёт твой код...
-}
-
 
   // ===== Состояния =====
   const [allAds, setAllAds] = useState([]);
