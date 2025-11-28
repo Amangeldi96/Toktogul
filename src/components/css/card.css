@@ -1,0 +1,154 @@
+		/* CARDS */
+.content {
+  min-height: 100%;
+		padding-top: 15px;
+				padding-bottom: 100px;
+}
+
+#cards {
+  column-count: 2;      /* кол-во колонок */
+  column-gap: 12px;     /* расстояние между колонками */
+  width: 100%;
+}
+.card {
+  background: #fff;
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 12px 0;
+  break-inside: avoid;
+  border-radius: 7px;
+  overflow: hidden; /* важно! */
+
+}
+
+.img {
+  position: relative;
+  padding-top: 75%;
+  background: #dae3ef;
+}
+
+.img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-vip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--vip);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge-pro {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: white;
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--pro);
+  border: 1px solid var(--pro);
+}
+
+.body {
+  padding: 12px;
+}
+
+.price {
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: normal;
+  overflow: visible;
+}
+.icon-btn {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.icon-btn.heart.active {
+  color: var(--vip);
+}
+/* CARDS-END */
+
+
+.phone{
+	display: flex;
+	gap: 15px;
+}
+.phone a{
+	color: #ffffff;
+	gap: 10px;
+  background: linear-gradient(45deg,	#708090,#778899); 
+	padding: 2px 5px 2px 5px;
+	border-radius: 4px;
+	font-weight: 900;
+
+}
+.what{
+  width: 15px;
+  height: 15px;
+}
+.what path {
+  fill: rgb(255, 255, 255) !important;
+}
+
+
+
+
+
+
+/* Контейнер для глаз + сердечко */
+.actions {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 40px !important;
+}
+
+.left-actions,
+.right-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 5px;
+}
+
+.view,
+.like {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.view-count,
+.like-count {
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+.like-count{
+    margin-left: -7px;
+}
+
+/* END */

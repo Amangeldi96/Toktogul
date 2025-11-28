@@ -1,0 +1,242 @@
+:root{
+  --bg:#f6f8fa;
+  --card-bg:#fff;
+  --accent:#2ecc71;
+  --muted:#8e97a6;
+  --vip:#ff4da6;
+  --pro:#3da0ff;
+  --shadow:0 4px 16px rgba(0,0,0,0.1);
+  font-family:"Inter","Roboto",sans-serif;
+}
+
+
+.wrap{
+  max-width:420px;
+  margin:auto;
+  padding:18px;
+}
+
+  /* Верхняя строка */
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .search {
+      flex: 1;
+      background: #eef2f7;
+      padding: 14px 18px;
+      border-radius: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .search input {
+      border: none;
+      outline: none;
+      width: 100%;
+      background: none;
+      font-size: 17px;
+    }
+
+    .filter-btn {
+      color: #ff9100;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Заголовок */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .header-row .title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .view-all {
+      color: #9aa0b0;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .chev {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Горизонтальная лента категорий */
+    .categories-scroll {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+
+    .categories-scroll::-webkit-scrollbar {
+      display: none;
+    }
+.cat-card icon{
+  width: 15px;
+  height: 15px;
+}
+
+    .cat-card {
+      height: 40px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .cat-card .icon img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .cat-card .label {
+      font-size: 17px;
+      font-weight: 700;
+      margin: -50px 60px;
+      width: 120px;
+    }
+
+    .cat-card .count {
+      font-size: 14px;
+      color: #98a0af;
+      font-weight: 600;
+      margin: 45px 60px;
+      width: 70px;
+    }
+
+    /* Цвета карточек */
+    .bg-blue { background: #e7f5ff; 
+      width: 150px
+    }
+    .bg-cream { background: #fff7df;
+      width: 120px
+    }
+    .bg-light { background: #e5f3ff; 
+           width: 125px
+    }
+    .bg-purple { background: #f6eaff; 
+           width: 190px
+    }
+    .bg-green { background: #e8f7ed; 
+           width: 150px
+    }
+    .bg-peach { background: #ffe8e0; 
+           width: 150px
+    }
+
+
+/* TABS */
+.tabs{
+  margin-top:18px;
+  display:flex;
+  gap:10px;
+}
+
+.tab{
+  flex:1;
+  text-align:center;
+  padding:10px 6px;
+  border-radius:12px;
+  background:white;
+  box-shadow:var(--shadow);
+  font-weight:700;
+  cursor:pointer;
+}
+
+.tab.active{
+  border:2px solid #d6e0ec;
+}
+
+
+
+
+
+/*МЕНЮ*/
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 75px;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+  z-index: 999;
+}
+
+.nav-item {
+  text-align: center;
+  font-size: 12px;
+  color: #252525;
+  width: 20%;
+  cursor: pointer;
+}
+
+.nav-item span {
+  display: block;
+  margin-top: 4px;
+}
+
+.nav-item svg {
+  width: 26px;
+  opacity: 0.7;
+	fill: #555
+}
+.ic-wat path{
+		fill: #555
+}
+
+/* АКТИВНАЯ */
+.nav-item.active span {
+  color: #000;
+  font-weight: 600;
+}
+
+.nav-item.active svg  {
+  fill: #000; 
+  opacity: 1;
+}
+
+.center-plus {
+  position: relative;
+  top: -37px;
+}
+
+.plus-btn {
+  width: 75px;
+  height: 75px;
+	background-color: #ffffffe1;
+	border: 3px solid #000;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+}
+
+.plus {
+  width: 36px;
+}

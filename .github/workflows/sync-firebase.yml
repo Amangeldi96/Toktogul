@@ -1,0 +1,36 @@
+name: Sync Firebase Ads to GitHub
+
+on:
+  workflow_dispatch:   # можно запускать вручную
+  schedule:
+    - cron: '*/10 * * * *'  # каждые 10 минут
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install firebase-admin
+
+      - name: Fetch Firebase Ads
+        run: node fetchFirebaseAds.js
+
+      - name: Commit JSON
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add ads.json
+          git commit -m "Update ads from Firebase"
+<<<<<<< HEAD
+          git push
+=======
+          git push
+>>>>>>> dd50505 (Обновил файл после редактирования)
