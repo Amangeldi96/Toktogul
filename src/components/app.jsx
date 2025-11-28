@@ -4,7 +4,6 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 
-// Импорт фото категорий
 import sedanImg from './img/sedan.png';
 import paintBucketImg from './img/paint-bucket.png';
 import repairToolsImg from './img/repair-tools.png';
@@ -13,28 +12,26 @@ import flowersImg from './img/flowers.png';
 import phoneImg from './img/phone.png';
 import CanvasImg from './img/Canvas.svg';
 
-
 import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 import "firebase/compat/firestore";
 
+// ===== Firebase =====
+const firebaseConfig = {
+  apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
+  authDomain: "toktogul-b4bc8.firebaseapp.com",
+  projectId: "toktogul-b4bc8",
+  storageBucket: "toktogul-b4bc8.appspot.com", // <- исправлено
+  messagingSenderId: "994223338100",
+  appId: "1:994223338100:web:41f38224398bd4d21e5721",
+  measurementId: "G-EGSEE12JPM"
+};
 
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
 
 export default function App() {
-  // ===== Firebase =====
-  const firebaseConfig = {
-    apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
-    authDomain: "toktogul-b4bc8.firebaseapp.com",
-    projectId: "toktogul-b4bc8",
-    storageBucket: "toktogul-b4bc8.firebasestorage.app",
-    messagingSenderId: "994223338100",
-    appId: "1:994223338100:web:41f38224398bd4d21e5721",
-    measurementId: "G-EGSEE12JPM"
-  };
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // ===== Состояния =====
   const [allAds, setAllAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,13 +45,10 @@ export default function App() {
     category: "",
     price: "",
     desc: "",
-    images: [null, null, null, null, null] // null вместо ""
+    images: [null, null, null, null, null]
   });
-
-  // ===== Вот здесь добавляем новое состояние для нижнего меню =====
   const [selectedTab, setSelectedTab] = useState("home");
 
-  // ===== Категории =====
   const categoryLabels = {
     electronics: "Электроника",
     cars: "Авто",
@@ -69,85 +63,73 @@ export default function App() {
     other: "Другое"
   };
 
-  // ===== Слушаем объявления =====
-useEffect(() => {
-  const unsubscribe = db.collection("ads")
-    .orderBy("timestamp", "desc")
-    .onSnapshot(snapshot => {
-      const ads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAllAds(ads);
-    });
-  return () => unsubscribe();
-}, [db]);
-
+  // ===== Загрузка объявлений =====
+  useEffect(() => {
+    const unsubscribe = db.collection("ads")
+      .orderBy("timestamp", "desc")
+      .onSnapshot(snapshot => {
+        const ads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAllAds(ads);
+      });
+    return () => unsubscribe();
+  }, []);
 
   // ===== Создание объявления =====
-const createAd = async () => {
-  const { phone, category, desc, price, images } = formData;
-  if (!phone || !category || !desc || !images[0]) {
-    alert("Заполните все поля и добавьте фото");
-    return;
-  }
+  const createAd = async () => {
+    const { phone, category, desc, price, images } = formData;
+    if (!phone || !category || !desc || !images[0]) {
+      alert("Заполните все поля и добавьте фото");
+      return;
+    }
 
-  try {
-    // ===== Загружаем фото в Firebase Storage =====
-    const uploadedUrls = await Promise.all(
-      images
-        .filter(img => img) // убираем пустые слоты
-        .map(async (img, idx) => {
-          // если img уже URL с Firebase (строка начинается с https) — пропускаем
+    try {
+      const uploadedUrls = await Promise.all(
+        images.filter(img => img).map(async (img, idx) => {
           if (img.startsWith("https://")) return img;
-
-          const storageRef = firebase.storage().ref();
-          const fileRef = storageRef.child(`ads/${Date.now()}_${idx}.jpg`);
-
-          // fetch для получения Blob из URL.createObjectURL
+          const fileRef = storage.ref().child(`ads/${Date.now()}_${idx}.jpg`);
           const response = await fetch(img);
           const blob = await response.blob();
-
           await fileRef.put(blob);
-          const downloadURL = await fileRef.getDownloadURL();
-          return downloadURL;
+          return await fileRef.getDownloadURL();
         })
-    );
+      );
 
-    const newAd = {
-      phone,
-      categoryName: categoryLabels[category],
-      categoryKey: category,
-      descText: desc,
-      price,
-      images: uploadedUrls,
-      firstImg: uploadedUrls[0],
-      views: 0,
-      likes: 0,
-      timestamp: Date.now()
-    };
+      const newAd = {
+        phone,
+        categoryName: categoryLabels[category],
+        categoryKey: category,
+        descText: desc,
+        price,
+        images: uploadedUrls,
+        firstImg: uploadedUrls[0],
+        views: 0,
+        likes: 0,
+        timestamp: Date.now()
+      };
 
-    const docRef = await db.collection("ads").add(newAd);
-    setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
-    setModalOpen(false);
-    setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
+      const docRef = await db.collection("ads").add(newAd);
+      setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
+      setModalOpen(false);
+      setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
 
-  } catch (e) {
-    console.error(e);
-    alert("Ошибка при сохранении объявления");
-  }
-};
+    } catch (e) {
+      console.error(e);
+      alert("Ошибка при сохранении объявления");
+    }
+  };
 
-  // ===== Фильтры =====
+  // ===== Остальной функционал (фильтры, лайки, галерея, Masonry) =====
   const filteredAds = allAds.filter(ad => {
     const matchCategory = selectedCategory ? ad.categoryKey === selectedCategory : true;
-    const price = Number(ad.price) || 0;
+    const priceNum = Number(ad.price) || 0;
     const min = filterPrice.min ? Number(filterPrice.min) : 0;
     const max = filterPrice.max ? Number(filterPrice.max) : Infinity;
-    const matchPrice = price >= min && price <= max;
+    const matchPrice = priceNum >= min && priceNum <= max;
     const matchSearch = ad.descText.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         ad.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchPrice && matchSearch;
   });
 
-  // ===== Лайки =====
   const toggleLike = (id) => {
     setAllAds(prev => prev.map(ad => {
       if (ad.id === id) {
@@ -160,14 +142,12 @@ const createAd = async () => {
     }));
   };
 
-  // ===== Masonry =====
   const renderColumns = (ads, columnsCount = 2) => {
     const cols = Array.from({ length: columnsCount }, () => []);
     ads.forEach((ad, i) => cols[i % columnsCount].push(ad));
     return cols;
   };
 
-  // ===== Галерея =====
   const openGallery = (images, index = 0) => setGallery({ open: true, images, index });
   const closeGallery = () => setGallery({ open: false, images: [], index: 0 });
 
@@ -341,28 +321,25 @@ const createAd = async () => {
 
 {/* ===== Скрытый input для выбора фото ===== */}
 
-<input
-  type="file"
-  id="realGalleryInput"
-  accept="image/*"
-  multiple
-  style={{ display: "none" }}
-  onChange={(e) => {
-    const files = Array.from(e.target.files);
-    const urls = files.map(file => URL.createObjectURL(file));
-    setFormData(prev => {
-      const newImages = [...prev.images];
-      urls.forEach((url, idx) => {
-        newImages[idx] = url; // заменяем только нужные слоты
-      });
-      return { ...prev, images: newImages };
-    });
-  }}
-/>
-
-    </div>
-  </div>
-)}
+ <input
+              type="file"
+              id="realGalleryInput"
+              accept="image/*"
+              multiple
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                const urls = files.map(file => URL.createObjectURL(file));
+                setFormData(prev => {
+                  const newImages = [...prev.images];
+                  urls.forEach((url, idx) => newImages[idx] = url);
+                  return { ...prev, images: newImages };
+                });
+              }}
+            />
+          </div>
+        </div>
+      )}
 
 {/* ===== Модалка фильтра ===== */}
 {filterModalOpen && (
