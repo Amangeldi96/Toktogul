@@ -186,9 +186,9 @@ export default function App() {
       <main className="content">
         <div className="cards" id="cards">
           {renderColumns(filteredAds, 2).map((col, i) => (
-            <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {col.map(ad => (
-                <div key={ad.id} className="card">
+  <div className="column" key={i + "col"} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+    {col.map(ad => (
+      <div key={ad.id} className="card">
                   <div className="img">
                     <img 
   src={ad.firstImg} className="card-img" alt={ad.descText || "Фото объявления"} onClick={() => openGallery(ad.images)}/>
@@ -268,12 +268,17 @@ export default function App() {
         <div className="input-group gr">
           <label htmlFor="phone">Номер телефона</label>
           <input
-            type="tel"
-            id="phone"
-            placeholder="+996 ___ ___ ___"
-            value={formData.phone}
-            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-          />
+  type="tel"
+  id="phone"
+  placeholder="+996 ___ ___ ___"
+  value={formData.phone}
+  onChange={e => {
+    let val = e.target.value;
+    if (!val.startsWith("+996")) val = "+996" + val.replace(/^0+/, "");
+    setFormData({ ...formData, phone: val });
+  }}
+/>
+
         </div>
         <div className="input-group gr">
           <label htmlFor="category">Категория</label>
@@ -326,14 +331,15 @@ export default function App() {
               accept="image/*"
               multiple
               style={{ display: "none" }}
-             onChange={(e) => {
-  const files = Array.from(e.target.files);
+            onChange={(e) => {
+  const files = Array.from(e.target.files).slice(0, 5);
   setFormData(prev => {
     const newImages = [...prev.images];
-    files.forEach((file, idx) => newImages[idx] = file); // сохраняем File, а не URL
+    files.forEach((file, idx) => newImages[idx] = file);
     return { ...prev, images: newImages };
   });
 }}
+
 	
             />
           </div>
