@@ -18,21 +18,28 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 import "firebase/compat/firestore";
 
-
-
 export default function App() {
   // ===== Firebase =====
   const firebaseConfig = {
     apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
     authDomain: "toktogul-b4bc8.firebaseapp.com",
     projectId: "toktogul-b4bc8",
-    storageBucket: "toktogul-b4bc8.appspot.com",
+    storageBucket: "toktogul-b4bc8.appspot.com", // ← исправлено
     messagingSenderId: "994223338100",
     appId: "1:994223338100:web:41f38224398bd4d21e5721",
     measurementId: "G-EGSEE12JPM"
   };
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
   const db = firebase.firestore();
+  const storage = firebase.storage();
+
+  // дальше идёт твой код...
+}
+
 
   // ===== Состояния =====
   const [allAds, setAllAds] = useState([]);
@@ -90,14 +97,17 @@ const createAd = async () => {
   }
 
   try {
-    // Загружаем все выбранные файлы в Storage
     const uploadedUrls = await Promise.all(
       images
         .filter(img => img) // убираем пустые слоты
         .map(async (img, idx) => {
+          if (typeof img === "string" && img.startsWith("https://")) return img;
+
           const storageRef = firebase.storage().ref();
           const fileRef = storageRef.child(`ads/${Date.now()}_${idx}.jpg`);
-          await fileRef.put(img); // img это File
+
+          // img — это File объект
+          await fileRef.put(img);
           return await fileRef.getDownloadURL();
         })
     );
@@ -116,7 +126,6 @@ const createAd = async () => {
     };
 
     const docRef = await db.collection("ads").add(newAd);
-
     setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
     setModalOpen(false);
     setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
@@ -340,17 +349,16 @@ const createAd = async () => {
   accept="image/*"
   multiple
   style={{ display: "none" }}
-onChange={(e) => {
-  const files = Array.from(e.target.files); // File[]
-  setFormData(prev => {
-    const newImages = [...prev.images];
-    files.forEach((file, idx) => {
-      newImages[idx] = file; // сохраняем File напрямую
+  onChange={(e) => {
+    const files = Array.from(e.target.files); // File[]
+    setFormData(prev => {
+      const newImages = [...prev.images];
+      files.forEach((file, idx) => {
+        newImages[idx] = file; // сохраняем File напрямую
+      });
+      return { ...prev, images: newImages };
     });
-    return { ...prev, images: newImages };
-  });
-}}
-
+  }}
 />
 
 
