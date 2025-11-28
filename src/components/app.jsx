@@ -26,7 +26,7 @@ export default function App() {
     apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
     authDomain: "toktogul-b4bc8.firebaseapp.com",
     projectId: "toktogul-b4bc8",
-    storageBucket: "toktogul-b4bc8.firebasestorage.app",
+    storageBucket: "toktogul-b4bc8.appspot.com",
     messagingSenderId: "994223338100",
     appId: "1:994223338100:web:41f38224398bd4d21e5721",
     measurementId: "G-EGSEE12JPM"
