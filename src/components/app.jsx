@@ -263,17 +263,18 @@ const createAd = async () => {
 {/* ===== Слоты для выбранных фото ===== */}
 
 <div className="selected-grid" id="selectedGrid">
-  {formData.images.map((img, i) => (
-    <div className="slot" key={i}>
-      <div className="placeholder">
-        <img
-          className="gal"
-          src={img || CanvasImg} // если есть фото — показываем его, иначе Canvas
-          alt={img ? `selected-${i}` : "placeholder"}
-        />
-      </div>
+ {formData.images.map((img, i) => (
+  <div className="slot" key={i}>
+    <div className="placeholder">
+      <img
+        className="gal"
+        src={img ? URL.createObjectURL(img) : CanvasImg}
+        alt=""
+      />
     </div>
-  ))}
+  </div>
+))}
+
 </div>
 </div>
 
