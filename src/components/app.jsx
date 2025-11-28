@@ -83,16 +83,15 @@ export default function App() {
     }
 
     try {
-      const uploadedUrls = await Promise.all(
-        images.filter(img => img).map(async (img, idx) => {
-          if (img.startsWith("https://")) return img;
-          const fileRef = storage.ref().child(`ads/${Date.now()}_${idx}.jpg`);
-          const response = await fetch(img);
-          const blob = await response.blob();
-          await fileRef.put(blob);
-          return await fileRef.getDownloadURL();
-        })
-      );
+    const uploadedUrls = await Promise.all(
+  images.filter(img => img).map(async (file, idx) => {
+    if (typeof file === "string" && file.startsWith("https://")) return file;
+    const fileRef = storage.ref().child(`ads/${Date.now()}_${idx}.jpg`);
+    await fileRef.put(file); // загружаем File напрямую
+    return await fileRef.getDownloadURL();
+  })
+);
+
 
       const newAd = {
         phone,
@@ -328,16 +327,14 @@ export default function App() {
               multiple
               style={{ display: "none" }}
              onChange={(e) => {
-  const uploadedUrls = await Promise.all(
-  images.filter(img => img).map(async (file, idx) => {
-    if (typeof file === "string" && file.startsWith("https://")) return file;
-    const fileRef = storage.ref().child(`ads/${Date.now()}_${idx}.jpg`);
-    await fileRef.put(file); // загружаем File напрямую
-    return await fileRef.getDownloadURL();
-  })
-);
-
-
+  const files = Array.from(e.target.files);
+  setFormData(prev => {
+    const newImages = [...prev.images];
+    files.forEach((file, idx) => newImages[idx] = file); // сохраняем File, а не URL
+    return { ...prev, images: newImages };
+  });
+}}
+	
             />
           </div>
         </div>
