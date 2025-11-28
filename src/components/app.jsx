@@ -184,6 +184,7 @@ export default function App() {
 
       {/* ===== Cards Masonry ===== */}
       <main className="content">
+				{loading && <p>Загрузка...</p>}
         <div className="cards" id="cards">
           {renderColumns(filteredAds, 2).map((col, i) => (
   <div className="column" key={i + "col"} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
