@@ -26,7 +26,7 @@ export default function App() {
     apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
     authDomain: "toktogul-b4bc8.firebaseapp.com",
     projectId: "toktogul-b4bc8",
-    storageBucket: "toktogul-b4bc8.appspot.com",
+    storageBucket: "toktogul-b4bc8.firebasestorage.app",
     messagingSenderId: "994223338100",
     appId: "1:994223338100:web:41f38224398bd4d21e5721",
     measurementId: "G-EGSEE12JPM"
@@ -90,18 +90,24 @@ const createAd = async () => {
   }
 
   try {
+    // ===== Загружаем фото в Firebase Storage =====
     const uploadedUrls = await Promise.all(
       images
         .filter(img => img) // убираем пустые слоты
         .map(async (img, idx) => {
-          if (typeof img === "string" && img.startsWith("https://")) return img;
+          // если img уже URL с Firebase (строка начинается с https) — пропускаем
+          if (img.startsWith("https://")) return img;
 
           const storageRef = firebase.storage().ref();
           const fileRef = storageRef.child(`ads/${Date.now()}_${idx}.jpg`);
 
-          // img — это File объект
-          await fileRef.put(img);
-          return await fileRef.getDownloadURL();
+          // fetch для получения Blob из URL.createObjectURL
+          const response = await fetch(img);
+          const blob = await response.blob();
+
+          await fileRef.put(blob);
+          const downloadURL = await fileRef.getDownloadURL();
+          return downloadURL;
         })
     );
 
@@ -128,7 +134,6 @@ const createAd = async () => {
     alert("Ошибка при сохранении объявления");
   }
 };
-
 
   // ===== Фильтры =====
   const filteredAds = allAds.filter(ad => {
@@ -343,17 +348,17 @@ const createAd = async () => {
   multiple
   style={{ display: "none" }}
   onChange={(e) => {
-    const files = Array.from(e.target.files); // File[]
+    const files = Array.from(e.target.files);
+    const urls = files.map(file => URL.createObjectURL(file));
     setFormData(prev => {
       const newImages = [...prev.images];
-      files.forEach((file, idx) => {
-        newImages[idx] = file; // сохраняем File напрямую
+      urls.forEach((url, idx) => {
+        newImages[idx] = url; // заменяем только нужные слоты
       });
       return { ...prev, images: newImages };
     });
   }}
 />
-
 
     </div>
   </div>
