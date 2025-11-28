@@ -327,15 +327,17 @@ export default function App() {
               accept="image/*"
               multiple
               style={{ display: "none" }}
-              onChange={(e) => {
-                const files = Array.from(e.target.files);
-                const urls = files.map(file => URL.createObjectURL(file));
-                setFormData(prev => {
-                  const newImages = [...prev.images];
-                  urls.forEach((url, idx) => newImages[idx] = url);
-                  return { ...prev, images: newImages };
-                });
-              }}
+             onChange={(e) => {
+  const uploadedUrls = await Promise.all(
+  images.filter(img => img).map(async (file, idx) => {
+    if (typeof file === "string" && file.startsWith("https://")) return file;
+    const fileRef = storage.ref().child(`ads/${Date.now()}_${idx}.jpg`);
+    await fileRef.put(file); // загружаем File напрямую
+    return await fileRef.getDownloadURL();
+  })
+);
+
+
             />
           </div>
         </div>
