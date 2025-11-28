@@ -90,17 +90,14 @@ const createAd = async () => {
   }
 
   try {
+    // Загружаем все выбранные файлы в Storage
     const uploadedUrls = await Promise.all(
       images
         .filter(img => img) // убираем пустые слоты
         .map(async (img, idx) => {
-          if (typeof img === "string" && img.startsWith("https://")) return img;
-
           const storageRef = firebase.storage().ref();
           const fileRef = storageRef.child(`ads/${Date.now()}_${idx}.jpg`);
-
-          // img — это File объект
-          await fileRef.put(img);
+          await fileRef.put(img); // img это File
           return await fileRef.getDownloadURL();
         })
     );
@@ -119,6 +116,7 @@ const createAd = async () => {
     };
 
     const docRef = await db.collection("ads").add(newAd);
+
     setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
     setModalOpen(false);
     setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
@@ -265,17 +263,17 @@ const createAd = async () => {
 {/* ===== Слоты для выбранных фото ===== */}
 
 <div className="selected-grid" id="selectedGrid">
-  {formData.images.map((img, i) => (
-    <div className="slot" key={i}>
-      <div className="placeholder">
-        <img
-          className="gal"
-          src={img || CanvasImg} // если есть фото — показываем его, иначе Canvas
-          alt={img ? `selected-${i}` : "placeholder"}
-        />
-      </div>
+{formData.images.map((img, i) => (
+  <div className="slot" key={i}>
+    <div className="placeholder">
+      <img
+        className="gal"
+        src={img ? (img instanceof File ? URL.createObjectURL(img) : img) : CanvasImg}
+        alt={img ? `selected-${i}` : "placeholder"}
+      />
     </div>
-  ))}
+  </div>
+))}
 </div>
 </div>
 
@@ -342,16 +340,17 @@ const createAd = async () => {
   accept="image/*"
   multiple
   style={{ display: "none" }}
-  onChange={(e) => {
-    const files = Array.from(e.target.files); // File[]
-    setFormData(prev => {
-      const newImages = [...prev.images];
-      files.forEach((file, idx) => {
-        newImages[idx] = file; // сохраняем File напрямую
-      });
-      return { ...prev, images: newImages };
+onChange={(e) => {
+  const files = Array.from(e.target.files); // File[]
+  setFormData(prev => {
+    const newImages = [...prev.images];
+    files.forEach((file, idx) => {
+      newImages[idx] = file; // сохраняем File напрямую
     });
-  }}
+    return { ...prev, images: newImages };
+  });
+}}
+
 />
 
 
