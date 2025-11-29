@@ -272,15 +272,16 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         {col.map(ad => (
           <div key={ad.id} className="card">
             <div className="img">
-             <img
+            <img
   src={ad.firstImg}
   className="card-img"
   alt={ad.descText || "Фото объявления"}
   onClick={() => {
-    handleView(ad.id);  // увеличиваем просмотры
-    openGallery(ad.images); // открываем галерею
+    handleView(ad.id);      // только один раз на пользователя
+    openGallery(ad.images);
   }}
 />
+
 
             </div>
 
