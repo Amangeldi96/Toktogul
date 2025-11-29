@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
@@ -13,15 +13,13 @@ import phoneImg from './img/phone.png';
 import CanvasImg from './img/Canvas.svg';
 
 import firebase from "firebase/compat/app";
-import "firebase/compat/storage";
 import "firebase/compat/firestore";
 
-// ===== Firebase =====
 const firebaseConfig = {
   apiKey: "AIzaSyD4G8qEj4o6ZGGdZMkmqrcFjsKeexAPPlE",
   authDomain: "toktogul-b4bc8.firebaseapp.com",
   projectId: "toktogul-b4bc8",
-  storageBucket: "toktogul-b4bc8.appspot.com", // <- исправлено
+  storageBucket: "toktogul-b4bc8.appspot.com",
   messagingSenderId: "994223338100",
   appId: "1:994223338100:web:41f38224398bd4d21e5721",
   measurementId: "G-EGSEE12JPM"
@@ -29,7 +27,6 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 export default function App() {
   const [allAds, setAllAds] = useState([]);
@@ -48,8 +45,6 @@ export default function App() {
     images: [null, null, null, null, null]
   });
   const [selectedTab, setSelectedTab] = useState("home");
-
-	  // **Добавляем состояние загрузки здесь**
   const [loading, setLoading] = useState(false);
 
   const categoryLabels = {
@@ -66,7 +61,6 @@ export default function App() {
     other: "Другое"
   };
 
-  // ===== Загрузка объявлений =====
   useEffect(() => {
     const unsubscribe = db.collection("ads")
       .orderBy("timestamp", "desc")
@@ -77,34 +71,49 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // ===== Создание объявления =====
- const createAd = async () => {
-  const { phone, category, desc, price, images } = formData;
-  if (!phone || !category || !desc || !images[0]) {
-    alert("Заполните все поля и добавьте фото");
-    return;
+  // ===== Cloudinary upload =====
+  async function uploadToCloudinary(file) {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "toktogul"); // твой preset
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
+      { method: "POST", body: data }
+    );
+    const json = await res.json();
+    if (!json.secure_url) throw new Error("Ошибка загрузки фото");
+    return json.secure_url;
   }
 
-  try {
+  const handleGalleryChange = async (e) => {
+    const files = Array.from(e.target.files).slice(0, 5);
     setLoading(true);
 
-    const uploadedUrls = await Promise.all(
-      images.filter(img => img).map(async (file) => {
-        // Если уже url, просто возвращаем
-        if (typeof file === "string" && file.startsWith("https://")) return file;
+    try {
+      const uploadedUrls = await Promise.all(
+        files.map(file => uploadToCloudinary(file))
+      );
 
-        const formDataCloud = new FormData();
-        formDataCloud.append("file", file);
-        formDataCloud.append("upload_preset", "YOUR_UPLOAD_PRESET"); // <- укажи свой preset
-        const res = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
-          method: "POST",
-          body: formDataCloud
-        });
-        const data = await res.json();
-        if (!data.secure_url) throw new Error("Ошибка загрузки фото");
-        return data.secure_url;
-      })
-    );
+      setFormData(prev => {
+        const newImages = [...prev.images];
+        uploadedUrls.forEach((url, idx) => newImages[idx] = url);
+        return { ...prev, images: newImages };
+      });
+    } catch (err) {
+      alert("Ошибка при загрузке фото");
+      console.error(err);
+    }
+
+    setLoading(false);
+  };
+
+  const createAd = async () => {
+    const { phone, category, desc, price, images } = formData;
+    if (!phone || !category || !desc || !images[0]) {
+      alert("Заполните все поля и добавьте фото");
+      return;
+    }
 
     const newAd = {
       phone,
@@ -112,62 +121,22 @@ export default function App() {
       categoryKey: category,
       descText: desc,
       price,
-      images: uploadedUrls,
-      firstImg: uploadedUrls[0],
+      images,
+      firstImg: images[0],
       views: 0,
       likes: 0,
       timestamp: Date.now()
     };
 
-    const docRef = await db.collection("ads").add(newAd);
-    setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
-    setModalOpen(false);
-    setFormData({
-      phone: "",
-      category: "",
-      price: "",
-      desc: "",
-      images: [null, null, null, null, null]
-    });
-
-  } catch (e) {
-    console.error("Ошибка при создании объявления:", e);
-    alert("Ошибка при сохранении объявления");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-  // ===== Остальной функционал (фильтры, лайки, галерея, Masonry) =====
-  const filteredAds = allAds.filter(ad => {
-    const matchCategory = selectedCategory ? ad.categoryKey === selectedCategory : true;
-    const priceNum = Number(ad.price) || 0;
-    const min = filterPrice.min ? Number(filterPrice.min) : 0;
-    const max = filterPrice.max ? Number(filterPrice.max) : Infinity;
-    const matchPrice = priceNum >= min && priceNum <= max;
-    const matchSearch = ad.descText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        ad.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchPrice && matchSearch;
-  });
-
-  const toggleLike = (id) => {
-    setAllAds(prev => prev.map(ad => {
-      if (ad.id === id) {
-        const liked = !ad.isFavorite;
-        if (liked) setFavorites([...favorites, { ...ad, isFavorite: true }]);
-        else setFavorites(favorites.filter(f => f.id !== id));
-        return { ...ad, isFavorite: liked, likes: liked ? ad.likes + 1 : Math.max(0, ad.likes - 1) };
-      }
-      return ad;
-    }));
-  };
-
-  const renderColumns = (ads, columnsCount = 2) => {
-    const cols = Array.from({ length: columnsCount }, () => []);
-    ads.forEach((ad, i) => cols[i % columnsCount].push(ad));
-    return cols;
+    try {
+      const docRef = await db.collection("ads").add(newAd);
+      setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
+      setModalOpen(false);
+      setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
+    } catch (e) {
+      console.error(e);
+      alert("Ошибка при сохранении объявления");
+    }
   };
 
   const openGallery = (images, index = 0) => setGallery({ open: true, images, index });
