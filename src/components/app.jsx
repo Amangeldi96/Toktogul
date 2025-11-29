@@ -79,17 +79,28 @@ const toggleFavorite = (adId) => {
     });
   };
 
+{/* ===== Увеличение просмотров =====*/}
+
 	const handleView = async (adId) => {
+  if (viewedAds.includes(adId)) return; // Уже был просмотр, не считаем
+
+  // Обновляем локально
   setAllAds(prevAds =>
     prevAds.map(ad =>
       ad.id === adId ? { ...ad, views: (ad.views || 0) + 1 } : ad
     )
   );
 
+  // Обновляем Firestore
   const adRef = db.collection("ads").doc(adId);
   await adRef.update({
     views: firebase.firestore.FieldValue.increment(1)
   });
+
+  // Сохраняем как просмотренное
+  const newViewed = [...viewedAds, adId];
+  setViewedAds(newViewed);
+  localStorage.setItem("viewedAds", JSON.stringify(newViewed));
 };
 
 
