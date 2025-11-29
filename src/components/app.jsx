@@ -306,11 +306,13 @@ if (!phone || !category || !desc || !imageUrls[0]) {
       </div>
 
 <main className="content">
- <div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+<div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
   {loadingAds
-    ? Array.from({ length: 2 }).map((_, i) => (
-        <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <SkeletonCard />
+    ? [0, 1].map(colIndex => (  // создаём 2 колонки
+        <div className="column" key={colIndex} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {Array.from({ length: 3 }).map((_, i) => ( // 3 skeleton в колонку
+            <SkeletonCard key={i} />
+          ))}
         </div>
       ))
     : renderColumns(filteredAds, 2).map((col, i) => (
