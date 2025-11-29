@@ -1,12 +1,14 @@
 .card.skeleton-card {
-  background-color: #f0f0f0; /* светлый фон skeleton */
+  width: 100%; /* растянуть на всю ширину колонки */
+  max-width: 300px; /* при желании ограничить максимальную ширину */
+  background-color: #f0f0f0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  gap: 10px; /* расстояние между элементами внутри skeleton */
-  margin-bottom: 15px; /* отступ между карточками */
+  gap: 10px;
+  margin-bottom: 15px;
   animation: pulse 1.5s infinite;
 }
 
@@ -24,7 +26,7 @@
 }
 
 .skeleton-img {
-  width: 100%;
+  width: 100%; /* растянуть изображение на всю ширину карточки */
   height: 150px;
   background-color: #ddd;
   border-radius: 8px 8px 0 0;
@@ -36,7 +38,6 @@
   border-radius: 4px;
   margin: 5px 10px;
 }
-
 .skeleton-line.short {
   width: 40%;
 }
@@ -47,4 +48,17 @@
 
 .skeleton-line.long {
   width: 80%;
+}
+
+.cards {
+  display: flex;
+  justify-content: center; /* центрируем колонки */
+  gap: 10px; /* расстояние между колонками */
+}
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* расстояние между карточками в колонке */
+  flex: 1; /* колонки растягиваются одинаково */
+  max-width: 300px; /* ограничение ширины колонки */
 }
