@@ -308,7 +308,7 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 <main className="content">
  <div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
   {loadingAds
-    ? Array.from({ length: 6 }).map((_, i) => (
+    ? Array.from({ length: 2 }).map((_, i) => (
         <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <SkeletonCard />
         </div>
