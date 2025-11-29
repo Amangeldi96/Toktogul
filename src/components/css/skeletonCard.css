@@ -1,7 +1,7 @@
 .card.skeleton-card {
   width: 100%; /* растянуть на всю ширину колонки */
   max-width: 300px; /* при желании ограничить максимальную ширину */
-  background-color: #f0f0f0;
+  background-color: #f0f0f0ad;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -28,7 +28,7 @@
 .skeleton-img {
   width: 100%; /* растянуть изображение на всю ширину карточки */
   height: 150px;
-  background-color: #ddd;
+  background-color: #ddddddad;
   border-radius: 8px 8px 0 0;
 }
 
