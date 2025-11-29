@@ -125,35 +125,39 @@ export default function App() {
   };
 
   const createAd = async () => {
-    const { phone, category, desc, price, images } = formData;
-    if (!phone || !category || !desc || !images[0]) {
-      alert("Заполните все поля и добавьте фото");
-      return;
-    }
+  const { phone, category, desc, price, images } = formData;
 
-    const newAd = {
-      phone,
-      categoryName: categoryLabels[category],
-      categoryKey: category,
-      descText: desc,
-      price,
-      images,
-      firstImg: images[0],
-      views: 0,
-      likes: 0,
-      timestamp: Date.now()
-    };
+  // Берем только URL (если есть preview — заменяем на URL)
+  const imageUrls = images.map(img => typeof img === "string" ? img : img.url || img.preview).filter(Boolean);
 
-    try {
-      const docRef = await db.collection("ads").add(newAd);
-      setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
-      setModalOpen(false);
-      setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
-    } catch (e) {
-      console.error(e);
-      alert("Ошибка при сохранении объявления");
-    }
+  if (!phone || !category || !desc || !imageUrls[0]) {
+    alert("Заполните все поля и добавьте фото");
+    return;
+  }
+
+  const newAd = {
+    phone,
+    categoryName: categoryLabels[category],
+    categoryKey: category,
+    descText: desc,
+    price,
+    images: imageUrls,
+    firstImg: imageUrls[0],
+    views: 0,
+    likes: 0,
+    timestamp: Date.now()
   };
+
+  try {
+    const docRef = await db.collection("ads").add(newAd);
+    setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
+    setModalOpen(false);
+    setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
+  } catch (e) {
+    console.error(e);
+    alert("Ошибка при сохранении объявления");
+  }
+};
 
   const openGallery = (images, index = 0) => setGallery({ open: true, images, index });
   const closeGallery = () => setGallery({ open: false, images: [], index: 0 });
