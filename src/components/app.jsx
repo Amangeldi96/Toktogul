@@ -47,6 +47,14 @@ export default function App() {
   const [selectedTab, setSelectedTab] = useState("home");
   const [loading, setLoading] = useState(false);
 
+
+	  // ===== Отслеживаем просмотренные объявления пользователем =====
+  const [viewedAds, setViewedAds] = useState(() => {
+    const stored = localStorage.getItem("viewedAds");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+
 	// ===== Toggle избранного =====
 const toggleFavorite = (adId) => {
   setAllAds(prevAds =>
