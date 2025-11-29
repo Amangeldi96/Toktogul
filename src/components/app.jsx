@@ -78,7 +78,7 @@ export default function App() {
   }, []);
 
   // ===== Создание объявления =====
-  const createAd = async () => {
+ const createAd = async () => {
   const { phone, category, desc, price, images } = formData;
   if (!phone || !category || !desc || !images[0]) {
     alert("Заполните все поля и добавьте фото");
@@ -86,29 +86,25 @@ export default function App() {
   }
 
   try {
-    // Загружаем файлы на Cloudinary
-    const uploadedUrls = await Promise.all(
-      images.map(async (img) => {
-        if (!img) return null;
-        if (typeof img === "string" && img.startsWith("https://")) return img;
+    setLoading(true);
 
-        if (img instanceof File) {
-          const formDataCloud = new FormData();
-          formDataCloud.append("file", img);
-          formDataCloud.append("upload_preset", "YOUR_UPLOAD_PRESET"); // <- замени на свой preset
-          
-          const response = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
-            method: "POST",
-            body: formDataCloud
-          });
-          const data = await response.json();
-          return data.secure_url;
-        }
-        return null;
+    const uploadedUrls = await Promise.all(
+      images.filter(img => img).map(async (file) => {
+        // Если уже url, просто возвращаем
+        if (typeof file === "string" && file.startsWith("https://")) return file;
+
+        const formDataCloud = new FormData();
+        formDataCloud.append("file", file);
+        formDataCloud.append("upload_preset", "YOUR_UPLOAD_PRESET"); // <- укажи свой preset
+        const res = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
+          method: "POST",
+          body: formDataCloud
+        });
+        const data = await res.json();
+        if (!data.secure_url) throw new Error("Ошибка загрузки фото");
+        return data.secure_url;
       })
     );
-
-    const validUrls = uploadedUrls.filter(url => url);
 
     const newAd = {
       phone,
@@ -116,8 +112,8 @@ export default function App() {
       categoryKey: category,
       descText: desc,
       price,
-      images: validUrls,
-      firstImg: validUrls[0],
+      images: uploadedUrls,
+      firstImg: uploadedUrls[0],
       views: 0,
       likes: 0,
       timestamp: Date.now()
@@ -126,13 +122,22 @@ export default function App() {
     const docRef = await db.collection("ads").add(newAd);
     setAllAds([{ id: docRef.id, ...newAd }, ...allAds]);
     setModalOpen(false);
-    setFormData({ phone: "", category: "", desc: "", price: "", images: [null, null, null, null, null] });
+    setFormData({
+      phone: "",
+      category: "",
+      price: "",
+      desc: "",
+      images: [null, null, null, null, null]
+    });
 
   } catch (e) {
-    console.error(e);
+    console.error("Ошибка при создании объявления:", e);
     alert("Ошибка при сохранении объявления");
+  } finally {
+    setLoading(false);
   }
 };
+
 
 
   // ===== Остальной функционал (фильтры, лайки, галерея, Masonry) =====
