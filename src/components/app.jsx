@@ -169,26 +169,27 @@ const toggleFavorite = (adId) => {
   }
 
   const handleGalleryChange = async (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    setLoading(true);
+  const files = Array.from(e.target.files).slice(0, 5);
+  setLoading(true);
 
-    try {
-      const uploadedUrls = await Promise.all(
-        files.map(file => uploadToCloudinary(file))
-      );
+  try {
+    const uploadedUrls = await Promise.all(
+      files.map(file => uploadToCloudinary(file))
+    );
 
-      setFormData(prev => {
-        const newImages = [...prev.images];
-        uploadedUrls.forEach((url, idx) => newImages[idx] = url);
-        return { ...prev, images: newImages };
-      });
-    } catch (err) {
-      alert("Ошибка при загрузке фото");
-      console.error(err);
-    }
+    setFormData(prev => {
+      const newImages = [...prev.images];
+      uploadedUrls.forEach((url, idx) => newImages[idx] = url);
+      return { ...prev, images: newImages };
+    });
+  } catch (err) {
+    alert("Ошибка при загрузке фото");
+    console.error(err);
+  }
 
-    setLoading(false);
-  };
+  setLoading(false);
+};
+
 
   const createAd = async () => {
   const { phone, category, desc, price, images } = formData;
