@@ -3,6 +3,7 @@ import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
+import SkeletonLoader from "./SkeletonLoader";
 
 import sedanImg from './img/sedan.png';
 import paintBucketImg from './img/paint-bucket.png';
@@ -311,18 +312,21 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         {col.map(ad => (
           <div key={ad.id} className="card">
             <div className="img">
-            <img
-  src={ad.firstImg}
-  className="card-img"
-  alt={ad.descText || "Фото объявления"}
-  onClick={() => {
-    handleView(ad.id);      // только один раз на пользователя
-    openGallery(ad.images);
-  }}
-/>
+  {loading ? (
+    <SkeletonLoader width="100%" height="150px" />
+  ) : (
+    <img
+      src={ad.firstImg}
+      className="card-img"
+      alt={ad.descText || "Фото объявления"}
+      onClick={() => {
+        handleView(ad.id);
+        openGallery(ad.images);
+      }}
+    />
+  )}
+</div>
 
-
-            </div>
 
             <div className="body">
               <div className="price">{ad.price || "Договорная"} сом</div>
@@ -411,17 +415,21 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 
 
  {/* Слоты для выбранных фото */}
-      <div className="selected-grid">
-        {formData.images.map((img, i) => (
-          <div className="slot" key={i}>
-            <div className="placeholder">
-              <img
-                className="gal"
-                src={img || CanvasImg} // показываем URL Cloudinary или placeholder
-                alt={img ? `selected-${i}` : "placeholder"}
-              />
-            </div>
-          </div>
+<div className="selected-grid">
+  {formData.images.map((img, i) => (
+    <div className="slot" key={i}>
+      <div className="placeholder">
+        {loading && typeof img !== "string" ? (
+          <SkeletonLoader width="100%" height="100%" />
+        ) : (
+          <img
+            className="gal"
+            src={img || CanvasImg}
+            alt={img ? `selected-${i}` : "placeholder"}
+          />
+        )}
+      </div>
+    </div>
   ))}
 </div>
 </div>
