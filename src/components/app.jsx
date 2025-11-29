@@ -273,7 +273,7 @@ export default function App() {
       <div className="placeholder">
         <img
           className="gal"
-          src={img || CanvasImg} // если есть фото — показываем его, иначе Canvas
+          src={img ? (img.preview || img) : CanvasImg} // если объект File — preview, иначе URL
           alt={img ? `selected-${i}` : "placeholder"}
         />
       </div>
