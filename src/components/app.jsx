@@ -4,6 +4,7 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import SkeletonLoader from "./skeleton";
+import SkeletonCard from "./SkeletonCard"; // путь к файлу корректный
 
 import sedanImg from './img/sedan.png';
 import paintBucketImg from './img/paint-bucket.png';
