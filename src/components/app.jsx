@@ -128,12 +128,20 @@ export default function App() {
   const { phone, category, desc, price, images } = formData;
 
   // Берем только URL (если есть preview — заменяем на URL)
-  const imageUrls = images.map(img => typeof img === "string" ? img : img.url || img.preview).filter(Boolean);
+const imageUrls = images
+  .map(img => {
+    if (!img) return null;               // пропускаем пустые слоты
+    if (typeof img === "string") return img;  // если уже строка
+    return img.preview || null;           // если объект — берем preview
+  })
+  .filter(Boolean);                      // убираем null
 
-  if (!phone || !category || !desc || !imageUrls[0]) {
-    alert("Заполните все поля и добавьте фото");
-    return;
-  }
+
+if (!phone || !category || !desc || !imageUrls[0]) {
+  alert("Заполните все поля и добавьте фото");
+  return;
+}
+
 
   const newAd = {
     phone,
