@@ -4,7 +4,8 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import SkeletonLoader from "./skeleton";
-import SkeletonCard from "./SkeletonCard"; // путь к файлу корректный
+import SkeletonCard from "./skeletonCard";
+
 
 import sedanImg from './img/sedan.png';
 import paintBucketImg from './img/paint-bucket.png';
@@ -306,17 +307,28 @@ if (!phone || !category || !desc || !imageUrls[0]) {
       </div>
 
 <main className="content">
-<div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px", padding: "0 10px" }}>
+<div
+  className="cards"
+  id="cards"
+>
   {loadingAds
-    ? [0, 1].map(colIndex => (  // создаём 2 колонки
-        <div className="column" key={colIndex} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {Array.from({ length: 3 }).map((_, i) => ( // 3 skeleton в колонку
+    ? Array.from({ length: 2 }).map((_, colIndex) => (
+        <div
+          className="column"
+          key={colIndex}
+          style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}
+        >
+          {Array.from({ length: 3 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ))
     : renderColumns(filteredAds, 2).map((col, i) => (
-        <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div
+          className="column"
+          key={i}
+          style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1 }}
+        >
           {col.map(ad => (
             <div key={ad.id} className="card">
               <div className="img">
@@ -330,7 +342,6 @@ if (!phone || !category || !desc || !imageUrls[0]) {
                   }}
                 />
               </div>
-
 
              {!loadingAds && (
               <div className="body">
