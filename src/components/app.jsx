@@ -138,12 +138,12 @@ const toggleFavorite = (adId) => {
 
 useEffect(() => {
   setLoadingAds(true); // включаем skeleton
-  const unsubscribe = db.collection("ads")
+ const unsubscribe = db.collection("ads")
     .orderBy("timestamp", "desc")
     .onSnapshot(snapshot => {
       const ads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAllAds(ads);
-      setLoadingAds(false); // отключаем skeleton
+      setLoadingAds(false); // данные загрузились, убираем Skeleton
     });
   return () => unsubscribe();
 }, []);
@@ -306,14 +306,12 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 
 <main className="content">
   <div className="cards" id="cards">
-    {renderColumns(filteredAds, 2).map((col, i) => (
-      <div
-        className="column"
-        key={i}
-        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-      >
-        {col.map(ad => (
-          <div key={ad.id} className="card">
+    {loadingAds
+      ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+      : renderColumns(filteredAds, 2).map((col, i) => (
+          <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {col.map(ad => (
+              <div key={ad.id} className="card">
             <div className="img">
               {loadingAds ? (
                 <SkeletonLoader width="100%" height="150px" />
