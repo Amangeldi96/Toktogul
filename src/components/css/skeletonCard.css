@@ -50,6 +50,12 @@
   width: 80%;
 }
 
+.cards {
+  display: flex;
+  justify-content: center; /* центрируем колонки */
+  gap: 10px; /* расстояние между колонками */
+}
+
 .column {
   display: flex;
   flex-direction: column;
