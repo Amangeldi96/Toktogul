@@ -29,6 +29,7 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 export default function App() {
+	const realGalleryInputRef = useRef(null);
   const [allAds, setAllAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
