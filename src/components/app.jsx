@@ -81,7 +81,8 @@ const toggleFavorite = (adId) => {
     });
   };
 
-{/* ===== Увеличение просмотров =====*/}
+// ===== Увеличение просмотров =====
+
 
 	const handleView = async (adId) => {
   if (viewedAds.includes(adId)) return; // Уже был просмотр, не считаем
