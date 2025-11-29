@@ -1,5 +1,5 @@
 import React from "react";
-import "./css/skeletonCard.css"; // создадим стили отдельно
+import "./css/skeletonCard.css";
 
 export default function SkeletonCard() {
   return (

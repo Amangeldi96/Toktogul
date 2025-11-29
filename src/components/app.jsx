@@ -306,17 +306,18 @@ if (!phone || !category || !desc || !imageUrls[0]) {
       </div>
 
 <main className="content">
-  <div className="cards" id="cards">
-    {loadingAds
-      ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-      : renderColumns(filteredAds, 2).map((col, i) => (
-          <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {col.map(ad => (
-              <div key={ad.id} className="card">
-            <div className="img">
-              {loadingAds ? (
-                <SkeletonLoader width="100%" height="150px" />
-              ) : (
+ <div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+  {loadingAds
+    ? Array.from({ length: 6 }).map((_, i) => (
+        <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <SkeletonCard />
+        </div>
+      ))
+    : renderColumns(filteredAds, 2).map((col, i) => (
+        <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {col.map(ad => (
+            <div key={ad.id} className="card">
+              <div className="img">
                 <img
                   src={ad.firstImg}
                   className="card-img"
@@ -326,8 +327,7 @@ if (!phone || !category || !desc || !imageUrls[0]) {
                     openGallery(ad.images);
                   }}
                 />
-              )}
-            </div>
+              </div>
 
 
              {!loadingAds && (
