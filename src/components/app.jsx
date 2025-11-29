@@ -161,40 +161,55 @@ const toggleFavorite = (adId) => {
   });
 
   // ===== Cloudinary upload =====
-  async function uploadToCloudinary(file) {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "toktogul");
+ async function uploadToCloudinary(file) {
+  const data = new FormData();
+  data.append("file", file);
+  data.append("upload_preset", "toktogul");
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
-      { method: "POST", body: data }
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
+    { method: "POST", body: data }
+  );
+
+  const json = await res.json();
+  console.log("Cloudinary ответ:", json); // ⚡ сюда добавляем лог
+
+  if (!json.secure_url) throw new Error("Ошибка загрузки фото");
+  return json.secure_url;
+}
+
+
+ const handleGalleryChange = async (e) => {
+  // 1️⃣ Сначала посмотрим, что пришло от input
+  console.log("Выбранные файлы:", e.target.files);
+
+  const files = Array.from(e.target.files).slice(0, 5);
+  setLoading(true);
+
+  try {
+    // 2️⃣ Логируем каждый файл перед загрузкой
+    files.forEach(file => console.log("Файл для загрузки:", file.name, file.type, file.size));
+
+    const uploadedUrls = await Promise.all(
+      files.map(async (file) => {
+        const url = await uploadToCloudinary(file);
+        console.log("Загруженный URL:", url); // 3️⃣ Логируем URL после загрузки
+        return url;
+      })
     );
-    const json = await res.json();
-    if (!json.secure_url) throw new Error("Ошибка загрузки фото");
-    return json.secure_url;
+
+    setFormData(prev => ({
+      ...prev,
+      images: uploadedUrls // сохраняем только URL
+    }));
+  } catch (err) {
+    alert("Ошибка при загрузке фото");
+    console.error("Ошибка при uploadToCloudinary:", err); // 4️⃣ Логируем полную ошибку
   }
 
-  const handleGalleryChange = async (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    setLoading(true);
+  setLoading(false);
+};
 
-    try {
-      const uploadedUrls = await Promise.all(
-        files.map(file => uploadToCloudinary(file))
-      );
-
-      setFormData(prev => ({
-        ...prev,
-        images: uploadedUrls // сохраняем только URL
-      }));
-    } catch (err) {
-      alert("Ошибка при загрузке фото");
-      console.error(err);
-    }
-
-    setLoading(false);
-  };
 
 
   const createAd = async () => {
