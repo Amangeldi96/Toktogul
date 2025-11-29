@@ -369,16 +369,20 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         <div className="modal__title">Объявление</div>
         <div style={{ width: "36px" }}></div>
       </div>
-
-   {/* ===== Галерея и выбранные фото ===== */}
 <div>
-  {/* Галерея */}
-  <div className="gallery" id="gallery" onClick={() => document.getElementById('realGalleryInput').click()}>
-    <div className="item big" data-type="gallery">
-      <img className="gall" src={CanvasImg} alt="gallery" />
-      <span className="big-text">галерея</span>
-    </div>
+
+ {/* ===== Галерея и выбранные фото ===== */}
+<div
+  className="gallery"
+  id="gallery"
+  onClick={() => realGalleryInputRef.current?.click()}
+>
+  <div className="item big" data-type="gallery">
+    <img className="gall" src={CanvasImg} alt="gallery" />
+    <span className="big-text">галерея</span>
   </div>
+</div>
+
 
 {/* ===== Слоты для выбранных фото ===== */}
 
