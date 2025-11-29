@@ -49,6 +49,9 @@ export default function App() {
   });
   const [selectedTab, setSelectedTab] = useState("home");
 
+	  // **Добавляем состояние загрузки здесь**
+  const [loading, setLoading] = useState(false);
+
   const categoryLabels = {
     electronics: "Электроника",
     cars: "Авто",
