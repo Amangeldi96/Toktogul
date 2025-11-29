@@ -71,11 +71,27 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // ===== renderColumns =====
+  const renderColumns = (ads, columnsCount = 2) => {
+    const cols = Array.from({ length: columnsCount }, () => []);
+    ads.forEach((ad, i) => {
+      cols[i % columnsCount].push(ad);
+    });
+    return cols;
+  };
+
+  // ===== Отфильтрованные объявления =====
+  const filteredAds = allAds.filter(ad => {
+    if (selectedCategory && ad.categoryKey !== selectedCategory) return false;
+    if (searchQuery && !ad.descText.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
   // ===== Cloudinary upload =====
   async function uploadToCloudinary(file) {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "toktogul"); // твой preset
+    data.append("upload_preset", "toktogul");
 
     const res = await fetch(
       "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
@@ -174,49 +190,32 @@ export default function App() {
         ))}
       </div>
 
-      {/* ===== Cards Masonry ===== */}
-      <main className="content">
-				{loading && <p>Загрузка...</p>}
-        <div className="cards" id="cards">
-          {renderColumns(filteredAds, 2).map((col, i) => (
-  <div className="column" key={i + "col"} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-    {col.map(ad => (
-      <div key={ad.id} className="card">
-                  <div className="img">
-                    <img 
-  src={ad.firstImg} className="card-img" alt={ad.descText || "Фото объявления"} onClick={() => openGallery(ad.images)}/>
-                  </div>
-                  <div className="body">
-                    <div className="price">{ad.price || "Договорная"} сом</div>
-                    <div className="sub">{ad.categoryName}</div>
-                    <div className="title">{ad.descText}</div>
-                    <div className="phone">
-                      <a href={`tel:${ad.phone}`}>{ad.phone}</a>
-                    </div>
-                    <div className="actions">
-                      <div className="left-actions">
-												  <svg class="view" viewBox="0 0 24 24">
-            <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
-            <circle cx="12" cy="12" r="2"/>
-          </svg>
-                        <span className="view-count">{ad.views}</span>
-                      </div>
-                      <div className="right-actions">
-                        <button className={`icon-btn heart ${ad.isFavorite ? 'active' : ''}`} onClick={() => toggleLike(ad.id)}>
-                           <svg class="like" viewBox="0 0 24 24" fill="none">
-              <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z"></path>
-            </svg>
-                        </button>
-                        <span className="like-count">{ad.likes}</span>
-                      </div>
-                    </div>
+       {/* ===== Cards Masonry ===== */}
+    <main className="content">
+      {loading && <p>Загрузка...</p>}
+      <div className="cards" id="cards">
+        {renderColumns(filteredAds, 2).map((col, i) => (
+          <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {col.map(ad => (
+              <div key={ad.id} className="card">
+                <div className="img">
+                  <img src={ad.firstImg} className="card-img" alt={ad.descText || "Фото объявления"} onClick={() => openGallery(ad.images)} />
+                </div>
+                <div className="body">
+                  <div className="price">{ad.price || "Договорная"} сом</div>
+                  <div className="sub">{ad.categoryName}</div>
+                  <div className="title">{ad.descText}</div>
+                  <div className="phone"><a href={`tel:${ad.phone}`}>{ad.phone}</a></div>
+                  <div className="actions">
+                    {/* left-actions, right-actions, heart, view и т.д. */}
                   </div>
                 </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </main>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </main>
 
     {/* ===== Модалка создания объявления ===== */}
 {modalOpen && (
