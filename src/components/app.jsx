@@ -171,7 +171,7 @@ const toggleFavorite = (adId) => {
     return json.secure_url;
   }
 
-  const handleGalleryChange = async (e) => {
+ const handleGalleryChange = async (e) => {
   const files = Array.from(e.target.files).slice(0, 5);
   setLoading(true);
 
@@ -180,11 +180,10 @@ const toggleFavorite = (adId) => {
       files.map(file => uploadToCloudinary(file))
     );
 
-    setFormData(prev => {
-      const newImages = [...prev.images];
-      uploadedUrls.forEach((url, idx) => newImages[idx] = url);
-      return { ...prev, images: newImages };
-    });
+    setFormData(prev => ({
+      ...prev,
+      images: uploadedUrls // Сохраняем только URL
+    }));
   } catch (err) {
     alert("Ошибка при загрузке фото");
     console.error(err);
@@ -192,6 +191,7 @@ const toggleFavorite = (adId) => {
 
   setLoading(false);
 };
+
 
 
   const createAd = async () => {
@@ -375,11 +375,8 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 <div>
 
  {/* ===== Галерея и выбранные фото ===== */}
-<div
-  className="gallery"
-  id="gallery"
-  onClick={() => realGalleryInputRef.current?.click()}
->
+// В компоненте
+<div className="gallery" onClick={() => realGalleryInputRef.current.click()}>
   <div className="item big" data-type="gallery">
     <img className="gall" src={CanvasImg} alt="gallery" />
     <span className="big-text">галерея</span>
@@ -468,37 +465,11 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 
  <input
   type="file"
+  ref={realGalleryInputRef}
   accept="image/*"
   multiple
   style={{ display: "none" }}
-  onChange={async (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-
-    const uploaded = [];
-
-    for (let file of files) {
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", "toktogul");
-
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
-        { method: "POST", body: data }
-      );
-
-      const json = await res.json();
-      if (json.secure_url) {
-        uploaded.push(json.secure_url); // сохраняем реальный URL
-      } else {
-        console.log("Ошибка Cloudinary:", json);
-      }
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      images: uploaded, // тут сохраняется только secure_url
-    }));
-  }}
+  onChange={handleGalleryChange}
 />
 
 
