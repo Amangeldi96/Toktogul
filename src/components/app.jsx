@@ -3,7 +3,7 @@ import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
-import SkeletonLoader from "./SkeletonCard";
+import SkeletonLoader from "./skeleton";
 
 import sedanImg from './img/sedan.png';
 import paintBucketImg from './img/paint-bucket.png';
