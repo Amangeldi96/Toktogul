@@ -161,22 +161,31 @@ const toggleFavorite = (adId) => {
   });
 
   // ===== Cloudinary upload =====
- async function uploadToCloudinary(file) {
+async function uploadToCloudinary(file) {
   const data = new FormData();
   data.append("file", file);
   data.append("upload_preset", "toktogul");
+  data.append("folder", "Toktogul"); // загружать в папку Toktogul
 
-  const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
-    { method: "POST", body: data }
-  );
-
-  const json = await res.json();
-  console.log("Cloudinary ответ:", json); // ⚡ сюда добавляем лог
-
-  if (!json.secure_url) throw new Error("Ошибка загрузки фото");
-  return json.secure_url;
+  try {
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
+      { method: "POST", body: data }
+    );
+    const json = await res.json();
+    
+    if (json.error) {
+      console.error("Cloudinary ответ:", json);
+      throw new Error(json.error.message || "Ошибка загрузки фото");
+    }
+    
+    return json.secure_url;
+  } catch (err) {
+    console.error("Ошибка при uploadToCloudinary:", err);
+    throw err;
+  }
 }
+
 
 
  const handleGalleryChange = async (e) => {
