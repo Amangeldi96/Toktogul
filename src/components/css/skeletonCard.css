@@ -49,11 +49,3 @@
 .skeleton-line.long {
   width: 80%;
 }
-
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* расстояние между карточками в колонке */
-  flex: 1; /* колонки растягиваются одинаково */
-  max-width: 300px; /* ограничение ширины колонки */
-}
