@@ -47,6 +47,26 @@ export default function App() {
   const [selectedTab, setSelectedTab] = useState("home");
   const [loading, setLoading] = useState(false);
 
+	// ===== Toggle избранного =====
+const toggleFavorite = (adId) => {
+  setAllAds(prevAds =>
+    prevAds.map(ad =>
+      ad.id === adId ? { ...ad, isFavorite: !ad.isFavorite } : ad
+    )
+  );
+
+  setFavorites(prevFavs => {
+    const isFav = prevFavs.find(ad => ad.id === adId);
+    if (isFav) {
+      return prevFavs.filter(ad => ad.id !== adId);
+    } else {
+      const adToAdd = allAds.find(ad => ad.id === adId);
+      return adToAdd ? [...prevFavs, { ...adToAdd, isFavorite: true }] : prevFavs;
+    }
+  });
+};
+
+
   const categoryLabels = {
     electronics: "Электроника",
     cars: "Авто",
