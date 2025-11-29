@@ -202,32 +202,88 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         ))}
       </div>
 
-       {/* ===== Cards Masonry ===== */}
-    <main className="content">
-      {loading && <p>Загрузка...</p>}
-      <div className="cards" id="cards">
-        {renderColumns(filteredAds, 2).map((col, i) => (
-          <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {col.map(ad => (
-              <div key={ad.id} className="card">
-                <div className="img">
-                  <img src={ad.firstImg} className="card-img" alt={ad.descText || "Фото объявления"} onClick={() => openGallery(ad.images)} />
+     <main className="content">
+  {loading && <p>Загрузка...</p>}
+  <div className="cards" id="cards">
+    {renderColumns(filteredAds, 2).map((col, i) => (
+      <div
+        className="column"
+        key={i}
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+      >
+        {col.map(ad => (
+          <div key={ad.id} className="card">
+            <div className="img">
+              <img
+                src={ad.firstImg}
+                className="card-img"
+                alt={ad.descText || "Фото объявления"}
+                onClick={() => openGallery(ad.images)}
+              />
+            </div>
+
+            <div className="body">
+              <div className="price">{ad.price || "Договорная"} сом</div>
+              <div className="sub">{ad.categoryName}</div>
+              <div className="title">{ad.descText}</div>
+
+              <div className="phone">
+                <a href={`tel:${ad.phone}`}>{ad.phone}</a>
+
+                {/* WhatsApp кнопка */}
+                <a
+                  href={`https://wa.me/${ad.phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="icon-btn whatsapp"
+                  style={{ marginLeft: "10px" }}
+                >
+                  <svg
+                    className="what"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M259.821,7453.12124 C259.58,7453.80344 258.622,7454.36761 257.858,7454.53266 C257.335,7454.64369 256.653,7454.73172 254.355,7453.77943 C251.774,7452.71011 248.19,7448.90097 248.19,7446.36621 C248.19,7445.07582 248.934,7443.57337 250.235,7443.57337 C250.861,7443.57337 250.999,7443.58538 251.205,7444.07952 C251.446,7444.6617 252.034,7446.09613 252.104,7446.24317 C252.393,7446.84635 251.81,7447.19946 251.387,7447.72462 C251.252,7447.88266 251.099,7448.05372 251.27,7448.3478 C251.44,7448.63589 252.028,7449.59418 252.892,7450.36341 C254.008,7451.35771 254.913,7451.6748 255.237,7451.80984 C255.478,7451.90987 255.766,7451.88687 255.942,7451.69881 C256.165,7451.45774 256.442,7451.05762 256.724,7450.6635 C256.923,7450.38141 257.176,7450.3464 257.441,7450.44643 C257.62,7450.50845 259.895,7451.56477 259.991,7451.73382 C260.062,7451.85686 260.062,7452.43903 259.821,7453.12124 M254.002,7439 L253.997,7439 L253.997,7439 C248.484,7439 244,7443.48535 244,7449 C244,7451.18666 244.705,7453.21526 245.904,7454.86076 L244.658,7458.57687 L248.501,7457.3485 C250.082,7458.39482 251.969,7459 254.002,7459 C259.515,7459 264,7454.51465 264,7449 C264,7443.48535 259.515,7439 254.002,7439"
+                      fill="currentColor"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
+
+              {/* ===== Actions (лайки и просмотры) ===== */}
+              <div className="actions">
+                <div className="left-actions">
+                  <svg className="view" viewBox="0 0 24 24">
+                    <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                  <span className="view-count">{ad.views}</span>
                 </div>
-                <div className="body">
-                  <div className="price">{ad.price || "Договорная"} сом</div>
-                  <div className="sub">{ad.categoryName}</div>
-                  <div className="title">{ad.descText}</div>
-                  <div className="phone"><a href={`tel:${ad.phone}`}>{ad.phone}</a></div>
-                  <div className="actions">
-                    {/* left-actions, right-actions, heart, view и т.д. */}
-                  </div>
+
+                <div className="right-actions">
+                  <button
+                    className={`icon-btn heart ${ad.isFavorite ? "active" : ""}`}
+                    onClick={() => toggleFavorite(ad.id)}
+                  >
+                    <svg className="like" viewBox="0 0 24 24" fill="none">
+                      <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
+                    </svg>
+                  </button>
+                  <span className="like-count">{ad.likes}</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         ))}
       </div>
-    </main>
+    ))}
+  </div>
+</main>
+
 
     {/* ===== Модалка создания объявления ===== */}
 {modalOpen && (
