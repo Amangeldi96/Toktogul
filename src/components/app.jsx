@@ -28,18 +28,12 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+import CanvasImg from './img/Canvas.svg';
+
+// ... остальной импорт и Firebase конфиг остаются без изменений
+
 export default function App() {
-
-  const realGalleryInputRef = useRef(null); // ← ВОТ ТУТ ДОЛЖНО БЫТЬ
-
-  const [allAds, setAllAds] = useState([]);
-  const [favorites, setFavorites] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
+  const realGalleryInputRef = useRef(null); // корректно используем useRef
   const [formData, setFormData] = useState({
     phone: "",
     category: "",
@@ -47,7 +41,6 @@ export default function App() {
     desc: "",
     images: [null, null, null, null, null]
   });
-  const [selectedTab, setSelectedTab] = useState("home");
   const [loading, setLoading] = useState(false);
 
 
@@ -171,27 +164,26 @@ const toggleFavorite = (adId) => {
     return json.secure_url;
   }
 
- const handleGalleryChange = async (e) => {
-  const files = Array.from(e.target.files).slice(0, 5);
-  setLoading(true);
+  const handleGalleryChange = async (e) => {
+    const files = Array.from(e.target.files).slice(0, 5);
+    setLoading(true);
 
-  try {
-    const uploadedUrls = await Promise.all(
-      files.map(file => uploadToCloudinary(file))
-    );
+    try {
+      const uploadedUrls = await Promise.all(
+        files.map(file => uploadToCloudinary(file))
+      );
 
-    setFormData(prev => ({
-      ...prev,
-      images: uploadedUrls // Сохраняем только URL
-    }));
-  } catch (err) {
-    alert("Ошибка при загрузке фото");
-    console.error(err);
-  }
+      setFormData(prev => ({
+        ...prev,
+        images: uploadedUrls // сохраняем только URL
+      }));
+    } catch (err) {
+      alert("Ошибка при загрузке фото");
+      console.error(err);
+    }
 
-  setLoading(false);
-};
-
+    setLoading(false);
+  };
 
 
   const createAd = async () => {
@@ -375,28 +367,26 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 <div>
 
  {/* ===== Галерея и выбранные фото ===== */}
-// В компоненте
-<div className="gallery" onClick={() => realGalleryInputRef.current.click()}>
-  <div className="item big" data-type="gallery">
-    <img className="gall" src={CanvasImg} alt="gallery" />
-    <span className="big-text">галерея</span>
-  </div>
-</div>
-
-
-{/* ===== Слоты для выбранных фото ===== */}
-
-<div className="selected-grid" id="selectedGrid">
-  {formData.images.map((img, i) => (
-    <div className="slot" key={i}>
-      <div className="placeholder">
-        <img
-          className="gal"
-          src={img ? (img.preview || img) : CanvasImg} // если объект File — preview, иначе URL
-          alt={img ? `selected-${i}` : "placeholder"}
-        />
+  <div className="gallery" onClick={() => realGalleryInputRef.current.click()}>
+        <div className="item big" data-type="gallery">
+          <img className="gall" src={CanvasImg} alt="gallery" />
+          <span className="big-text">галерея</span>
+        </div>
       </div>
-    </div>
+
+
+ {/* Слоты для выбранных фото */}
+      <div className="selected-grid">
+        {formData.images.map((img, i) => (
+          <div className="slot" key={i}>
+            <div className="placeholder">
+              <img
+                className="gal"
+                src={img || CanvasImg} // показываем URL Cloudinary или placeholder
+                alt={img ? `selected-${i}` : "placeholder"}
+              />
+            </div>
+          </div>
   ))}
 </div>
 </div>
@@ -461,16 +451,17 @@ if (!phone || !category || !desc || !imageUrls[0]) {
   <button className="btn-green" onClick={createAd}>Создать объявление</button>
 </div>
 
-{/* ===== Скрытый input для выбора фото ===== */}
+  {/* Скрытый input */}
+      <input
+        type="file"
+        ref={realGalleryInputRef}
+        accept="image/*"
+        multiple
+        style={{ display: "none" }}
+        onChange={handleGalleryChange}
+      />
 
- <input
-  type="file"
-  ref={realGalleryInputRef}
-  accept="image/*"
-  multiple
-  style={{ display: "none" }}
-  onChange={handleGalleryChange}
-/>
+      {loading && <p>Загрузка...</p>}
 
 
           </div>
