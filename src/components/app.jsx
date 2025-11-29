@@ -28,8 +28,6 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-import CanvasImg from './img/Canvas.svg';
-
 // ... остальной импорт и Firebase конфиг остаются без изменений
 
 export default function App() {
