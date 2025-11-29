@@ -41,6 +41,22 @@ export default function App() {
   });
   const [loading, setLoading] = useState(false);
 
+	  // ===== Состояния для объявлений =====
+  const [allAds, setAllAds] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
+  const [selectedTab, setSelectedTab] = useState("home");
+
+  const [viewedAds, setViewedAds] = useState(() => {
+    const stored = localStorage.getItem("viewedAds");
+    return stored ? JSON.parse(stored) : [];
+  });
+
 
 	  // ===== Отслеживаем просмотренные объявления пользователем =====
   const [viewedAds, setViewedAds] = useState(() => {
