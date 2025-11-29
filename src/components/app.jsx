@@ -65,6 +65,33 @@ const toggleFavorite = (adId) => {
     }
   });
 };
+// <<< Вставляем здесь: обработчик лайка >>>
+  const handleLike = async (adId) => {
+    setAllAds(prevAds =>
+      prevAds.map(ad =>
+        ad.id === adId ? { ...ad, likes: (ad.likes || 0) + 1 } : ad
+      )
+    );
+
+    const adRef = db.collection("ads").doc(adId);
+    await adRef.update({
+      likes: firebase.firestore.FieldValue.increment(1)
+    });
+  };
+
+	const handleView = async (adId) => {
+  setAllAds(prevAds =>
+    prevAds.map(ad =>
+      ad.id === adId ? { ...ad, views: (ad.views || 0) + 1 } : ad
+    )
+  );
+
+  const adRef = db.collection("ads").doc(adId);
+  await adRef.update({
+    views: firebase.firestore.FieldValue.increment(1)
+  });
+};
+
 
 
   const categoryLabels = {
@@ -234,12 +261,16 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         {col.map(ad => (
           <div key={ad.id} className="card">
             <div className="img">
-              <img
-                src={ad.firstImg}
-                className="card-img"
-                alt={ad.descText || "Фото объявления"}
-                onClick={() => openGallery(ad.images)}
-              />
+             <img
+  src={ad.firstImg}
+  className="card-img"
+  alt={ad.descText || "Фото объявления"}
+  onClick={() => {
+    handleView(ad.id);  // увеличиваем просмотры
+    openGallery(ad.images); // открываем галерею
+  }}
+/>
+
             </div>
 
             <div className="body">
@@ -285,10 +316,12 @@ if (!phone || !category || !desc || !imageUrls[0]) {
                 </div>
 
                 <div className="right-actions">
-                  <button
-                    className={`icon-btn heart ${ad.isFavorite ? "active" : ""}`}
-                    onClick={() => toggleFavorite(ad.id)}
-                  >
+<button
+  className={`icon-btn heart ${ad.isFavorite ? "active" : ""}`}
+  onClick={() => handleLike(ad.id)}
+>
+
+
                     <svg className="like" viewBox="0 0 24 24" fill="none">
                       <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
                     </svg>
