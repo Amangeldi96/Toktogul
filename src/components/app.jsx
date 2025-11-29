@@ -52,10 +52,6 @@ export default function App() {
   const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
   const [selectedTab, setSelectedTab] = useState("home");
 
-  const [viewedAds, setViewedAds] = useState(() => {
-    const stored = localStorage.getItem("viewedAds");
-    return stored ? JSON.parse(stored) : [];
-  });
 
 
 	  // ===== Отслеживаем просмотренные объявления пользователем =====
