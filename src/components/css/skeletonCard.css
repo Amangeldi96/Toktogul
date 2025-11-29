@@ -15,13 +15,13 @@
 /* Анимация пульсации */
 @keyframes pulse {
   0% {
-    background-color: #f0f0f0;
+    background-color: #f0f0f088;
   }
   50% {
-    background-color: #e0e0e0;
+    background-color: #e0e0e088;
   }
   100% {
-    background-color: #f0f0f0;
+    background-color: #f0f0f088;
   }
 }
 
@@ -34,7 +34,7 @@
 
 .skeleton-line {
   height: 12px;
-  background-color: #ddd;
+  background-color: #dddddd69;
   border-radius: 4px;
   margin: 5px 10px;
 }
