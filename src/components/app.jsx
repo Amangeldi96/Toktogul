@@ -306,7 +306,7 @@ if (!phone || !category || !desc || !imageUrls[0]) {
       </div>
 
 <main className="content">
-<div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+<div className="cards" id="cards" style={{ display: "flex", justifyContent: "center", gap: "10px", padding: "0 10px" }}>
   {loadingAds
     ? [0, 1].map(colIndex => (  // создаём 2 колонки
         <div className="column" key={colIndex} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
