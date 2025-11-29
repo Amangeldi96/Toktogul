@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
@@ -29,10 +29,6 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 export default function App() {
-  const [formData, setFormData] = useState({
-    images: [],
-    // остальное
-  });
 
   const realGalleryInputRef = useRef(null); // ← ВОТ ТУТ ДОЛЖНО БЫТЬ
 
