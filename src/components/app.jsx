@@ -327,22 +327,25 @@ if (!phone || !category || !desc || !imageUrls[0]) {
         <div className="btn-filter" onClick={() => setFilterModalOpen(true)}>Фильтр</div>
       </div>
 
-      {/* ===== Горизонтальная лента категорий ===== */}
-      <div className="categories-scroll">
-        {[{ img: sedanImg, label: "Транспорт", count: "331 960" },
-          { img: paintBucketImg, label: "Услуги", count: "115 316" },
-          { img: repairToolsImg, label: "Ремонт", count: "136 708" },
-          { img: buildingImg, label: "Недвижимость", count: "66 750" },
-          { img: flowersImg, label: "Дом и сад", count: "138 056" },
-          { img: phoneImg, label: "Телефоны", count: "97 420" }].map((cat,i) => (
-          <div className={`cat-card bg`} key={i}>
-           <div className="icon">
-  					<img src={cat.img} alt={cat.label} /></div>
-            <div className="label">{cat.label}</div>
-            <div className="count">{cat.count}</div>
-          </div>
-        ))}
+{/* ===== Горизонтальная лента категорий ===== */}
+<div className="categories-scroll">
+  {[
+    { img: sedanImg, label: "Транспорт", count: "331 960", bgClass: "bg-blue" },
+    { img: paintBucketImg, label: "Услуги", count: "115 316", bgClass: "bg-cream" },
+    { img: repairToolsImg, label: "Ремонт", count: "136 708", bgClass: "bg-light" },
+    { img: buildingImg, label: "Недвижимость", count: "66 750", bgClass: "bg-purple" },
+    { img: flowersImg, label: "Дом и сад", count: "138 056", bgClass: "bg-green" },
+    { img: phoneImg, label: "Телефоны", count: "97 420", bgClass: "bg-peach" }
+  ].map((cat, i) => (
+    <div className={`cat-card ${cat.bgClass}`} key={i}>
+      <div className="icon">
+        <img src={cat.img} alt={cat.label} />
       </div>
+      <div className="label">{cat.label}</div>
+      <div className="count">{cat.count}</div>
+    </div>
+  ))}
+</div>
 
 <main className="content">
 <div
@@ -396,19 +399,23 @@ if (!phone || !category || !desc || !imageUrls[0]) {
                     className="icon-btn whatsapp"
                     style={{ marginLeft: "10px" }}
                   >
-                  <svg
-                    className="what"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M259.821,7453.12124 C259.58,7453.80344 258.622,7454.36761 257.858,7454.53266 C257.335,7454.64369 256.653,7454.73172 254.355,7453.77943 C251.774,7452.71011 248.19,7448.90097 248.19,7446.36621 C248.19,7445.07582 248.934,7443.57337 250.235,7443.57337 C250.861,7443.57337 250.999,7443.58538 251.205,7444.07952 C251.446,7444.6617 252.034,7446.09613 252.104,7446.24317 C252.393,7446.84635 251.81,7447.19946 251.387,7447.72462 C251.252,7447.88266 251.099,7448.05372 251.27,7448.3478 C251.44,7448.63589 252.028,7449.59418 252.892,7450.36341 C254.008,7451.35771 254.913,7451.6748 255.237,7451.80984 C255.478,7451.90987 255.766,7451.88687 255.942,7451.69881 C256.165,7451.45774 256.442,7451.05762 256.724,7450.6635 C256.923,7450.38141 257.176,7450.3464 257.441,7450.44643 C257.62,7450.50845 259.895,7451.56477 259.991,7451.73382 C260.062,7451.85686 260.062,7452.43903 259.821,7453.12124 M254.002,7439 L253.997,7439 L253.997,7439 C248.484,7439 244,7443.48535 244,7449 C244,7451.18666 244.705,7453.21526 245.904,7454.86076 L244.658,7458.57687 L248.501,7457.3485 C250.082,7458.39482 251.969,7459 254.002,7459 C259.515,7459 264,7454.51465 264,7449 C264,7443.48535 259.515,7439 254.002,7439"
-                      fill="currentColor"
-                      strokeWidth="1"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+<svg
+  className="what"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 58 58"
+>
+  <g>
+    <path
+      fill="#2cb742"
+      d="m0 58 4.988-14.963A28.35 28.35 0 0 1 1 28.5C1 12.76 13.76 0 29.5 0S58 12.76 58 28.5 45.24 57 29.5 57a28.373 28.373 0 0 1-13.26-3.273L0 58z"
+    />
+    <path
+      fill="#ffffff"
+      d="M47.683 37.985c-1.316-2.487-6.169-5.331-6.169-5.331-1.098-.626-2.423-.696-3.049.42 0 0-1.577 1.891-1.978 2.163-1.832 1.241-3.529 1.193-5.242-.52l-3.981-3.981-3.981-3.981c-1.713-1.713-1.761-3.41-.52-5.242.272-.401 2.163-1.978 2.163-1.978 1.116-.627 1.046-1.951.42-3.049 0 0-2.844-4.853-5.331-6.169a2.726 2.726 0 0 0-3.203.482l-1.758 1.758c-5.577 5.577-2.831 11.873 2.746 17.45l5.097 5.097 5.097 5.097c5.577 5.577 11.873 8.323 17.45 2.746l1.758-1.758a2.728 2.728 0 0 0 .481-3.204z"
+    />
+  </g>
+</svg>
+
                 </a>
               </div>
 

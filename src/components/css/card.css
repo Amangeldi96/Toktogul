@@ -94,25 +94,25 @@
 
 .phone{
 	display: flex;
-	gap: 15px;
+	justify-content: center;
+	margin-top: 10px;
 }
 .phone a{
-	color: #ffffff;
+	display: flex;
+	align-items: center;
+	color: #000;
 	gap: 10px;
-  background: linear-gradient(45deg,	#708090,#778899); 
+  background: linear-gradient(45deg,	#7c9ebb44,#7c9ebb33); 
 	padding: 2px 5px 2px 5px;
 	border-radius: 4px;
 	font-weight: 900;
 
 }
 .what{
+	display: block;
   width: 15px;
   height: 15px;
 }
-.what path {
-  fill: rgb(255, 255, 255) !important;
-}
-
 
 
 
