@@ -4,7 +4,7 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import SkeletonLoader from "./skeleton";
-import SkeletonCard from "./SkeletonCard";
+import SkeletonCard from "./skeletonCard";
 
 
 import sedanImg from './img/sedan.png';
@@ -58,14 +58,14 @@ export default function App() {
 
 
 
-	  // ===== Отслеживаем просмотренные объявления пользователем =====
-  const [viewedAds, setViewedAds] = useState(() => {
-    const stored = localStorage.getItem("viewedAds");
-    return stored ? JSON.parse(stored) : [];
-  });
+// ===== Отслеживаем просмотренные объявления =====
+const [viewedAds, setViewedAds] = useState(() => {
+  const stored = localStorage.getItem("viewedAds");
+  return stored ? JSON.parse(stored) : [];
+});
 
 
-	// ===== Toggle избранного =====
+// ===== Toggle избранного =====
 const toggleFavorite = (adId) => {
   setAllAds(prevAds =>
     prevAds.map(ad =>
@@ -73,29 +73,40 @@ const toggleFavorite = (adId) => {
     )
   );
 
+  // Обновляем список избранных
   setFavorites(prevFavs => {
-    const isFav = prevFavs.find(ad => ad.id === adId);
+    const isFav = prevFavs.some(ad => ad.id === adId);
+
     if (isFav) {
+      // Удаляем из избранных
       return prevFavs.filter(ad => ad.id !== adId);
     } else {
+      // Добавляем в избранные
       const adToAdd = allAds.find(ad => ad.id === adId);
       return adToAdd ? [...prevFavs, { ...adToAdd, isFavorite: true }] : prevFavs;
     }
   });
 };
-// <<< Вставляем здесь: обработчик лайка >>>
-  const handleLike = async (adId) => {
-    setAllAds(prevAds =>
-      prevAds.map(ad =>
-        ad.id === adId ? { ...ad, likes: (ad.likes || 0) + 1 } : ad
-      )
-    );
 
+// ===== Лайк объявления =====
+const handleLike = async (adId) => {
+  // Локально +1 лайк
+  setAllAds(prevAds =>
+    prevAds.map(ad =>
+      ad.id === adId ? { ...ad, likes: (ad.likes || 0) + 1 } : ad
+    )
+  );
+
+  // Обновляем в Firestore
+  try {
     const adRef = db.collection("ads").doc(adId);
     await adRef.update({
       likes: firebase.firestore.FieldValue.increment(1)
     });
-  };
+  } catch (e) {
+    console.error("Ошибка лайка:", e);
+  }
+};
 
 // ===== Увеличение просмотров =====
 
@@ -333,14 +344,14 @@ if (!phone || !category || !desc || !imageUrls[0]) {
             <div key={ad.id} className="card">
               <div className="img">
                 <img
-                  src={ad.firstImg}
-                  className="card-img"
-                  alt={ad.descText || "Фото объявления"}
-                  onClick={() => {
-                    handleView(ad.id);
-                    openGallery(ad.images);
-                  }}
-                />
+                        src={ad.firstImg}
+                        className="card-img"
+                        alt={ad.descText || "Фото объявления"}
+                        onClick={() => {
+                          handleView(ad.id);
+                          openGallery(ad.images, 0);
+                        }}
+                      />
               </div>
 
              {!loadingAds && (
@@ -384,10 +395,13 @@ if (!phone || !category || !desc || !imageUrls[0]) {
                     <span className="view-count">{ad.views}</span>
                   </div>
                   <div className="right-actions">
-                    <button
-                      className={`icon-btn heart ${ad.isFavorite ? "active" : ""}`}
-                      onClick={() => handleLike(ad.id)}
-                    >
+                 <button
+  className={`icon-btn heart ${ad.isFavorite ? "active" : ""}`}
+  onClick={() => {
+    toggleFavorite(ad.id); // обновление локального состояния избранного
+    handleLike(ad.id);     // обновление лайков в Firestore
+  }}
+>
                       <svg className="like" viewBox="0 0 24 24" fill="none">
                         <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
                       </svg>
@@ -631,10 +645,30 @@ if (!phone || !category || !desc || !imageUrls[0]) {
   </div>
 </div>
 
-      {/* ===== Галерея ===== */}
+{/* ===== Галерея (слайдер) ===== */}
       {gallery.open && (
-        <div className="modal open" onClick={closeGallery}>
-          <img src={gallery.images[gallery.index]} alt="gallery" />
+        <div className="gallery-modal" onClick={closeGallery}>
+          <div className="gallery-inner" onClick={e => e.stopPropagation()}>
+            <button className="gallery-close" onClick={closeGallery}>✕</button>
+
+            <img className="gallery-img" src={gallery.images[gallery.index]} alt={`Фото ${gallery.index + 1}`} />
+
+            <button
+              className="gallery-btn left"
+              onClick={() => setGallery(g => ({ ...g, index: g.index > 0 ? g.index - 1 : g.images.length - 1 }))}
+            >
+              ‹
+            </button>
+
+            <button
+              className="gallery-btn right"
+              onClick={() => setGallery(g => ({ ...g, index: g.index < g.images.length - 1 ? g.index + 1 : 0 }))}
+            >
+              ›
+            </button>
+
+            <div className="gallery-counter">{gallery.index + 1} / {gallery.images.length}</div>
+          </div>
         </div>
       )}
     </div>
