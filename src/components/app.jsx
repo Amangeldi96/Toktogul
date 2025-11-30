@@ -4,7 +4,7 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import SkeletonLoader from "./skeleton";
-import SkeletonCard from "./skeletonCard.jsx";
+import SkeletonCard from "./skeletCard.jsx";
 
 
 import sedanImg from './img/sedan.png';
