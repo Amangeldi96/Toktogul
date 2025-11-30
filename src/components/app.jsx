@@ -4,7 +4,7 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import SkeletonLoader from "./skeleton";
-import SkeletonCard from "./SkeletonCard.jsx";
+import SkeletonCard from "./skeletonCard.jsx";
 
 
 import sedanImg from './img/sedan.png';
@@ -50,8 +50,35 @@ export default function App() {
   const [favorites, setFavorites] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
-  const [modalOpen, setModalOpen] = useState(false);
+const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
+const [modalOpen, setModalOpen] = useState(false);
+
+// ===== Состояния для свайпа (телефон) =====
+const [touchStartX, setTouchStartX] = useState(0);
+const [touchEndX, setTouchEndX] = useState(0);
+
+const handleTouchStart = (e) => {
+  setTouchStartX(e.touches[0].clientX);
+};
+
+const handleTouchMove = (e) => {
+  setTouchEndX(e.touches[0].clientX);
+};
+
+const handleTouchEnd = () => {
+  const delta = touchStartX - touchEndX;
+  if (delta > 50) {
+    setGallery(g => ({
+      ...g,
+      index: g.index < g.images.length - 1 ? g.index + 1 : 0
+    }));
+  } else if (delta < -50) {
+    setGallery(g => ({
+      ...g,
+      index: g.index > 0 ? g.index - 1 : g.images.length - 1
+    }));
+  }
+};
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
   const [selectedTab, setSelectedTab] = useState("home");
@@ -646,31 +673,37 @@ if (!phone || !category || !desc || !imageUrls[0]) {
 </div>
 
 {/* ===== Галерея (слайдер) ===== */}
-      {gallery.open && (
-        <div className="gallery-modal" onClick={closeGallery}>
-          <div className="gallery-inner" onClick={e => e.stopPropagation()}>
-            <button className="gallery-close" onClick={closeGallery}>✕</button>
+{gallery.open && (
+  <div className="gallery-modal" onClick={closeGallery}>
+<div
+  className="gallery-inner"
+  onClick={e => e.stopPropagation()}
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
+>
+      <button className="gallery-close" onClick={closeGallery}>✕</button>
 
-            <img className="gallery-img" src={gallery.images[gallery.index]} alt={`Фото ${gallery.index + 1}`} />
+      <img className="gallery-img" src={gallery.images[gallery.index]} alt={`Фото ${gallery.index + 1}`} />
 
-            <button
-              className="gallery-btn left"
-              onClick={() => setGallery(g => ({ ...g, index: g.index > 0 ? g.index - 1 : g.images.length - 1 }))}
-            >
-              ‹
-            </button>
+      <button
+        className="gallery-btn left"
+        onClick={() => setGallery(g => ({ ...g, index: g.index > 0 ? g.index - 1 : g.images.length - 1 }))}
+      >
+        ‹
+      </button>
 
-            <button
-              className="gallery-btn right"
-              onClick={() => setGallery(g => ({ ...g, index: g.index < g.images.length - 1 ? g.index + 1 : 0 }))}
-            >
-              ›
-            </button>
+      <button
+        className="gallery-btn right"
+        onClick={() => setGallery(g => ({ ...g, index: g.index < g.images.length - 1 ? g.index + 1 : 0 }))}
+      >
+        ›
+      </button>
 
-            <div className="gallery-counter">{gallery.index + 1} / {gallery.images.length}</div>
-          </div>
-        </div>
-      )}
+      <div className="gallery-counter">{gallery.index + 1} / {gallery.images.length}</div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
