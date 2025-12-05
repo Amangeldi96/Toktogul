@@ -1,0 +1,77 @@
+.card.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Плавная лента света 45° */
+.card.skeleton-card::before,
+.skeleton-line::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(59, 89, 152, 0.2) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  filter: blur(2px);
+  transform: translate(-100%, -100%);
+  animation: fb-linear-45 2s linear infinite;
+}
+
+/* Движение линии по диагонали */
+@keyframes fb-linear-45 {
+  0% {
+    transform: translate(-100%, -100%);
+  }
+  100% {
+    transform: translate(100%, 100%);
+  }
+}
+
+/* skeleton элементы */
+.skeleton-img {
+  width: 100%;
+  height: 100px;
+  border-radius: 12px 12px 0 0;
+  background: #e1e4e8;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line {
+  height: 16px;
+  border-radius: 6px;
+  margin: 5px 12px;
+  background: #d8dadf;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+.skeleton-line.shorter {
+  width: 30%;
+}
+.skeleton-line.long {
+  width: 85%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  max-width: 300px;
+}
