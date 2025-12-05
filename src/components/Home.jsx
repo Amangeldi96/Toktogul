@@ -390,7 +390,7 @@ const handleGalleryChange = async e => {
     };
 
     await db.collection("ads").add(adData);
-    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!")
+    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
 
     // ✅ Очистка формы и localStorage
     setFormData({
