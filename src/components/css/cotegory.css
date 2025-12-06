@@ -176,17 +176,17 @@
 
 /* DISPLAY */
 .select-display {
-  padding: 14px 18px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 16px 22px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #5e22ce, #9774d8);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
   cursor: pointer;
-  user-select: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  transition: 0.3s;
+}
+.select-display:hover{
+  transform: translateY(-3px) scale(1.03);
 }
 
 .select-display .arrow {
@@ -195,18 +195,31 @@
 }
 
 /* DROPDOWN */
+/* DROPDOWN */
 .select-dropdown {
   position: absolute;
   top: 110%;
   left: 0;
   width: 100%;
-  background: white;
+  background: rgb(235, 218, 255);
   border-radius: 12px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.1);
   border: 1px solid #e5e5e5;
   z-index: 20;
   max-height: 260px;
-  overflow-y: auto;
+  overflow-y: auto; /* Бул өзгөртүү скроллду өчүрөт */
+}
+
+
+.category-dropdown::-webkit-scrollbar {
+display: none;
+}
+
+.category-dropdown::-webkit-scrollbar-thumb {
+display: none;
+}
+.category-dropdown::-webkit-scrollbar-track {
+display: none;
 }
 
 /* LIST */

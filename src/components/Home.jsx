@@ -772,67 +772,69 @@ useEffect(() => {
         <div style={{ width: "36px" }}></div>
       </div>
 
-      {/* ===== Адрес (Фильтр модал) ===== */}
-      <div className="input-group gr">
-        <label>Адрес</label>
-        <div className="address-wrapper" ref={addressRef}>
+{/* ===== Адрес ===== */}
+<div className="input-group gr" ref={addressRef}>
+  <label>Адрес</label>
+  <div className="select-wrapper">
+    <div
+      className={`select-display ${filterAddressOpen ? "open" : ""}`}
+      onClick={() => setFilterAddressOpen(!filterAddressOpen)}
+    >
+      {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
+      <span className="arrow">▼</span>
+    </div>
+
+    <div className={`select-dropdown ${filterAddressOpen ? "open" : ""}`}>
+      <div className="select-list">
+        {Object.keys(addressLabels).map((key) => (
           <div
-            className="address-display"
-            onClick={() => setFilterAddressOpen(!filterAddressOpen)}
+            key={key}
+            className={`select-row ${filterSelectedAddress === key ? "active" : ""}`}
+            onClick={() => {
+              setFilterSelectedAddress(key);
+              setFilterAddressOpen(false);
+            }}
           >
-            {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
-            <span className="arrow">{filterAddressOpen ? "▲" : "▼"}</span>
+            {addressLabels[key]}
           </div>
-
-          <div className={`address-dropdown ${filterAddressOpen ? "open" : ""}`}>
-            <div className="address-list">
-              {Object.keys(addressLabels).map((key) => (
-                <div
-                  key={key}
-                  className={`address-row ${filterSelectedAddress === key ? "active" : ""}`}
-                  onClick={() => {
-                    setFilterSelectedAddress(key);
-                    setFilterAddressOpen(false);
-                  }}
-                >
-                  {addressLabels[key]}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
+    </div>
+  </div>
+</div>
 
-      {/* ===== Категория (Фильтр модал) ===== */}
-      <div className="input-group gr">
-        <label>Категория</label>
-        <div className="category-wrapper" ref={categoryRef}>
+{/* ===== Категория ===== */}
+<div className="input-group gr" ref={categoryRef}>
+  <label>Категория</label>
+  <div className="select-wrapper">
+    <div
+      className={`select-display ${filterCategoryOpen ? "open" : ""}`}
+      onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
+    >
+      {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
+      <span className="arrow">▼</span>
+    </div>
+
+    <div className={`select-dropdown ${filterCategoryOpen ? "open" : ""}`}>
+      <div className="select-list">
+        {Object.keys(categoryLabels).map((key) => (
           <div
-            className="category-display"
-            onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
+            key={key}
+            className={`select-row ${filterSelectedCategory === key ? "active" : ""}`}
+            onClick={() => {
+              setFilterSelectedCategory(key);
+              setFilterCategoryOpen(false);
+            }}
           >
-            {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
-            <span className="arrow">{filterCategoryOpen ? "▲" : "▼"}</span>
+            {categoryLabels[key]}
           </div>
-
-          <div className={`category-dropdown ${filterCategoryOpen ? "open" : ""}`}>
-            <div className="category-list">
-              {Object.keys(categoryLabels).map((key) => (
-                <div
-                  key={key}
-                  className={`category-row ${filterSelectedCategory === key ? "active" : ""}`}
-                  onClick={() => {
-                    setFilterSelectedCategory(key);
-                    setFilterCategoryOpen(false);
-                  }}
-                >
-                  {categoryLabels[key]}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
+    </div>
+  </div>
+</div>
+
+
 
       {/* ===== Цена ===== */}
       <div className="price-row" style={{ display: "flex", gap: "10px" }}>
