@@ -6,6 +6,7 @@ import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
+import "./css/cotegory.css";
 
 // === Компоненты ===
 import SevenDaysAds from "./SevenDaysAds.jsx";
@@ -175,6 +176,64 @@ const showSuccess = (msg) => {
       showError("Не удалось выйти. Попробуйте снова.");
     }
   };
+
+// Адрес тизмеси (мисалы)
+// Компоненттин ичинде
+const [addressOpen, setAddressOpen] = useState(false);
+const [selectedAddress, setSelectedAddress] = useState("");
+
+const addressLabels = {
+  bishkek: "Бишкек",
+  osh: "Ош",
+  jalalabad: "Жалал-Абад",
+  naryn: "Нарын",
+  talas: "Талас",
+  batken: "Баткен",
+  issyk: "Ысык-Көл",
+  chui: "Чүй"
+};
+
+const [showAddresses, setShowAddresses] = useState(false);
+
+
+useEffect(() => {
+  if (dropdownRef.current) {
+    if (showAddresses) {
+      const scrollHeight = dropdownRef.current.scrollHeight;
+      dropdownRef.current.style.maxHeight = scrollHeight + "px";
+      dropdownRef.current.style.opacity = "1";
+    } else {
+      dropdownRef.current.style.maxHeight = "0px";
+      dropdownRef.current.style.opacity = "0";
+    }
+  }
+}, [showAddresses]);
+
+
+
+
+
+const dropdownRef = useRef(null);
+
+useEffect(() => {
+  if (dropdownRef.current) {
+    if (showAddresses) {
+      // ачылганда: реф аркылуу бийиктикти эсептейбиз
+      const scrollHeight = dropdownRef.current.scrollHeight;
+      dropdownRef.current.style.maxHeight = scrollHeight + "px";
+      dropdownRef.current.style.opacity = "1";
+    } else {
+      // жабылганда
+      dropdownRef.current.style.maxHeight = "0px";
+      dropdownRef.current.style.opacity = "0";
+    }
+  }
+}, [showAddresses]);
+
+
+
+
+
 
   const categoryLabels = {
     electronics: "Электроника",
@@ -683,6 +742,39 @@ const handleGalleryChange = async e => {
 </div>
 
 
+<div className="address-wrapper">
+  <label>Адрес</label>
+
+  <div
+    className="address-display"
+    onClick={() => setShowAddresses(!showAddresses)}
+  >
+    {formData.address
+      ? addressLabels[formData.address]
+      : "Адрес тандаңыз"}
+    <span className="arrow">▾</span>
+  </div>
+
+  {showAddresses && (
+    <div className="address-dropdown">
+      <div className="address-list">
+        {Object.keys(addressLabels).map(key => (
+          <div
+            key={key}
+            className={`address-row ${formData.address === key ? "active" : ""}`}
+            onClick={() => {
+              setFormData({ ...formData, address: key });
+              setShowAddresses(false);
+            }}
+          >
+            {addressLabels[key]}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
 
 
               <div className="input-group gr">
@@ -735,80 +827,112 @@ const handleGalleryChange = async e => {
           </div>
         </div>
       )}
+{/* ===== Модалка фильтра ===== */}
+{filterModalOpen && (
+  <div className="modal open">
+    <div className="small-modal">
+      <div className="modal__header">
+        <button className="close-btn" onClick={() => setFilterModalOpen(false)}>✕</button>
+        <div className="modal__title">Фильтр</div>
+        <div style={{ width: "36px" }}></div>
+      </div>
 
-      {/* ===== Модалка фильтра ===== */}
-      {filterModalOpen && (
-        <div className="modal open">
-          <div className=" small-modal"> {/* small-modal для компактной высоты */}
-            <div className="modal__header">
-              <button className="close-btn" onClick={() => setFilterModalOpen(false)}>✕</button>
-              <div className="modal__title">Фильтр</div>
-              <div style={{ width: "36px" }}></div>
-            </div>
-
-
-            <div className="input-group gr">
-  <label>Категория</label>
-  <div className="category-wrapper">
+ {/* Адрес блогу */}
+<div className="input-group gr">
+  <label>Адрес</label>
+  <div className="address-wrapper">
     {/* Триггер */}
     <div
-      className="category-display"
-      onClick={() => setCategoryOpen(!categoryOpen)}
+      className="address-display"
+      onClick={() => setAddressOpen(!addressOpen)}
     >
-      {selectedCategory ? categoryLabels[selectedCategory] : "Категорияны танда"}
-      <span className="arrow">{categoryOpen ? "▲" : "▼"}</span>
+      {selectedAddress ? addressLabels[selectedAddress] : "Адрес танда"}
+      <span className="arrow">{addressOpen ? "▲" : "▼"}</span>
     </div>
 
     {/* Dropdown */}
-    {categoryOpen && (
-      <div className="category-dropdown">
-        <div className="category-list">
-          {Object.keys(categoryLabels).map((key) => (
-            <div
-              key={key}
-              className={`category-row ${selectedCategory === key ? "active" : ""}`}
-              onClick={() => {
-                setSelectedCategory(key);
-                setCategoryOpen(false);
-              }}
-            >
-              {categoryLabels[key]}
-            </div>
-          ))}
-        </div>
+    <div className={`address-dropdown ${addressOpen ? "open" : ""}`}>
+      <div className="address-list">
+        {Object.keys(addressLabels).map((key) => (
+          <div
+            key={key}
+            className={`address-row ${selectedAddress === key ? "active" : ""}`}
+            onClick={() => {
+              setSelectedAddress(key);
+              setAddressOpen(false);
+            }}
+          >
+            {addressLabels[key]}
+          </div>
+        ))}
       </div>
-    )}
+    </div>
   </div>
 </div>
 
-              {/* Цена в одну строку */}
-              <div className="price-row" style={{ display: "flex", gap: "10px" }}>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label>Цена от</label>
-                  <input
-                    type="number"
-                    value={filterPrice.min}
-                    onChange={e => setFilterPrice({ ...filterPrice, min: e.target.value })}
-                  />
-                </div>
+      {/* Категория блогу */}
+      <div className="input-group gr">
+        <label>Категория</label>
+        <div className="category-wrapper">
+          {/* Триггер */}
+          <div
+            className="category-display"
+            onClick={() => setCategoryOpen(!categoryOpen)}
+          >
+            {selectedCategory ? categoryLabels[selectedCategory] : "Категорияны танда"}
+            <span className="arrow">{categoryOpen ? "▲" : "▼"}</span>
+          </div>
 
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label>Цена до</label>
-                  <input
-                    type="number"
-                    value={filterPrice.max}
-                    onChange={e => setFilterPrice({ ...filterPrice, max: e.target.value })}
-                  />
+          {/* Dropdown */}
+          <div
+            className={`category-dropdown ${categoryOpen ? "open" : ""}`}
+          >
+            <div className="category-list">
+              {Object.keys(categoryLabels).map((key) => (
+                <div
+                  key={key}
+                  className={`category-row ${selectedCategory === key ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedCategory(key);
+                    setCategoryOpen(false);
+                  }}
+                >
+                  {categoryLabels[key]}
                 </div>
-              </div>
-              {/* Кнопка применить */}
-              <div className="actions">
-                <button className="btn-green" onClick={() => setFilterModalOpen(false)}>Көрсөтүү</button>
-              </div>
+              ))}
             </div>
           </div>
-      )}
+        </div>
+      </div>
 
+      {/* Цена */}
+      <div className="price-row" style={{ display: "flex", gap: "10px" }}>
+        <div className="input-group" style={{ flex: 1 }}>
+          <label>Цена от</label>
+          <input
+            type="number"
+            value={filterPrice.min}
+            onChange={e => setFilterPrice({ ...filterPrice, min: e.target.value })}
+          />
+        </div>
+
+        <div className="input-group" style={{ flex: 1 }}>
+          <label>Цена до</label>
+          <input
+            type="number"
+            value={filterPrice.max}
+            onChange={e => setFilterPrice({ ...filterPrice, max: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* Кнопка */}
+      <div className="actions">
+        <button className="btn-green" onClick={() => setFilterModalOpen(false)}>Көрсөтүү</button>
+      </div>
+    </div>
+  </div>
+)}
 
 
  {/* ===== Нижнее меню ===== */}
