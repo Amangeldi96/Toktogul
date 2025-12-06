@@ -63,6 +63,9 @@ function renderColumns(ads, numColumns) {
 // ===== React-компонент =====
 export default function Home_global() {
   const realGalleryInputRef = useRef(null);
+	const [showCategories, setShowCategories] = useState(false);
+
+
 
   const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
   const [formData, setFormData] = useState({
@@ -390,7 +393,7 @@ const handleGalleryChange = async e => {
     };
 
     await db.collection("ads").add(adData);
-    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!")
+    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
 
     // ✅ Очистка формы и localStorage
     setFormData({
@@ -643,24 +646,47 @@ const handleGalleryChange = async e => {
     setFormData({ ...formData, phone: digits });
   }}
 />
+</div>
+
+
+
+              
+       <div className="category-wrapper">
+  <label>Категория</label>
+
+  <div 
+    className="category-display" 
+    onClick={() => setShowCategories(!showCategories)}
+  >
+    {formData.category 
+      ? categoryLabels[formData.category] 
+      : "Категорияны тандаңыз"}
+    <span className="arrow">▾</span>
+  </div>
+
+  {showCategories && (
+    <div className="category-dropdown">
+      <div className="category-list">
+        {Object.keys(categoryLabels).map(key => (
+          <div
+            key={key}
+            className={`category-row ${formData.category === key ? "active" : ""}`}
+            onClick={() => {
+              setFormData({ ...formData, category: key });
+              setShowCategories(false);
+            }}
+          >
+            {categoryLabels[key]}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
 
 
 
 
-              </div>
-              <div className="input-group gr">
-                <label htmlFor="category">Категория</label>
-                <select
-                  id="category"
-                  value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
-                >
-                  <option value="" disabled>Категорияны тандаңыз</option>
-                  {Object.keys(categoryLabels).map(key => (
-                    <option key={key} value={key}>{categoryLabels[key]}</option>
-                  ))}
-                </select>
-              </div>
               <div className="input-group gr">
                 <label htmlFor="price">Баасы</label>
                 <input
