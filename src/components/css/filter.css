@@ -231,3 +231,50 @@
 .category-select:hover .arrow {
   color: #a547b1;
 }
+
+
+
+/**/
+
+
+/* Контейнер */
+.price-row {
+  display: flex;
+  gap: 14px;
+}
+
+/* Ар бир input-group */
+.price-row .input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label */
+.price-row .input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* Input */
+.price-row .input-group input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.price-row .input-group input:hover {
+  border-color: #a547b1;
+  background: #faf5fc;
+}
+
+.price-row .input-group input:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
+  outline: none;
+}
