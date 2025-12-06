@@ -82,7 +82,7 @@ text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-	width: 170px;
+	width: 140px;
 	height: 250px;
 }
 
