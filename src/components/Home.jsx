@@ -31,209 +31,105 @@ import "firebase/compat/auth";
 import "firebase/compat/storage";
 
 // ===== Вспомогательные функции =====
-function formatPrice(value) {
-  return value !== null && value !== "" && value !== 0
-    ? `${value.toLocaleString("ru-RU")} сом`
-    : "Келишим түрүндө";
-}
+const formatPrice = (value) =>
+  value ? `${value.toLocaleString("ru-RU")} сом` : "Келишим түрүндө";
 
-function formatPhoneDisplay(phone) {
+const formatPhoneDisplay = (phone) => {
   if (!phone) return "";
   const digits = phone.replace(/\D/g, "");
   if (digits.startsWith("996") && digits.length === 12) return "0" + digits.slice(3);
   if (digits.length === 9) return "0" + digits;
   return digits;
-}
+};
 
-function createWhatsAppLink(phone) {
+const createWhatsAppLink = (phone) => {
   if (!phone) return "#";
   let digits = phone.replace(/\D/g, "");
   if (digits.length === 9 && digits.startsWith("0")) digits = "996" + digits.slice(1);
-  if (digits.length === 12 && digits.startsWith("996")) digits = digits;
   return `https://wa.me/${digits}`;
-}
+};
 
-function renderColumns(ads, numColumns) {
+const renderColumns = (ads, numColumns) => {
   const columns = Array.from({ length: numColumns }, () => []);
-  ads.forEach((ad, index) => {
-    columns[index % numColumns].push(ad);
-  });
+  ads.forEach((ad, index) => columns[index % numColumns].push(ad));
   return columns;
-}
+};
 
 // ===== React-компонент =====
 export default function Home_global() {
-  const realGalleryInputRef = useRef(null);
-	const [showCategories, setShowCategories] = useState(false);
-	const [categoryOpen, setCategoryOpen] = useState(false);
+  // ===== Refs =====
+  const realGalleryInputRef = useRef(null); // Галереяны ачуу үчүн скрытый input
+  const touchStartRef = useRef(0);          // Свайптар үчүн
+  const dropdownRef = useRef(null);         // Dropdown анимациясы үчүн
 
-
-
-  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
+  // ===== Общие state =====
+  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 }); // Галерея модал
   const [formData, setFormData] = useState({
     phone: "",
     category: "",
     price: "",
     desc: "",
     images: [null, null, null, null, null],
-  });
-
-  const [loadingAds, setLoadingAds] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  }); // Жарнама формасы
+  const [loadingAds, setLoadingAds] = useState(true); // Загрузка объявлений
+  const [loading, setLoading] = useState(false);      // Загрузка при создании объявления
+  const [favorites, setFavorites] = useState([]);    // Избранные объявления
+  const [searchQuery, setSearchQuery] = useState(""); // Поиск
+  const [modalOpen, setModalOpen] = useState(false); // Плюс-модал (жарнама)
+  const [filterModalOpen, setFilterModalOpen] = useState(false); // Фильтр-модал
   const [viewedAds, setViewedAds] = useState(() => {
     const stored = localStorage.getItem("viewedAds");
     return stored ? JSON.parse(stored) : [];
-  });
-  const [allAds, setAllAds] = useState([]);
-  const [allAdsOriginal, setAllAdsOriginal] = useState([]);
-  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
-  const [selectedTab, setSelectedTab] = useState("home");
-  const [user, setUser] = useState(null);
+  }); // Просмотренные объявления
+  const [allAds, setAllAds] = useState([]);          // Все объявления для отображения
+  const [allAdsOriginal, setAllAdsOriginal] = useState([]); // Все объявления оригинал
+  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" }); // Фильтр по цене
+  const [selectedTab, setSelectedTab] = useState("home"); // Текущий таб (home, favorites, profile)
+  const [user, setUser] = useState(null);            // Текущий пользователь
+  const [successMessages, setSuccessMessages] = useState([]); // Успешные уведомления
+  const [errorMessages, setErrorMessages] = useState([]);     // Ошибки уведомления
+  const [showCategories, setShowCategories] = useState(false); // Для общего dropdown категорий
 
-  const closeProfile = () => setSelectedTab(null);
-	
-	
+  // ===== Жарнама модал (плюс кнопка) =====
+  const [adCategoryOpen, setAdCategoryOpen] = useState(false); // Категория в модалке плюс
+  const [adSelectedCategory, setAdSelectedCategory] = useState(""); // Выбранная категория
+  const [adAddressOpen, setAdAddressOpen] = useState(false);   // Адрес в модалке плюс
+  const [adSelectedAddress, setAdSelectedAddress] = useState(""); // Выбранный адрес
 
-  const touchStartRef = useRef(0);
-  const handleTouchStart = (e) => { touchStartRef.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e) => {
-    const delta = e.changedTouches[0].clientX - touchStartRef.current;
-    if (delta > 50) prevImage();
-    else if (delta < -50) nextImage();
+  // ===== Фильтр модал =====
+  const [filterCategoryOpen, setFilterCategoryOpen] = useState(false); // Категория в фильтре
+  const [filterSelectedCategory, setFilterSelectedCategory] = useState(""); // Выбранная категория фильтра
+  const [filterAddressOpen, setFilterAddressOpen] = useState(false); // Адрес в фильтре
+  const [filterSelectedAddress, setFilterSelectedAddress] = useState(""); // Выбранный адрес фильтра
+
+  // ===== Для анимации dropdown =====
+  const [showAddresses, setShowAddresses] = useState(false);
+
+  // ===== Функция закрытия профиля =====
+  const closeProfile = () => setSelectedTab("home"); 
+
+	 const [selectedCategory, setSelectedCategory] = useState(null); // <-- бул керек
+	 // Универсалдуу dropdown’дор
+const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+const [isAddressOpen, setIsAddressOpen] = useState(false);
+
+const categoryRef = useRef(null);
+const addressRef = useRef(null);
+
+
+
+
+  // ===== Labels и категории =====
+  const addressLabels = {
+    bishkek: "Бишкек",
+    osh: "Ош",
+    jalalabad: "Жалал-Абад",
+    naryn: "Нарын",
+    talas: "Талас",
+    batken: "Баткен",
+    issyk: "Ысык-Көл",
+    chui: "Чүй",
   };
-
-  const openGallery = (images, index) => {
-    setGallery({ open: true, images: images.filter(i => i), index });
-  };
-  const closeGallery = () => setGallery({ open: false, images: [], index: 0 });
-  const nextImage = () => setGallery(g => ({ ...g, index: g.index + 1 < g.images.length ? g.index + 1 : 0 }));
-  const prevImage = () => setGallery(g => ({ ...g, index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1 }));
-
-  // ===== Уведомления =====
-  const [successMessages, setSuccessMessages] = useState([]);
-  const [errorMessages, setErrorMessages] = useState([]);
-
-
-
-const showError = (msg) => {
-  const id = Date.now();
-  setErrorMessages(prev => [...prev, { id, msg }]);
-  setTimeout(() => {
-    setErrorMessages(prev => prev.filter(m => m.id !== id));
-  }, 4000);
-};
-
-const showSuccess = (msg) => {
-  const id = Date.now();
-  setSuccessMessages(prev => [...prev, { id, msg }]);
-  setTimeout(() => {
-    setSuccessMessages(prev => prev.filter(m => m.id !== id));
-  }, 4000);
-};
-
-  // ===== Загрузка на Cloudinary =====
-  const uploadToCloudinary = async (file) => {
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "Toktogul");
-
-      const res = await fetch("https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload", {
-        method: "POST",
-        body: fd,
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        console.error("Cloudinary вернул ошибку:", data.error);
-        return null;
-      }
-
-      console.log("Cloudinary загрузка успешна:", data.secure_url);
-      return data.secure_url;
-    } catch (error) {
-      console.error("Ошибка загрузки в Cloudinary:", error);
-      return null;
-    }
-  };
-
-  // ===== Firebase Auth =====
-  const signOut = async () => {
-    try {
-      await firebase.auth().signOut();
-      setUser(null);
-      setFavorites([]);
-      setSelectedTab(null);
-      showSuccess("Вы вышли из системы!");
-    } catch (error) {
-      console.error("Ошибка выхода:", error.message);
-      showError("Не удалось выйти. Попробуйте снова.");
-    }
-  };
-
-// Адрес тизмеси (мисалы)
-// Компоненттин ичинде
-const [addressOpen, setAddressOpen] = useState(false);
-const [selectedAddress, setSelectedAddress] = useState("");
-
-const addressLabels = {
-  bishkek: "Бишкек",
-  osh: "Ош",
-  jalalabad: "Жалал-Абад",
-  naryn: "Нарын",
-  talas: "Талас",
-  batken: "Баткен",
-  issyk: "Ысык-Көл",
-  chui: "Чүй"
-};
-
-const [showAddresses, setShowAddresses] = useState(false);
-
-
-useEffect(() => {
-  if (dropdownRef.current) {
-    if (showAddresses) {
-      const scrollHeight = dropdownRef.current.scrollHeight;
-      dropdownRef.current.style.maxHeight = scrollHeight + "px";
-      dropdownRef.current.style.opacity = "1";
-    } else {
-      dropdownRef.current.style.maxHeight = "0px";
-      dropdownRef.current.style.opacity = "0";
-    }
-  }
-}, [showAddresses]);
-
-
-
-
-
-const dropdownRef = useRef(null);
-
-useEffect(() => {
-  if (dropdownRef.current) {
-    if (showAddresses) {
-      // ачылганда: реф аркылуу бийиктикти эсептейбиз
-      const scrollHeight = dropdownRef.current.scrollHeight;
-      dropdownRef.current.style.maxHeight = scrollHeight + "px";
-      dropdownRef.current.style.opacity = "1";
-    } else {
-      // жабылганда
-      dropdownRef.current.style.maxHeight = "0px";
-      dropdownRef.current.style.opacity = "0";
-    }
-  }
-}, [showAddresses]);
-
-
-
-
-
 
   const categoryLabels = {
     electronics: "Электроника",
@@ -259,42 +155,173 @@ useEffect(() => {
     { img: phoneImg, label: "Электроника", key: "electronics", bgClass: "bg-peach" },
   ];
 
-  // ===== Авторизация и загрузка пользователя =====
-  useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const storedFavorites = localStorage.getItem("favorites");
-        setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
-      } else {
-        setFavorites([]);
-      }
+
+// Категория анимация
+useEffect(() => {
+  if (!categoryRef.current) return;
+  categoryRef.current.style.maxHeight = isCategoryOpen
+    ? categoryRef.current.scrollHeight + "px"
+    : "0px";
+}, [isCategoryOpen]);
+
+// Адрес анимация
+useEffect(() => {
+  if (!addressRef.current) return;
+  addressRef.current.style.maxHeight = isAddressOpen
+    ? addressRef.current.scrollHeight + "px"
+    : "0px";
+}, [isAddressOpen]);
+
+
+
+  // ===== Helper функции для уведомлений =====
+  const showError = (msg) => {
+    const id = Date.now();
+    setErrorMessages((prev) => [...prev, { id, msg }]);
+    setTimeout(() => setErrorMessages((prev) => prev.filter((m) => m.id !== id)), 4000);
+  };
+
+  const showSuccess = (msg) => {
+    const id = Date.now();
+    setSuccessMessages((prev) => [...prev, { id, msg }]);
+    setTimeout(() => setSuccessMessages((prev) => prev.filter((m) => m.id !== id)), 4000);
+  };
+
+  // ===== Firebase Auth =====
+  const signOut = async () => {
+    try {
+      await firebase.auth().signOut();
+      setUser(null);
+      setFavorites([]);
+      setSelectedTab(null);
+      showSuccess("Вы вышли из системы!");
+    } catch (error) {
+      console.error("Ошибка выхода:", error.message);
+      showError("Не удалось выйти. Попробуйте снова.");
+    }
+  };
+
+  // ===== Галерея =====
+  const openGallery = (images, index) => setGallery({ open: true, images: images.filter(Boolean), index });
+  const closeGallery = () => setGallery({ open: false, images: [], index: 0 });
+  const nextImage = () => setGallery((g) => ({ ...g, index: g.index + 1 < g.images.length ? g.index + 1 : 0 }));
+  const prevImage = () => setGallery((g) => ({ ...g, index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1 }));
+
+  const handleTouchStart = (e) => (touchStartRef.current = e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    const delta = e.changedTouches[0].clientX - touchStartRef.current;
+    if (delta > 50) prevImage();
+    else if (delta < -50) nextImage();
+  };
+
+  // ===== Загрузка в Cloudinary =====
+  const uploadToCloudinary = async (file) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "Toktogul");
+
+      const res = await fetch("https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.error) return null;
+      return data.secure_url;
+    } catch (error) {
+      console.error("Ошибка загрузки в Cloudinary:", error);
+      return null;
+    }
+  };
+
+  const handleGalleryChange = async (e) => {
+    const files = Array.from(e.target.files).slice(0, 5);
+    const uploadedUrls = [];
+
+    for (let file of files) {
+      const url = await uploadToCloudinary(file);
+      if (url) uploadedUrls.push(url);
+    }
+
+    setFormData((prev) => {
+      const newImages = [...prev.images];
+      uploadedUrls.forEach((url, i) => (newImages[i] = url));
+      localStorage.setItem("newAdImages", JSON.stringify(newImages));
+      return { ...prev, images: newImages };
     });
 
-    return () => unsubscribe();
-  }, []);
+    e.target.value = null;
+  };
 
-  // ===== Лайки и избранное =====
+  // ===== Создание объявления =====
+  const createAd = async () => {
+    if (!formData.phone || !formData.category || !formData.desc) return showError("Сумасынан башкасын толтуруу зарыл!");
+    if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
+
+    setLoading(true);
+
+    try {
+      const adData = {
+        ...formData,
+        images: formData.images.filter(Boolean),
+        price: formData.price ? Number(formData.price) : 0,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        likes: 0,
+        likedBy: [],
+        views: 0,
+        userId: user.uid,
+      };
+
+      await db.collection("ads").add(adData);
+      showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
+
+      // Очистка формы и localStorage
+      setFormData({ phone: "", category: "", price: "", desc: "", images: [null, null, null, null, null] });
+      localStorage.removeItem("newAdImages");
+      setModalOpen(false);
+
+      // Перезагрузка последних объявлений
+      const snapshot = await db.collection("ads").orderBy("timestamp", "desc").limit(20).get();
+      const adsData = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        const images = Array.isArray(data.images) ? data.images : data.images ? [data.images] : [];
+        return {
+          id: doc.id,
+          ...data,
+          firstImg: images[0] || CanvasImg,
+          images,
+          timestamp: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : Date.now(),
+          categoryName: categoryLabels[data.category] || data.category,
+          descText: data.desc?.length > 100 ? data.desc.substring(0, 100) + "..." : data.desc || "",
+        };
+      });
+      setAllAdsOriginal(adsData);
+      setAllAds(adsData);
+    } catch (error) {
+      console.error("Ошибка создания объявления:", error);
+      showError("Не удалось создать объявление. Попробуйте снова.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===== Likes и избранное =====
   const toggleLike = async (adId) => {
     if (!user) return showError("Тандалгандарга салуу үчүн аккаунт менен кириңиз!");
-
     const adRef = db.collection("ads").doc(adId);
-    const ad = allAds.find(a => a.id === adId);
+    const ad = allAds.find((a) => a.id === adId);
     const likedBy = ad.likedBy || [];
     let newLikedBy, increment;
 
     if (likedBy.includes(user.uid)) {
-      newLikedBy = likedBy.filter(uid => uid !== user.uid);
+      newLikedBy = likedBy.filter((uid) => uid !== user.uid);
       increment = -1;
-      setFavorites(prev => {
-        const updated = prev.filter(id => id !== adId);
+      setFavorites((prev) => {
+        const updated = prev.filter((id) => id !== adId);
         localStorage.setItem("favorites", JSON.stringify(updated));
         return updated;
       });
     } else {
       newLikedBy = [...likedBy, user.uid];
       increment = 1;
-      setFavorites(prev => {
+      setFavorites((prev) => {
         const updated = [...prev, adId];
         localStorage.setItem("favorites", JSON.stringify(updated));
         return updated;
@@ -303,54 +330,31 @@ useEffect(() => {
 
     try {
       await adRef.update({ likedBy: newLikedBy, likes: firebase.firestore.FieldValue.increment(increment) });
-      setAllAds(prev => prev.map(a => a.id === adId ? { ...a, likedBy: newLikedBy, likes: (a.likes || 0) + increment } : a));
+      setAllAds((prev) =>
+        prev.map((a) => (a.id === adId ? { ...a, likedBy: newLikedBy, likes: (a.likes || 0) + increment } : a))
+      );
     } catch (err) {
       console.error("Мыйтыкчаны жаңылоодо ката чыкты:", err);
       showError("тилеке каршы мыйтыкчаны жаңлоо болбоду!");
     }
   };
 
-// ===== Просмотры объявлений =====
-const handleView = async (adId) => {
-  try {
-    // Загружаем список уже просмотренных объявлений
-    let viewed = JSON.parse(localStorage.getItem("viewedAds")) || [];
+  // ===== Просмотры объявлений =====
+  const handleView = async (adId) => {
+    try {
+      let viewed = JSON.parse(localStorage.getItem("viewedAds")) || [];
+      if (viewed.includes(adId)) return;
 
-    // Если это объявление уже просмотрено — НЕ увеличиваем
-    if (viewed.includes(adId)) {
-      return;
+      const adRef = db.collection("ads").doc(adId);
+      await adRef.update({ views: firebase.firestore.FieldValue.increment(1) });
+
+      viewed.push(adId);
+      localStorage.setItem("viewedAds", JSON.stringify(viewed));
+      setViewedAds(viewed);
+    } catch (error) {
+      console.error("жарнаманы көрүүдө ката чыкты:", error);
     }
-
-    // Увеличиваем счётчик просмотров только ОДИН раз
-    const adRef = db.collection("ads").doc(adId);
-    await adRef.update({
-      views: firebase.firestore.FieldValue.increment(1)
-    });
-
-    // Добавляем в список просмотренных
-    viewed.push(adId);
-    localStorage.setItem("viewedAds", JSON.stringify(viewed));
-
-    // Обновляем стейт
-    setViewedAds(viewed);
-
-  } catch (error) {
-    console.error("жарнаманы көрүүдө ката чыкты:", error);
-  }
-};
-
-
-  // ===== Количество объявлений по категориям =====
-  const categoryCounts = useMemo(() => {
-    const counts = {};
-    categories.forEach(cat => counts[cat.key] = 0);
-
-    allAdsOriginal.forEach(ad => {
-      if (ad.category) counts[ad.category] = (counts[ad.category] || 0) + 1;
-    });
-
-    return counts;
-  }, [allAdsOriginal, categories]);
+  };
 
   // ===== Загрузка объявлений =====
   useEffect(() => {
@@ -358,14 +362,14 @@ const handleView = async (adId) => {
       setLoadingAds(true);
       try {
         const snapshot = await db.collection("ads").orderBy("timestamp", "desc").limit(20).get();
-        const adsData = snapshot.docs.map(doc => {
+        const adsData = snapshot.docs.map((doc) => {
           const data = doc.data();
           const images = Array.isArray(data.images) ? data.images : data.images ? [data.images] : [];
           return {
             id: doc.id,
             ...data,
-            firstImg: images.length > 0 ? images[0] : CanvasImg,
-            images: images,
+            firstImg: images[0] || CanvasImg,
+            images,
             timestamp: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : Date.now(),
             categoryName: categoryLabels[data.category] || data.category,
             descText: data.desc?.length > 100 ? data.desc.substring(0, 100) + "..." : data.desc || "",
@@ -386,447 +390,378 @@ const handleView = async (adId) => {
   // ===== Фильтрация объявлений =====
   const filteredAds = useMemo(() => {
     let ads = allAdsOriginal;
-    if (selectedTab === "favorites") ads = ads.filter(ad => favorites.includes(ad.id));
-    if (selectedCategory) ads = ads.filter(ad => ad.category === selectedCategory);
+    if (selectedTab === "favorites") ads = ads.filter((ad) => favorites.includes(ad.id));
+    if (selectedCategory) ads = ads.filter((ad) => ad.category === selectedCategory);
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      ads = ads.filter(ad =>
-        ad.desc?.toLowerCase().includes(query) || ad.categoryName?.toLowerCase().includes(query)
+      ads = ads.filter(
+        (ad) => ad.desc?.toLowerCase().includes(query) || ad.categoryName?.toLowerCase().includes(query)
       );
     }
 
     const minPrice = Number(filterPrice.min);
     const maxPrice = Number(filterPrice.max);
-
-    if (!isNaN(minPrice) && minPrice > 0) ads = ads.filter(ad => (ad.price || 0) >= minPrice);
-    if (!isNaN(maxPrice) && maxPrice > 0) ads = ads.filter(ad => (ad.price || Infinity) <= maxPrice);
+    if (!isNaN(minPrice) && minPrice > 0) ads = ads.filter((ad) => (ad.price || 0) >= minPrice);
+    if (!isNaN(maxPrice) && maxPrice > 0) ads = ads.filter((ad) => (ad.price || Infinity) <= maxPrice);
 
     return ads;
   }, [allAdsOriginal, selectedTab, favorites, selectedCategory, searchQuery, filterPrice]);
 
-  const handleCategoryClick = categoryKey => setSelectedCategory(categoryKey);
-
- // useEffect менен экрандын жүктөлүшүндө сакталган сүрөттөрдү окуйбуз
-
-
-// handleGalleryChange ичинде да сактайбыз
-const handleGalleryChange = async e => {
-  const files = Array.from(e.target.files).slice(0, 5);
-  const uploadedUrls = [];
-
-  for (let file of files) {
-    const url = await uploadToCloudinary(file);
-    if (url) uploadedUrls.push(url);
-  }
-
-  setFormData(prev => {
-    const newImages = [...prev.images];
-    for (let i = 0; i < uploadedUrls.length; i++) newImages[i] = uploadedUrls[i];
-    localStorage.setItem("newAdImages", JSON.stringify(newImages)); // ✅ сактайбыз
-    return { ...prev, images: newImages };
-  });
-
-  e.target.value = null;
-};
-
- // ===== Создание объявления =====
- const createAd = async () => {
-  if (!formData.phone || !formData.category || !formData.desc) {
-    return showError("Сумасынан башкасын толтуруу зарыл!");
-  }
-
-  if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
-
-  setLoading(true);
-
-  try {
-    const adData = {
-      ...formData,
-      images: formData.images.filter(Boolean),
-      price: formData.price ? Number(formData.price) : 0,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      likes: 0,
-      likedBy: [],
-      views: 0,
-      userId: user.uid,
-    };
-
-    await db.collection("ads").add(adData);
-    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
-
-    // ✅ Очистка формы и localStorage
-    setFormData({
-      phone: "",
-      category: "",
-      price: "",
-      desc: "",
-      images: [null, null, null, null, null],
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    categories.forEach((cat) => (counts[cat.key] = 0));
+    allAdsOriginal.forEach((ad) => {
+      if (ad.category) counts[ad.category] = (counts[ad.category] || 0) + 1;
     });
-    localStorage.removeItem("newAdImages"); // очистка localStorage
+    return counts;
+  }, [allAdsOriginal, categories]);
 
-    setModalOpen(false);
-    
-    // Перезагрузка последних объявлений
-    const snapshot = await db.collection("ads").orderBy("timestamp", "desc").limit(20).get();
-    const adsData = snapshot.docs.map(doc => {
-      const data = doc.data();
-      const images = Array.isArray(data.images) ? data.images : data.images ? [data.images] : [];
-      return {
-        id: doc.id,
-        ...data,
-        firstImg: images.length > 0 ? images[0] : CanvasImg,
-        images: images,
-        timestamp: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : Date.now(),
-        categoryName: categoryLabels[data.category] || data.category,
-        descText: data.desc?.length > 100 ? data.desc.substring(0, 100) + "..." : data.desc || "",
-      };
+  const handleCategoryClick = (categoryKey) => setSelectedCategory(categoryKey);
+
+  // ===== Dropdown addresses animation =====
+  useEffect(() => {
+    if (!dropdownRef.current) return;
+    dropdownRef.current.style.maxHeight = showAddresses ? dropdownRef.current.scrollHeight + "px" : "0px";
+    dropdownRef.current.style.opacity = showAddresses ? "1" : "0";
+  }, [showAddresses]);
+
+  // ===== Firebase Auth listener =====
+  useEffect(() => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const storedFavorites = localStorage.getItem("favorites");
+        setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
+      } else setFavorites([]);
     });
-    setAllAdsOriginal(adsData);
-    setAllAds(adsData);
-
-  } catch (error) {
-    console.error("Ошибка создания объявления:", error);
-    showError("Не удалось создать объявление. Попробуйте снова.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+    return () => unsubscribe();
+  }, []);
 
 
 
 
   return (
-			<div className="wrap">
-				<SevenDaysAds onLoad={(ads) => setAllAdsOriginal(ads)} />
+<div className="wrap">
+  {/* ===== 7 күндүк жарнамалар ===== */}
+  <SevenDaysAds onLoad={(ads) => setAllAdsOriginal(ads)} />
 
-<div className="notifications">
-  {successMessages.map(msg => (
-    <div key={msg.id} className="hom-success">{msg.msg}</div>
-  ))}
-  {errorMessages.map(msg => (
-    <div key={msg.id} className="hom-error">{msg.msg}</div>
-  ))}
-</div>
+  {/* ===== Успех жана каталар ===== */}
+  <div className="notifications">
+    {successMessages.map(msg => (
+      <div key={msg.id} className="hom-success">{msg.msg}</div>
+    ))}
+    {errorMessages.map(msg => (
+      <div key={msg.id} className="hom-error">{msg.msg}</div>
+    ))}
+  </div>
 
+  {/* ===== Верхний поиск и фильтр ===== */}
+  <div className="top-row">
+    <div className="search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6.2" stroke="#9AA3B6" strokeWidth="1.6" />
+        <path d="M21 21l-4.35-4.35" stroke="#9AA3B6" strokeWidth="1.6" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Жарнама издөө..."
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+      />
+    </div>
+    <div className="btn-filter" onClick={() => setFilterModalOpen(true)}>Фильтр</div>
+  </div>
 
-      {/* ===== Верхний поиск и фильтр ===== */}
-      <div className="top-row">
-        <div className="search">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="6.2" stroke="#9AA3B6" strokeWidth="1.6" />
-            <path d="M21 21l-4.35-4.35" stroke="#9AA3B6" strokeWidth="1.6" />
-          </svg>
-          <input 
-            type="text" 
-            placeholder="Жарнама издөө..." 
-            value={searchQuery} 
-            onChange={e => setSearchQuery(e.target.value)} 
-          />
+  {/* ===== Горизонтальная лента категорий ===== */}
+  <div className="categories-scroll">
+    {categories.map((cat, i) => (
+      <div
+        className={`cat-card ${cat.bgClass} ${selectedCategory === cat.key ? "selected" : ""}`}
+        key={i}
+        onClick={() => handleCategoryClick(cat.key)}
+      >
+        <div className="icon">
+          <img src={cat.img} alt={cat.label} />
         </div>
-        <div className="btn-filter" onClick={() => setFilterModalOpen(true)}>Фильтр</div>
+        <div className="text-block">
+          <div className="label">{cat.label}</div>
+          <div className="count">{categoryCounts[cat.key] || 0}</div>
+        </div>
       </div>
+    ))}
+  </div>
 
-   
-      {/* Горизонтальная лента категорий */}
-      <div className="categories-scroll">
-        {categories.map((cat, i) => (
-          <div className={`cat-card ${cat.bgClass} ${selectedCategory === cat.key ? "selected" : ""}`} key={i} onClick={() => handleCategoryClick(cat.key)}>
-            <div className="icon"><img src={cat.img} alt={cat.label} /></div>
-            <div className="text-block">
-              <div className="label">{cat.label}</div>
-              <div className="count">{categoryCounts[cat.key] || 0}</div>
-            </div>
+  {/* ===== Основной контент ===== */}
+  <main className="content">
+    <div className="cards" id="cards">
+      {loadingAds ? (
+        Array.from({ length: 2 }).map((_, colIndex) => (
+          <div
+            className="column"
+            key={colIndex}
+            style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}
+          >
+            {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
-        ))}
-      </div>
-
-      {/* ===== Основной контент ===== */}
-      <main className="content">
-        <div className="cards" id="cards">
-          {loadingAds
-            ? Array.from({ length: 2 }).map((_, colIndex) => (
-                <div
-                  className="column"
-                  key={colIndex}
-                  style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}
-                >
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <SkeletonCard key={i} />
-                  ))}
-                </div>
-              ))
-            : filteredAds.length === 0
-              ? <div className="no-ads-message">
-                  <p>Жарнама табылган жок.</p>
-                </div>
-              : renderColumns(filteredAds, 2).map((col, i) => (
-  <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1 }}>
-    {col.map(ad => (
-      <div key={ad.id} className="card">
-                    
-                      <div className="img">
- <img
-   src={ad.images && ad.images[0] ? ad.images[0] : CanvasImg}
-  className="card-img"
-  alt={ad.descText || "Фото объявления"}
-  onClick={() => {
-    handleView(ad.id);
-    openGallery(ad.images, 0);
-  }}
-/>
-
-                      </div>
-
-                      {/* тело карточки */}
-                      <div className="body">
-                        <div className="price">{formatPrice(ad.price)}</div>
-
-                        <div className="sub">{ad.categoryName}</div>
-                       <div className="title">{ad.desc || "Жарнама тууралу маалымат жок"}</div>
-
-                        
-              
-                         <div className="phone">
-  <a href={`tel:${ad.phone}`}>{formatPhoneDisplay(ad.phone)}</a>
-  <a
-    href={createWhatsAppLink(ad.phone)}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="icon-btn whatsapp"
-    style={{ marginLeft: "10px" }}
-  >
-    <svg className="what" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 58">
-      <g>
-        <path fill="#2cb742" d="m0 58 4.988-14.963A28.35 28.35 0 0 1 1 28.5C1 12.76 13.76 0 29.5 0S58 12.76 58 28.5 45.24 57 29.5 57a28.373 28.373 0 0 1-13.26-3.273L0 58z" />
-        <path fill="#ffffff" d="M47.683 37.985c-1.316-2.487-6.169-5.331-6.169-5.331-1.098-.626-2.423-.696-3.049.42 0 0-1.577 1.891-1.978 2.163-1.832 1.241-3.529 1.193-5.242-.52l-3.981-3.981-3.981-3.981c-1.713-1.713-1.761-3.41-.52-5.242.272-.401 2.163-1.978 2.163-1.978 1.116-.627 1.046-1.951.42-3.049 0 0-2.844-4.853-5.331-6.169a2.726 2.726 0 0 0-3.203.482l-1.758 1.758c-5.577 5.577-2.831 11.873 2.746 17.45l5.097 5.097 5.097 5.097c5.577 5.577 11.873 8.323 17.45 2.746l1.758-1.758a2.728 2.728 0 0 0 .481-3.204z" />
-      </g>
-    </svg>
-  </a>
-</div>
-
-                        
-                        <div className="ad-date" style={{ color: "#888", marginTop: "10px" }}>
-  {ad.timestamp ? new Date(ad.timestamp.seconds ? ad.timestamp.seconds * 1000 : ad.timestamp).toLocaleDateString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  }) + " " + new Date(ad.timestamp.seconds ? ad.timestamp.seconds * 1000 : ad.timestamp).toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }) : ""}
-</div>
-
-
-                        <div className="actions">
-                          <div className="left-actions">
-<svg className="view" viewBox="0 0 24 24">
-  <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
-</svg>
-                            <span className="view-count">{ad.views}</span>
-                          </div>
-                          
-                          <div className="right-actions">
-                    <button
-  type="button"
-  className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
-  onClick={() => toggleLike(ad.id)}
->
-  <svg className="like" viewBox="0 0 24 24" fill="none">
-    <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
-  </svg>
-</button>
-<span className="like-count">{ad.likes || 0}</span>
-
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+        ))
+      ) : filteredAds.length === 0 ? (
+        <div className="no-ads-message">
+          <p>Жарнама табылган жок.</p>
         </div>
-      </main>
-
-      {/* ===== Модалка создания объявления ===== */}
-      {modalOpen && (
-        <div className="modal open">
-          <div className="modal__sheet">
-
-            <div className="modal__header">
-              <button className="close-btn" onClick={() => setModalOpen(false)}>✕</button>
-              <div className="modal__title">Жарнама берүү</div>
-              <div style={{ width: "36px" }}></div>
-            </div>
-            
-            <div>
-              {/* ===== Галерея и выбранные фото ===== */}
-              <div className="gallery" onClick={() => realGalleryInputRef.current.click()}>
-                <div className="item big" data-type="gallery">
-                  <img className="gall" src={CanvasImg} alt="gallery" />
-                  <span className="big-text">Сүрөттөр</span>
+      ) : (
+        renderColumns(filteredAds, 2).map((col, i) => (
+          <div
+            className="column"
+            key={i}
+            style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1 }}
+          >
+            {col.map(ad => (
+              <div key={ad.id} className="card">
+                <div className="img">
+                  <img
+                    src={ad.images && ad.images[0] ? ad.images[0] : CanvasImg}
+                    className="card-img"
+                    alt={ad.descText || "Фото объявления"}
+                    onClick={() => {
+                      handleView(ad.id);
+                      openGallery(ad.images, 0);
+                    }}
+                  />
                 </div>
-              </div>
 
+                <div className="body">
+                  <div className="price">{formatPrice(ad.price)}</div>
+                  <div className="sub">{ad.categoryName}</div>
+                  <div className="title">{ad.desc || "Жарнама тууралу маалымат жок"}</div>
 
-              {/* Слоты для выбранных фото */}
-              <div className="selected-grid">
-                {formData.images.map((img, i) => (
-                  <div className="slot" key={i}>
-                    <div className="placeholder">
-                      {loading && typeof img !== "string" ? (
-                        <SkeletonLoader width="100%" height="100%" />
-                      ) : (
-                        <img
-                          className="gal"
-                          src={img || CanvasImg}
-                          alt={img ? `selected-${i}` : "placeholder"}
-                        />
-                      )}
+                  <div className="phone">
+                    <a href={`tel:${ad.phone}`}>{formatPhoneDisplay(ad.phone)}</a>
+                    <a
+                      href={createWhatsAppLink(ad.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="icon-btn whatsapp"
+                      style={{ marginLeft: "10px" }}
+                    >
+                      <svg className="what" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 58">
+                        <g>
+                          <path fill="#2cb742" d="m0 58 4.988-14.963A28.35 28.35 0 0 1 1 28.5C1 12.76 13.76 0 29.5 0S58 12.76 58 28.5 45.24 57 29.5 57a28.373 28.373 0 0 1-13.26-3.273L0 58z" />
+                          <path fill="#ffffff" d="M47.683 37.985c-1.316-2.487-6.169-5.331-6.169-5.331-1.098-.626-2.423-.696-3.049.42 0 0-1.577 1.891-1.978 2.163-1.832 1.241-3.529 1.193-5.242-.52l-3.981-3.981-3.981-3.981c-1.713-1.713-1.761-3.41-.52-5.242.272-.401 2.163-1.978 2.163-1.978 1.116-.627 1.046-1.951.42-3.049 0 0-2.844-4.853-5.331-6.169a2.726 2.726 0 0 0-3.203.482l-1.758 1.758c-5.577 5.577-2.831 11.873 2.746 17.45l5.097 5.097 5.097 5.097c5.577 5.577 11.873 8.323 17.45 2.746l1.758-1.758a2.728 2.728 0 0 0 .481-3.204z" />
+                        </g>
+                      </svg>
+                    </a>
+                  </div>
+
+                  <div className="ad-date" style={{ color: "#888", marginTop: "10px" }}>
+                    {ad.timestamp ? new Date(ad.timestamp.seconds ? ad.timestamp.seconds * 1000 : ad.timestamp).toLocaleDateString("ru-RU", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric"
+                    }) + " " + new Date(ad.timestamp.seconds ? ad.timestamp.seconds * 1000 : ad.timestamp).toLocaleTimeString("ru-RU", {
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) : ""}
+                  </div>
+
+                  <div className="actions">
+                    <div className="left-actions">
+                      <svg className="view" viewBox="0 0 24 24">
+                        <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                      </svg>
+                      <span className="view-count">{ad.views}</span>
+                    </div>
+                    <div className="right-actions">
+                      <button
+                        type="button"
+                        className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
+                        onClick={() => toggleLike(ad.id)}
+                      >
+                        <svg className="like" viewBox="0 0 24 24" fill="none">
+                          <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
+                        </svg>
+                      </button>
+                      <span className="like-count">{ad.likes || 0}</span>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-
-            {/* ===== Информация ===== */}
-            <div className="info-block">
-              <div className="input-group gr">
-                <label htmlFor="phone">Байланыш номер</label>
-<input
-  type="tel"
-  placeholder="0700123456"
-  value={formData.phone}
-  onChange={e => {
-    const digits = e.target.value.replace(/\D/g, ""); // только цифры
-    setFormData({ ...formData, phone: digits });
-  }}
-/>
-</div>
-
-
-
-              
-       <div className="category-wrapper">
-  <label>Категория</label>
-
-  <div 
-    className="category-display" 
-    onClick={() => setShowCategories(!showCategories)}
-  >
-    {formData.category 
-      ? categoryLabels[formData.category] 
-      : "Категорияны тандаңыз"}
-    <span className="arrow">▾</span>
-  </div>
-
-  {showCategories && (
-    <div className="category-dropdown">
-      <div className="category-list">
-        {Object.keys(categoryLabels).map(key => (
-          <div
-            key={key}
-            className={`category-row ${formData.category === key ? "active" : ""}`}
-            onClick={() => {
-              setFormData({ ...formData, category: key });
-              setShowCategories(false);
-            }}
-          >
-            {categoryLabels[key]}
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
-
-<div className="address-wrapper">
-  <label>Адрес</label>
-
-  <div
-    className="address-display"
-    onClick={() => setShowAddresses(!showAddresses)}
-  >
-    {formData.address
-      ? addressLabels[formData.address]
-      : "Адрес тандаңыз"}
-    <span className="arrow">▾</span>
-  </div>
-
-  {showAddresses && (
-    <div className="address-dropdown">
-      <div className="address-list">
-        {Object.keys(addressLabels).map(key => (
-          <div
-            key={key}
-            className={`address-row ${formData.address === key ? "active" : ""}`}
-            onClick={() => {
-              setFormData({ ...formData, address: key });
-              setShowAddresses(false);
-            }}
-          >
-            {addressLabels[key]}
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
-
-
-              <div className="input-group gr">
-                <label htmlFor="price">Баасы</label>
-                <input
-                  type="number"
-                  id="price"
-                  placeholder="Сумасын жазыңыз"
-                  value={formData.price}
-                  onChange={e => setFormData({ ...formData, price: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* ===== Описание ===== */}
-            <div className="desc-block">
-              <h4>Жарнамаңыз тууралу маалымат</h4>
-              <textarea
-                id="desc"
-                className="desc"
-                maxLength="6000"
-                value={formData.desc}
-                onChange={e => setFormData({ ...formData, desc: e.target.value })}
-              />
-              <div className="counter">{formData.desc.length}/6000</div>
-            </div>
-
-            {/* ===== Действия ===== */}
-            <div className="actions">
-              <button 
-                className="btn-green" 
-                onClick={createAd} 
-                disabled={loading} // Отключаем кнопку при загрузке
-              >
-                {loading ? "Жүктөлүүдө..." : "Жарнама берүү"}
-              </button>
-            </div>
-
-            {/* Скрытый input */}
-            <input
-              type="file"
-              ref={realGalleryInputRef}
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleGalleryChange}
-            />
-
-
-          </div>
-        </div>
+        ))
       )}
+    </div>
+  </main>
+
+
+    {/* ===== Модалка создания объявления (Плюс кнопка) ===== */}
+{modalOpen && (
+  <div className="modal open">
+    <div className="modal__sheet">
+
+      {/* ===== Заголовок ===== */}
+      <div className="modal__header">
+        <button className="close-btn" onClick={() => setModalOpen(false)}>✕</button>
+        <div className="modal__title">Жарнама берүү</div>
+        <div style={{ width: "36px" }}></div>
+      </div>
+
+      {/* ===== Галерея и выбранные фото ===== */}
+      <div className="gallery" onClick={() => realGalleryInputRef.current.click()}>
+        <div className="item big" data-type="gallery">
+          <img className="gall" src={CanvasImg} alt="gallery" />
+          <span className="big-text">Сүрөттөр</span>
+        </div>
+      </div>
+
+      {/* Слоты для выбранных фото */}
+      <div className="selected-grid">
+        {formData.images.map((img, i) => (
+          <div className="slot" key={i}>
+            <div className="placeholder">
+              {loading && typeof img !== "string" ? (
+                <SkeletonLoader width="100%" height="100%" />
+              ) : (
+                <img
+                  className="gal"
+                  src={img || CanvasImg}
+                  alt={img ? `selected-${i}` : "placeholder"}
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ===== Информация ===== */}
+      <div className="info-block">
+        <div className="input-group gr">
+          <label htmlFor="phone">Байланыш номер</label>
+          <input
+            type="tel"
+            placeholder="0700123456"
+            value={formData.phone}
+            onChange={e => {
+              const digits = e.target.value.replace(/\D/g, "");
+              setFormData({ ...formData, phone: digits });
+            }}
+          />
+        </div>
+
+        {/* ===== Категория (Плюс модал) ===== */}
+<div className="select-wrapper">
+  <div
+    className="select-display"
+    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+  >
+    {adSelectedCategory ? categoryLabels[adSelectedCategory] : "Категорияны тандаңыз"}
+    <span className="arrow">{isCategoryOpen ? "▲" : "▼"}</span>
+  </div>
+
+  {isCategoryOpen && (
+    <div className="select-dropdown">
+      <div className="select-list">
+        {Object.entries(categoryLabels).map(([key, label]) => (
+          <div
+            className={`select-row ${adSelectedCategory === key ? "active" : ""}`}
+            key={key}
+            onClick={() => {
+              setAdSelectedCategory(key);
+              setIsCategoryOpen(false);
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
+
+
+        {/* ===== Адрес (Плюс модал) ===== */}
+       <div className="select-wrapper">
+  <div
+    className="select-display"
+    onClick={() => setIsAddressOpen(!isAddressOpen)}
+  >
+    {adSelectedAddress ? addressLabels[adSelectedAddress] : "Адрес тандаңыз"}
+    <span className="arrow">{isAddressOpen ? "▲" : "▼"}</span>
+  </div>
+
+  {isAddressOpen && (
+    <div className="select-dropdown">
+      <div className="select-list">
+        {Object.entries(addressLabels).map(([key, label]) => (
+          <div
+            className={`select-row ${adSelectedAddress === key ? "active" : ""}`}
+            key={key}
+            onClick={() => {
+              setAdSelectedAddress(key);
+              setIsAddressOpen(false);
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
+
+        {/* ===== Цена ===== */}
+        <div className="input-group gr">
+          <label htmlFor="price">Баасы</label>
+          <input
+            type="number"
+            id="price"
+            placeholder="Сумасын жазыңыз"
+            value={formData.price}
+            onChange={e => setFormData({ ...formData, price: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* ===== Описание ===== */}
+      <div className="desc-block">
+        <h4>Жарнамаңыз тууралу маалымат</h4>
+        <textarea
+          id="desc"
+          className="desc"
+          maxLength="6000"
+          value={formData.desc}
+          onChange={e => setFormData({ ...formData, desc: e.target.value })}
+        />
+        <div className="counter">{formData.desc.length}/6000</div>
+      </div>
+
+      {/* ===== Действия ===== */}
+      <div className="actions">
+        <button 
+          className="btn-green" 
+          onClick={createAd} 
+          disabled={loading}
+        >
+          {loading ? "Жүктөлүүдө..." : "Жарнама берүү"}
+        </button>
+      </div>
+
+      {/* Скрытый input для галереи */}
+      <input
+        type="file"
+        ref={realGalleryInputRef}
+        accept="image/*"
+        multiple
+        style={{ display: "none" }}
+        onChange={handleGalleryChange}
+      />
+
+    </div>
+  </div>
+)}
+
 {/* ===== Модалка фильтра ===== */}
 {filterModalOpen && (
   <div className="modal open">
@@ -837,64 +772,58 @@ const handleGalleryChange = async e => {
         <div style={{ width: "36px" }}></div>
       </div>
 
- {/* Адрес блогу */}
-<div className="input-group gr">
-  <label>Адрес</label>
-  <div className="address-wrapper">
-    {/* Триггер */}
-    <div
-      className="address-display"
-      onClick={() => setAddressOpen(!addressOpen)}
-    >
-      {selectedAddress ? addressLabels[selectedAddress] : "Адрес танда"}
-      <span className="arrow">{addressOpen ? "▲" : "▼"}</span>
-    </div>
-
-    {/* Dropdown */}
-    <div className={`address-dropdown ${addressOpen ? "open" : ""}`}>
-      <div className="address-list">
-        {Object.keys(addressLabels).map((key) => (
+      {/* ===== Адрес (Фильтр модал) ===== */}
+      <div className="input-group gr">
+        <label>Адрес</label>
+        <div className="address-wrapper" ref={addressRef}>
           <div
-            key={key}
-            className={`address-row ${selectedAddress === key ? "active" : ""}`}
-            onClick={() => {
-              setSelectedAddress(key);
-              setAddressOpen(false);
-            }}
+            className="address-display"
+            onClick={() => setFilterAddressOpen(!filterAddressOpen)}
           >
-            {addressLabels[key]}
+            {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
+            <span className="arrow">{filterAddressOpen ? "▲" : "▼"}</span>
           </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</div>
 
-      {/* Категория блогу */}
+          <div className={`address-dropdown ${filterAddressOpen ? "open" : ""}`}>
+            <div className="address-list">
+              {Object.keys(addressLabels).map((key) => (
+                <div
+                  key={key}
+                  className={`address-row ${filterSelectedAddress === key ? "active" : ""}`}
+                  onClick={() => {
+                    setFilterSelectedAddress(key);
+                    setFilterAddressOpen(false);
+                  }}
+                >
+                  {addressLabels[key]}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Категория (Фильтр модал) ===== */}
       <div className="input-group gr">
         <label>Категория</label>
-        <div className="category-wrapper">
-          {/* Триггер */}
+        <div className="category-wrapper" ref={categoryRef}>
           <div
             className="category-display"
-            onClick={() => setCategoryOpen(!categoryOpen)}
+            onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
           >
-            {selectedCategory ? categoryLabels[selectedCategory] : "Категорияны танда"}
-            <span className="arrow">{categoryOpen ? "▲" : "▼"}</span>
+            {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
+            <span className="arrow">{filterCategoryOpen ? "▲" : "▼"}</span>
           </div>
 
-          {/* Dropdown */}
-          <div
-            className={`category-dropdown ${categoryOpen ? "open" : ""}`}
-          >
+          <div className={`category-dropdown ${filterCategoryOpen ? "open" : ""}`}>
             <div className="category-list">
               {Object.keys(categoryLabels).map((key) => (
                 <div
                   key={key}
-                  className={`category-row ${selectedCategory === key ? "active" : ""}`}
+                  className={`category-row ${filterSelectedCategory === key ? "active" : ""}`}
                   onClick={() => {
-                    setSelectedCategory(key);
-                    setCategoryOpen(false);
+                    setFilterSelectedCategory(key);
+                    setFilterCategoryOpen(false);
                   }}
                 >
                   {categoryLabels[key]}
@@ -905,7 +834,7 @@ const handleGalleryChange = async e => {
         </div>
       </div>
 
-      {/* Цена */}
+      {/* ===== Цена ===== */}
       <div className="price-row" style={{ display: "flex", gap: "10px" }}>
         <div className="input-group" style={{ flex: 1 }}>
           <label>Цена от</label>
@@ -915,7 +844,6 @@ const handleGalleryChange = async e => {
             onChange={e => setFilterPrice({ ...filterPrice, min: e.target.value })}
           />
         </div>
-
         <div className="input-group" style={{ flex: 1 }}>
           <label>Цена до</label>
           <input
@@ -926,13 +854,14 @@ const handleGalleryChange = async e => {
         </div>
       </div>
 
-      {/* Кнопка */}
+      {/* ===== Кнопка ===== */}
       <div className="actions">
         <button className="btn-green" onClick={() => setFilterModalOpen(false)}>Көрсөтүү</button>
       </div>
     </div>
   </div>
 )}
+
 
 
  {/* ===== Нижнее меню ===== */}
@@ -1050,4 +979,5 @@ const handleGalleryChange = async e => {
   </div>
 )}
 </div>
-	);}
+	);
+}
