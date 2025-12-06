@@ -164,3 +164,70 @@
 .btn-filter {
   color: #4929b4;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Контейнер */
+.category-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Select */
+.category-select select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  font-weight: 600;
+  background: #fff;
+  appearance: none; /* браузердин default стрелкасын алып салат */
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.category-select select:hover {
+  border-color: #a547b1;
+  background: #faf5fc;
+}
+
+.category-select select:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
+  outline: none;
+}
+
+/* Жаңы стрелка */
+.category-select .arrow {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  font-size: 14px;
+  color: #666;
+  transition: color 0.25s ease;
+}
+
+.category-select:hover .arrow {
+  color: #a547b1;
+}

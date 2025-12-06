@@ -64,6 +64,7 @@ function renderColumns(ads, numColumns) {
 export default function Home_global() {
   const realGalleryInputRef = useRef(null);
 	const [showCategories, setShowCategories] = useState(false);
+	const [categoryOpen, setCategoryOpen] = useState(false);
 
 
 
@@ -748,17 +749,40 @@ const handleGalleryChange = async e => {
               <div style={{ width: "36px" }}></div>
             </div>
 
-            <div className="filter-content">
-              {/* Категория */}
-              <div className="input-group gr">
-                <label>Категория</label>
-                <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                  <option value="">Все</option>
-                  {Object.keys(categoryLabels).map(key => (
-                    <option key={key} value={key}>{categoryLabels[key]}</option>
-                  ))}
-                </select>
-              </div>
+
+            <div className="input-group gr">
+  <label>Категория</label>
+  <div className="category-wrapper">
+    {/* Триггер */}
+    <div
+      className="category-display"
+      onClick={() => setCategoryOpen(!categoryOpen)}
+    >
+      {selectedCategory ? categoryLabels[selectedCategory] : "Категорияны танда"}
+      <span className="arrow">{categoryOpen ? "▲" : "▼"}</span>
+    </div>
+
+    {/* Dropdown */}
+    {categoryOpen && (
+      <div className="category-dropdown">
+        <div className="category-list">
+          {Object.keys(categoryLabels).map((key) => (
+            <div
+              key={key}
+              className={`category-row ${selectedCategory === key ? "active" : ""}`}
+              onClick={() => {
+                setSelectedCategory(key);
+                setCategoryOpen(false);
+              }}
+            >
+              {categoryLabels[key]}
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</div>
 
               {/* Цена в одну строку */}
               <div className="price-row" style={{ display: "flex", gap: "10px" }}>
@@ -786,11 +810,12 @@ const handleGalleryChange = async e => {
               </div>
             </div>
           </div>
-        </div>
       )}
 
+
+
+ {/* ===== Нижнее меню ===== */}
     <div>
-  {/* ===== Нижнее меню ===== */}
   <div className="bottom-nav">
     {/* Главная */}
     <div
