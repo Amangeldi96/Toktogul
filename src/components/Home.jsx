@@ -503,13 +503,9 @@ const handleGalleryChange = async e => {
                   <p>Жарнама табылган жок.</p>
                 </div>
               : renderColumns(filteredAds, 2).map((col, i) => (
-                <div
-                  className="column"
-                  key={i}
-                  style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1 }}
-                >
-                  {col.map(ad => (
-                    <div key={ad.id} className="card">
+  <div className="column" key={i} style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1 }}>
+    {col.map(ad => (
+      <div key={ad.id} className="card">
                     
                       <div className="img">
  <img
@@ -529,7 +525,8 @@ const handleGalleryChange = async e => {
                         <div className="price">{formatPrice(ad.price)}</div>
 
                         <div className="sub">{ad.categoryName}</div>
-                        <div className="title">{ad.descText}</div>
+                       <div className="title">{ad.desc || "Жарнама тууралу маалымат жок"}</div>
+
                         
               
                          <div className="phone">

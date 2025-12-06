@@ -37,6 +37,33 @@ text-align: center;
 
 
 
+
+/**/
+
+
+
+.my-ads {
+  max-height: 70vh; /* экрандын 70% бийиктигинен ашпайт */
+  overflow-y: auto; /* ашса скрол чыгат */
+  padding-right: 10px; /* скрол менен текст кагышпасын */
+}
+
+/* Скрол стили */
+.my-ads::-webkit-scrollbar {
+  width: 8px;
+	display: none;
+}
+.my-ads::-webkit-scrollbar-thumb {
+  background: #9b27b0; /* фиолет түстүү скрол */
+  border-radius: 6px;
+	display: none;
+}
+.my-ads::-webkit-scrollbar-track {
+  background: #f0f0f0;
+	display: none;
+}
+
+
 /**/
 
 
