@@ -165,7 +165,7 @@ export default function Home() {
 
   // ===== Labels и категории =====
   const addressLabels = {
-    toktogul: "Токтгул",
+    toktogul: "Токтогул",
     janyjol: "Жаңы-Жол",
     uchterek: "Үч-Терек",
     tereksuu: "Терек-Суу",
