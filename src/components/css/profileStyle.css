@@ -25,24 +25,31 @@ width: 100%;
 max-width: 400px;
 position: relative;
 text-align: center;
+overflow-y: auto;
 }
 
+
+
 .prf-close-btn {
-position: absolute;
-top: 2px;
-right: 5px;
-background: none;
-border: none;
-font-size: 2rem;
-color: #888;
-cursor: pointer;
-transition: color 0.2s;
-z-index: 2000;
+  position: absolute;   /* ← модалдын ичинде бурчуна бекитилет */
+  top: 10px;
+  right: 10px;
+
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 999;        /* модалдын үстүндө */
 }
 
 .prf-close-btn:hover {
-color: #333;
+  color: #333;
 }
+
+
+
+
 
 /* Табы (Переключатель) */
 .prf-tabs {
@@ -257,4 +264,130 @@ padding: 1.5rem;
   padding: 20px;
   border-radius: 15px;
   display: none; /* башында жашыруун */
+}
+
+
+
+
+/* Админ панель модалканын ичинде */
+.admin-panel {
+  position: fixed;          /* экранга бекитүү */
+  top: 50%;                 /* вертикалдык борбор */
+  left: 50%;                /* горизонталдык борбор */
+  transform: translate(-50%, -50%); /* так ортого жылдырат */
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3); /* көлөкө */
+  z-index: 5000;            /* үстүндө турушу үчүн */
+  width: 350px;             /* модалканын туурасы */
+  max-height: 80vh;         /* экрандан ашпашы үчүн */
+  overflow-y: auto;         /* мазмун көп болсо скролл */
+}
+
+.admin-panel h2 {
+  margin-bottom: 10px;
+  color: #6a0dad; /* фиолетовый тема */
+}
+
+.admin-panel p {
+  font-size: 14px;
+  color: #333;
+}
+
+
+/**/
+.admin-ads-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-ad-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 14px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  display: block; /* Биринчи көрүүдө жашырылбайт, ads.length == 0 болсо чыкпайт */
+}
+
+.admin-ad-img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-ad-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.admin-ad-desc {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.admin-ad-user {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.admin-ad-btns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-ad-btns button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+}
+
+.admin-ad-btns .approve {
+  background: #4CAF50;
+}
+
+.admin-ad-btns .reject {
+  background: #FF4242;
+}
+
+.no-ads-text {
+  padding: 20px 0;
+  text-align: center;
+  color: #777;
+}
+
+/**/
+
+.prf-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  max-height: 80vh;       /* экрандан ашпайт */
+  overflow-y: auto;       /* мазмун көп болсо скролл чыгат */
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* IE/Edge */
+* {
+  -ms-overflow-style: none;
 }

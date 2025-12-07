@@ -20,7 +20,17 @@ export default function Profile({ onClose }) {
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
+	const approveAd = async (id) => {
+  await db.collection("ads").doc(id).update({ status: "approved" });
+};
+
+const rejectAd = async (id) => {
+  await db.collection("ads").doc(id).update({ status: "rejected" });
+};
+const [ads, setAds] = useState([]);
+
   const [showMyAdsModal, setShowMyAdsModal] = useState(false); // ✅ Менин жарнамам модалкасы
+  const [role, setRole] = useState("user"); // ✅ роль коштук
 
   const auth = firebase.auth();
 
@@ -28,8 +38,18 @@ export default function Profile({ onClose }) {
     const unsub = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setIsAuthReady(true);
-      if (currentUser) setTab("profile");
-      else setTab("login");
+      if (currentUser) {
+        setTab("profile");
+        // роль окуу
+        db.collection("users").doc(currentUser.uid).get().then(doc => {
+          if (doc.exists) {
+            setRole(doc.data().role || "user");
+          }
+        });
+      } else {
+        setTab("login");
+        setRole("user");
+      }
     });
     return () => unsub();
   }, []);
@@ -48,6 +68,18 @@ export default function Profile({ onClose }) {
     }
   }, [error]);
 
+
+
+useEffect(() => {
+  const unsub = db.collection("ads").onSnapshot(snapshot => {
+    const adsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setAds(adsData);
+  });
+  return () => unsub();
+}, []);
+
+
+
   const clearMessages = () => {
     setError("");
     setSuccessMessage("");
@@ -65,7 +97,12 @@ export default function Profile({ onClose }) {
     }
     try {
       const u = await auth.createUserWithEmailAndPassword(email, password);
-      await db.collection("users").doc(u.user.uid).set({ name, email });
+      // ✅ роль коштук
+      await db.collection("users").doc(u.user.uid).set({ 
+        name, 
+        email, 
+        role: "user" // демейки user, админди кол менен өзгөртөсүң
+      });
       await u.user.updateProfile({ displayName: name });
 
       setSuccessMessage("Сиз ийгиликтүү катталдыңыз!");
@@ -132,38 +169,90 @@ export default function Profile({ onClose }) {
     );
   }
 
+ 
+
   return (
+   <div
+    className="prf-modal-overlay"
+    onClick={onClose} // сыртты басканда жабылат
+  >
     <div
-      className="prf-modal-overlay"
-      onClick={onClose} // сыртты басканда жабылат
+      className="prf-modal-content"
+      onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
     >
-      <div
-        className="prf-modal-content"
-        onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
-      >
-        <button className="prf-close-btn" onClick={onClose}>×</button>
+      <button className="prf-close-btn" onClick={onClose}>×</button>
 
-        {successMessage && <p className="prf-success">{successMessage}</p>}
-        {error && <p className="prf-error">{error}</p>}
+      {successMessage && <p className="prf-success">{successMessage}</p>}
+      {error && <p className="prf-error">{error}</p>}
 
-        {user && tab === "profile" && (
-          <div className="prf-field">
-            <p>Салам, {user.displayName || user.email}</p>
+      {/* Профиль */}
+      {user && tab === "profile" && (
+        <div className="prf-field">
+          <p>Салам, {user.displayName || user.email}</p>
 
-            <div className="prf-buttons">
+          <div className="prf-buttons">
+            <button
+              className="prf-btn"
+              onClick={() => setShowMyAdsModal(true)}
+            >
+              Менин жарнамам
+            </button>
+
+            {role === "admin" && (
               <button
-                className="prf-btn"
-                onClick={() => setShowMyAdsModal(true)}
+                className="prf-btn admin"
+                onClick={() => setTab("admin")}
               >
-                Менин жарнамам
+                Админ
               </button>
+            )}
 
-              <button className="prf-btn logout" onClick={logout}>
-                Чыгуу
+            <button className="prf-btn logout" onClick={logout}>
+              Чыгуу
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Админ панель — ошол эле модалканын ичинде */}
+{user && tab === "admin" && (
+  <div className="admin-panel">
+    <button className="prf-close-btn" onClick={() => setTab("profile")}>×</button>
+    <h2>Админ</h2>
+    <p>Бул жерде жарнамаларды ырастоо/четке кагуу болот.</p>
+
+    {/* Жарнамалардын контейнери */}
+    {ads.length > 0 ? (
+      <div className="admin-ads-list">
+        {ads.map(ad => (
+          <div key={ad.id} className="admin-ad-card">
+            {ad.imageUrl && (
+              <img className="admin-ad-img" src={ad.imageUrl} alt="ad" />
+            )}
+            <h3 className="admin-ad-title">{ad.title}</h3>
+            <p className="admin-ad-desc">{ad.description}</p>
+            <p className="admin-ad-user">Автор: {ad.userEmail}</p>
+            <div className="admin-ad-btns">
+              <button className="approve" onClick={() => approveAd(ad.id)}>
+                Ырастоо
+              </button>
+              <button className="reject" onClick={() => rejectAd(ad.id)}>
+                Четке кагуу
               </button>
             </div>
           </div>
-        )}
+        ))}
+      </div>
+    ) : (
+      <p className="no-ads-text">Азырынча жарнама жок</p>
+    )}
+
+  </div>
+)}
+
+
+
+  
 
         {/* Менин жарнамам модалкасы */}
         {showMyAdsModal && (
