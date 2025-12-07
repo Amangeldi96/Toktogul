@@ -19,23 +19,20 @@ export default function Profile({ onClose }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-	const [activeModal, setActiveModal] = useState("profile");
 
-  const [showMyAdsModal, setShowMyAdsModal] = useState(false); // ✅ Модалка стейти
+  const [showMyAdsModal, setShowMyAdsModal] = useState(false); // ✅ Менин жарнамам модалкасы
 
   const auth = firebase.auth();
 
-useEffect(() => {
-  const unsub = auth.onAuthStateChanged((currentUser) => {
-    console.log("CurrentUser:", currentUser); // ✅ Бул жерде чыгышы керек
-    setUser(currentUser);
-    setIsAuthReady(true);
-    if (currentUser) setTab("profile");
-    else setTab("login");
-  });
-  return () => unsub();
-}, []);
-
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      setIsAuthReady(true);
+      if (currentUser) setTab("profile");
+      else setTab("login");
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     if (successMessage) {
@@ -120,7 +117,7 @@ useEffect(() => {
 
   // ======================== UI =========================
 
-  // ✅ Менин жарнамам → Толук экран
+  // ✅ Толук экран Username
   if (tab === "user") {
     return (
       <div className="fullpage-username">
@@ -130,15 +127,20 @@ useEffect(() => {
         >
           ×
         </button>
-
-      <Username user={user} />  // ✅ user пропсу берилүү керек
+        <Username user={user} />
       </div>
     );
   }
 
   return (
-    <div className="prf-modal-overlay">
-      <div className="prf-modal-content">
+    <div
+      className="prf-modal-overlay"
+      onClick={onClose} // сыртты басканда жабылат
+    >
+      <div
+        className="prf-modal-content"
+        onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
+      >
         <button className="prf-close-btn" onClick={onClose}>×</button>
 
         {successMessage && <p className="prf-success">{successMessage}</p>}
@@ -149,13 +151,12 @@ useEffect(() => {
             <p>Салам, {user.displayName || user.email}</p>
 
             <div className="prf-buttons">
-     <button
-  className="prf-btn"
-  onClick={() => setShowMyAdsModal(true)}
->
-  Менин жарнамам
-</button>
-
+              <button
+                className="prf-btn"
+                onClick={() => setShowMyAdsModal(true)}
+              >
+                Менин жарнамам
+              </button>
 
               <button className="prf-btn logout" onClick={logout}>
                 Чыгуу
@@ -166,10 +167,21 @@ useEffect(() => {
 
         {/* Менин жарнамам модалкасы */}
         {showMyAdsModal && (
-          <div className="prf-modal-overlay myadss">
-            <div className="prf-modal-content myads2">
-              <button className="prf-close-btn" onClick={onClose}>×</button>
-              <Username user={user} /> 
+          <div
+            className="prf-modal-overlay myadss"
+            onClick={() => setShowMyAdsModal(false)} // сыртты басканда жабылат
+          >
+            <div
+              className="prf-modal-content myads2"
+              onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
+            >
+              <button
+                className="prf-close-btn"
+                onClick={() => setShowMyAdsModal(false)}
+              >
+                ×
+              </button>
+              <Username user={user} />
             </div>
           </div>
         )}

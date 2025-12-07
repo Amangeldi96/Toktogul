@@ -131,7 +131,7 @@
 /* Для фильтр-модалки */
 .small-modal {
   max-height: 120vh;
-  height: 75vh;
+  height: 60vh;
   width: 90%;
   margin: auto;
   overflow-y: auto;

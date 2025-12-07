@@ -673,12 +673,20 @@ const filteredAds = useMemo(() => {
 
     {/* ===== Модалка создания объявления (Плюс кнопка) ===== */}
 {modalOpen && (
-  <div className="modal open">
-    <div className="modal__sheet">
-
+  <div
+    className="modal open"
+    onClick={() => setModalOpen(false)} // сыртты басканда жабылат
+  >
+    <div
+      className="modal__sheet"
+      onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
+    >
       {/* ===== Заголовок ===== */}
       <div className="modal__header">
-        <button className="close-btn" onClick={() => setModalOpen(false)}>✕</button>
+        <button
+          className="close-btn"
+          onClick={() => setModalOpen(false)}>✕</button>
+
         <div className="modal__title">Жарнама берүү</div>
         <div style={{ width: "36px" }}></div>
       </div>
@@ -832,10 +840,21 @@ const filteredAds = useMemo(() => {
 
 {/* ===== Модалка фильтра ===== */}
 {filterModalOpen && (
-  <div className="modal open">
-    <div className="small-modal">
+  <div
+    className="modal open"
+    onClick={() => setFilterModalOpen(false)} // сыртты басканда жабылат
+  >
+    <div
+      className="small-modal"
+      onClick={(e) => e.stopPropagation()} // ичиндеги басканда жабылбайт
+    >
       <div className="modal__header">
-        <button className="close-btn" onClick={() => setFilterModalOpen(false)}>✕</button>
+        <button
+          className="close-btn"
+          onClick={() => setFilterModalOpen(false)} // ✕ басканда жабылат
+        >
+          ✕
+        </button>
         <div className="modal__title">Фильтр</div>
         <div style={{ width: "36px" }}></div>
       </div>
@@ -979,6 +998,7 @@ onClick={() => {
       <span>Байланыш</span>
     </div>
     {/* Профиль*/}
+
    <div
         className={`nav-item ${selectedTab === "profile" ? "active" : ""}`}
         onClick={() => setSelectedTab("profile")}
@@ -990,7 +1010,10 @@ onClick={() => {
       </div>
 
      {selectedTab === "profile" && (
-        <Profile user={user} signOut={signOut} onClose={closeProfile} />
+        <Profile user={user} 
+				signOut={signOut} 
+				onClose={() => setSelectedTab(null)}  
+				/>
       )}
     </div>
 

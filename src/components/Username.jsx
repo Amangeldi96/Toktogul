@@ -8,7 +8,7 @@ export default function Username({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [confirmAdId, setConfirmAdId] = useState(null); // 🔑 модалка үчүн
+  const [confirmAdId, setConfirmAdId] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -28,7 +28,11 @@ export default function Username({ user }) {
           return {
             id: doc.id,
             ...data,
-            firstImg: images.length > 0 ? images[0] : CanvasImg,
+            firstImg: images.length > 0
+              ? typeof images[0] === "string"
+                ? images[0]
+                : images[0].url || CanvasImg
+              : CanvasImg,
             images,
           };
         });
@@ -44,11 +48,32 @@ export default function Username({ user }) {
 
   const handleDelete = async adId => {
     try {
+      const adDoc = await db.collection("ads").doc(adId).get();
+      const adData = adDoc.data();
+
+      // Cloudinary сүрөттөрдү өчүрүү
+      if (adData.images && Array.isArray(adData.images)) {
+        for (const img of adData.images) {
+          const publicId = typeof img === "string" ? null : img.publicId;
+          if (publicId) {
+            await fetch("https://api.cloudinary.com/v1_1/<cloud_name>/image/destroy", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Basic ${btoa("<api_key>:<api_secret>")}`,
+              },
+              body: JSON.stringify({ public_id: publicId }),
+            });
+          }
+        }
+      }
+
       await db.collection("ads").doc(adId).delete();
       setAds(prev => prev.filter(ad => ad.id !== adId));
-      setSuccess("✅ Жарнама ийгиликтүү өчүрүлдү!");
+      setSuccess("✅ Жарнама жана сүрөттөр ийгиликтүү өчүрүлдү!");
       setTimeout(() => setSuccess(""), 3000);
-    } catch {
+    } catch (err) {
+      console.error("Өчүрүү катасы:", err);
       setError("❌ Жарнаманы өчүрүү мүмкүн болгон жок!");
       setTimeout(() => setError(""), 3000);
     }
@@ -81,7 +106,7 @@ export default function Username({ user }) {
                 <div className="title2">{ad.desc}</div>
                 <div className="actions">
                   <button
-                    onClick={() => setConfirmAdId(ad.id)} // 🔑 confirm модалка ачылат
+                    onClick={() => setConfirmAdId(ad.id)}
                     className="btn-red"
                   >
                     Өчүрүү
@@ -93,31 +118,36 @@ export default function Username({ user }) {
         </div>
       )}
 
-      {/* 🔑 Стилдүү модалка */}
-      {confirmAdId && (
-        <div className="confirm-overlay">
-          <div className="confirm-modal">
-            <p>Бул жарнаманы чындап өчүрөсүңбү?</p>
-            <div className="confirm-actions">
-              <button
-                className="btn-red"
-                onClick={() => {
-                  handleDelete(confirmAdId);
-                  setConfirmAdId(null);
-                }}
-              >
-                Ооба
-              </button>
-              <button
-                className="btn-gray"
-                onClick={() => setConfirmAdId(null)}
-              >
-                Жок
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+{confirmAdId && (
+  <div
+    className="confirm-overlay"
+    onClick={() => setConfirmAdId(null)} // сыртты басканда жабылат
+  >
+    <div
+      className="confirm-modal"
+      onClick={(e) => e.stopPropagation()} // модалканын ичиндеги басканда жабылбайт
+    >
+      <p>Бул жарнаманы чындап өчүрөсүңбү?</p>
+      <div className="confirm-actions">
+        <button
+          className="btn-red"
+          onClick={() => {
+            handleDelete(confirmAdId);
+            setConfirmAdId(null);
+          }}
+        >
+          Ооба
+        </button>
+        <button
+          className="btn-gray"
+          onClick={() => setConfirmAdId(null)}
+        >
+          Жок
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
