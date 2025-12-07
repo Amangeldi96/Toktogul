@@ -9,23 +9,18 @@ export default function CloudUpload({ onUpload }) {
     data.append("upload_preset", "toktogul");
     data.append("cloud_name", "dqzgtlvlu");
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload",
-      {
-        method: "POST",
-        body: data,
-      },
-    );
+    const res = await fetch("https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload", {
+      method: "POST",
+      body: data,
+    });
 
     const json = await res.json();
-
     if (!json.secure_url) {
-      console.log("Ошибка Cloudinary:", json);
       alert("Ошибка загрузки файла в Cloudinary");
       return null;
     }
 
-    return json.secure_url;
+    return { url: json.secure_url, publicId: json.public_id };
   };
 
   const handleChange = async (e) => {
@@ -33,25 +28,14 @@ export default function CloudUpload({ onUpload }) {
     if (!file) return;
 
     setPreview(URL.createObjectURL(file));
-
-    const url = await uploadToCloudinary(file);
-
-    if (url && onUpload) {
-      onUpload(url);
-    }
+    const result = await uploadToCloudinary(file);
+    if (result && onUpload) onUpload(result.url, result.publicId);
   };
 
   return (
     <div>
       <input type="file" onChange={handleChange} />
-
-      {preview && (
-        <img
-          src={preview}
-          alt=""
-          style={{ width: 150, marginTop: 10, borderRadius: 10 }}
-        />
-      )}
+      {preview && <img src={preview} alt="" style={{ width: 150, marginTop: 10, borderRadius: 10 }} />}
     </div>
   );
 }

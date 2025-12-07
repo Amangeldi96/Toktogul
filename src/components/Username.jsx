@@ -25,17 +25,20 @@ export default function Username({ user }) {
             : data.images
             ? [data.images]
             : [];
+
           return {
             id: doc.id,
             ...data,
-            firstImg: images.length > 0
-              ? typeof images[0] === "string"
-                ? images[0]
-                : images[0].url || CanvasImg
-              : CanvasImg,
+            firstImg:
+              images.length > 0
+                ? typeof images[0] === "string"
+                  ? images[0]
+                  : images[0].url || CanvasImg
+                : CanvasImg,
             images,
           };
         });
+
         setAds(adsData);
         setLoading(false);
       });
@@ -43,45 +46,65 @@ export default function Username({ user }) {
     return () => unsubscribe();
   }, [user]);
 
-  const formatPrice = value =>
+  const formatPrice = (value) =>
     value ? `${value.toLocaleString("ru-RU")} сом` : "Келишим түрүндө";
 
-  const handleDelete = async adId => {
-    try {
-      const adDoc = await db.collection("ads").doc(adId).get();
-      const adData = adDoc.data();
 
-      // Cloudinary сүрөттөрдү өчүрүү
-      if (adData.images && Array.isArray(adData.images)) {
-        for (const img of adData.images) {
-          const publicId = typeof img === "string" ? null : img.publicId;
-          if (publicId) {
-            await fetch("https://api.cloudinary.com/v1_1/<cloud_name>/image/destroy", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Basic ${btoa("<api_key>:<api_secret>")}`,
-              },
-              body: JSON.stringify({ public_id: publicId }),
-            });
-          }
+  // ======================================================
+  // 🚀 Cloudinary сүрөттү 100% ишенимдүү өчүрүү функциясы
+  // ======================================================
+  const deleteCloudinaryImage = async (publicId) => {
+  if (!publicId) return;
+
+  try {
+    await fetch("http://localhost:5000/delete-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publicId }),
+    });
+  } catch (err) {
+    console.error("Ошибка при удалении через сервер:", err);
+  }
+};
+
+
+
+  // ======================================================
+  // 🚀 Жарнаманы (сүрөттөр менен) толук өчүрүү
+  // ======================================================
+ const handleDelete = async (adId) => {
+  try {
+    const adDoc = await db.collection("ads").doc(adId).get();
+    const adData = adDoc.data();
+
+    if (adData.images && Array.isArray(adData.images)) {
+      for (const img of adData.images) {
+        const publicId = typeof img === "string" ? null : img.publicId || img.public_id;
+        if (publicId) {
+          await fetch("http://localhost:5000/delete-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publicId }),
+          });
         }
       }
-
-      await db.collection("ads").doc(adId).delete();
-      setAds(prev => prev.filter(ad => ad.id !== adId));
-      setSuccess("✅ Жарнама жана сүрөттөр ийгиликтүү өчүрүлдү!");
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
-      console.error("Өчүрүү катасы:", err);
-      setError("❌ Жарнаманы өчүрүү мүмкүн болгон жок!");
-      setTimeout(() => setError(""), 3000);
     }
-  };
 
-  if (!user) {
-    return <p>Кирүү керек</p>;
+    await db.collection("ads").doc(adId).delete();
+    setAds((prev) => prev.filter((ad) => ad.id !== adId));
+    setSuccess("✅ Бардык сүрөттөр жана жарнама ийгиликтүү өчүрүлдү!");
+    setTimeout(() => setSuccess(""), 3000);
+  } catch (err) {
+    console.error("Өчүрүү катасы:", err);
+    setError("❌ Жарнаманы өчүрүү мүмкүн болгон жок!");
+    setTimeout(() => setError(""), 3000);
   }
+};
+
+
+
+  if (!user) return <p>Кирүү керек</p>;
+
 
   return (
     <div className="my-ads">
@@ -96,10 +119,10 @@ export default function Username({ user }) {
         <p>Жарнама табылган жок.</p>
       ) : (
         <div className="ads-grid">
-          {ads.map(ad => (
+          {ads.map((ad) => (
             <div className="my-card" key={ad.id}>
               <div className="img">
-                <img src={ad.firstImg || CanvasImg} alt={ad.desc || "Жарнама"} />
+                <img src={ad.firstImg || CanvasImg} alt={ad.desc} />
               </div>
               <div className="body">
                 <div className="price">{formatPrice(ad.price)}</div>
@@ -118,36 +141,38 @@ export default function Username({ user }) {
         </div>
       )}
 
-{confirmAdId && (
-  <div
-    className="confirm-overlay"
-    onClick={() => setConfirmAdId(null)} // сыртты басканда жабылат
-  >
-    <div
-      className="confirm-modal"
-      onClick={(e) => e.stopPropagation()} // модалканын ичиндеги басканда жабылбайт
-    >
-      <p>Бул жарнаманы чындап өчүрөсүңбү?</p>
-      <div className="confirm-actions">
-        <button
-          className="btn-red"
-          onClick={() => {
-            handleDelete(confirmAdId);
-            setConfirmAdId(null);
-          }}
-        >
-          Ооба
-        </button>
-        <button
-          className="btn-gray"
+      {confirmAdId && (
+        <div
+          className="confirm-overlay"
           onClick={() => setConfirmAdId(null)}
         >
-          Жок
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          <div
+            className="confirm-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p>Бул жарнаманы чындап өчүрөсүңбү?</p>
+
+            <div className="confirm-actions">
+              <button
+                className="btn-red"
+                onClick={() => {
+                  handleDelete(confirmAdId);
+                  setConfirmAdId(null);
+                }}
+              >
+                Ооба
+              </button>
+
+              <button
+                className="btn-gray"
+                onClick={() => setConfirmAdId(null)}
+              >
+                Жок
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
