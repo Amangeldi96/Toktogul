@@ -1,38 +1,36 @@
+// server.js
 import express from "express";
+import bodyParser from "body-parser";
 import cors from "cors";
-import fetch from "node-fetch";
+import cloudinary from "cloudinary";
+
+// === Cloudinary конфигурациясы ===
+cloudinary.v2.config({
+  cloud_name: "dqzgtlvlu",
+  api_key: "455915719989692",       // сенин API key
+  api_secret: "<API_SECRET>",       // сенин API secret (фронтендке салбоо)
+});
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-const CLOUD_NAME = "<сениң_cloud_name>";
-const API_KEY = "<сениң_api_key>";
-const API_SECRET = "<сениң_api_secret>";
-
-// Cloudinary сүрөттү өчүрүү
-app.post("/delete-image", async (req, res) => {
+// === Өчүрүү API ===
+app.delete("/delete-image", async (req, res) => {
   const { publicId } = req.body;
-  if (!publicId) return res.status(400).json({ error: "No publicId provided" });
 
-  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/resources/image/upload`;
+  if (!publicId) {
+    return res.status(400).json({ error: "PublicId керек" });
+  }
 
   try {
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString("base64")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ public_ids: [publicId] }),
-    });
-
-    const json = await response.json();
-    res.json(json);
+    const result = await cloudinary.v2.uploader.destroy(publicId);
+    res.json({ success: true, result });
   } catch (err) {
-    console.error("Cloudinary DELETE Error:", err);
-    res.status(500).json({ error: "Cloudinary delete failed" });
+    console.error(err);
+    res.status(500).json({ error: "Cloudinary өчүрүү катасы" });
   }
 });
 
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

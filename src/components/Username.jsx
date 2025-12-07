@@ -53,19 +53,26 @@ export default function Username({ user }) {
   // ======================================================
   // 🚀 Cloudinary сүрөттү 100% ишенимдүү өчүрүү функциясы
   // ======================================================
-  const deleteCloudinaryImage = async (publicId) => {
-  if (!publicId) return;
-
+  const handleDeleteCloudinary = async (publicId) => {
   try {
-    await fetch("http://localhost:5000/delete-image", {
-      method: "POST",
+    const res = await fetch("http://localhost:5000/delete-image", {
+      method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ publicId }),
     });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("Сүрөт өчүрүлдү:", data.result);
+    } else {
+      console.error("Өчүрүү мүмкүн болгон жок:", data.error);
+    }
   } catch (err) {
-    console.error("Ошибка при удалении через сервер:", err);
+    console.error("Сүрөт өчүрүү катасы:", err);
   }
 };
+
 
 
 
@@ -92,7 +99,7 @@ export default function Username({ user }) {
 
     await db.collection("ads").doc(adId).delete();
     setAds((prev) => prev.filter((ad) => ad.id !== adId));
-    setSuccess("✅ Бардык сүрөттөр жана жарнама ийгиликтүү өчүрүлдү!");
+    setSuccess("жарнамаңыз ийгиликтүү өчүрүлдү!");
     setTimeout(() => setSuccess(""), 3000);
   } catch (err) {
     console.error("Өчүрүү катасы:", err);
