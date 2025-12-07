@@ -103,11 +103,13 @@ export default function Home() {
   const [allAdsOriginal, setAllAdsOriginal] = useState([]);
   const [loadingAds, setLoadingAds] = useState(false);
   const [viewedAds, setViewedAds] = useState([]);
+	
 
   // ===== Filters =====
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddresses, setShowAddresses] = useState(false);
+	const [selectedAddress, setSelectedAddress] = useState("");
 
   // ===== Функция закрытия профиля =====
   const closeProfile = () => setModalOpen(false);
@@ -315,7 +317,14 @@ useEffect(() => {
       showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
 
       // Очистка формы и localStorage
-      setFormData({ phone: "", category: "", price: "", desc: "", images: [null, null, null, null, null] });
+      setFormData({ 
+  phone: "", 
+  category: "", 
+  address: "",   // ← кошуу керек
+  price: "", 
+  desc: "", 
+  images: [null, null, null, null, null] 
+});
       localStorage.removeItem("newAdImages");
       setModalOpen(false);
 
@@ -429,26 +438,52 @@ useEffect(() => {
     loadAds();
   }, []);
 
-  // ===== Фильтрация объявлений =====
-  const filteredAds = useMemo(() => {
-    let ads = allAdsOriginal;
-    if (selectedTab === "favorites") ads = ads.filter((ad) => favorites.includes(ad.id));
-    if (selectedCategory) ads = ads.filter((ad) => ad.category === selectedCategory);
+	//====филер====
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      ads = ads.filter(
-        (ad) => ad.desc?.toLowerCase().includes(query) || ad.categoryName?.toLowerCase().includes(query)
-      );
-    }
+const filteredAds = useMemo(() => {
+  let ads = allAdsOriginal;
 
-    const minPrice = Number(filterPrice.min);
-    const maxPrice = Number(filterPrice.max);
-    if (!isNaN(minPrice) && minPrice > 0) ads = ads.filter((ad) => (ad.price || 0) >= minPrice);
-    if (!isNaN(maxPrice) && maxPrice > 0) ads = ads.filter((ad) => (ad.price || Infinity) <= maxPrice);
+  if (selectedTab === "favorites") {
+    ads = ads.filter((ad) => favorites.includes(ad.id));
+  }
 
-    return ads;
-  }, [allAdsOriginal, selectedTab, favorites, selectedCategory, searchQuery, filterPrice]);
+  // Категория + Адрес фильтр
+  if (selectedCategory || selectedAddress) {
+    ads = ads.filter((ad) => {
+      const matchCategory = selectedCategory ? ad.category === selectedCategory : true;
+      const matchAddress = selectedAddress ? ad.address === selectedAddress : true;
+      return matchCategory && matchAddress;
+    });
+  }
+
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    ads = ads.filter(
+      (ad) =>
+        ad.desc?.toLowerCase().includes(query) ||
+        ad.categoryName?.toLowerCase().includes(query)
+    );
+  }
+
+  const minPrice = Number(filterPrice.min);
+  const maxPrice = Number(filterPrice.max);
+  if (!isNaN(minPrice) && minPrice > 0) {
+    ads = ads.filter((ad) => (ad.price || 0) >= minPrice);
+  }
+  if (!isNaN(maxPrice) && maxPrice > 0) {
+    ads = ads.filter((ad) => (ad.price || Infinity) <= maxPrice);
+  }
+
+  return ads;
+}, [
+  allAdsOriginal,
+  selectedTab,
+  favorites,
+  selectedCategory,
+  selectedAddress,   // ← кошулду
+  searchQuery,
+  filterPrice,
+]);
 
   const categoryCounts = useMemo(() => {
     const counts = {};
@@ -818,10 +853,10 @@ useEffect(() => {
         <div
           key={key}
           className={filterSelectedCategory === key ? "active select-row" : "select-row"}
-          onClick={() => {
-            setFilterSelectedCategory(key);
-            setFilterCategoryOpen(false);
-          }}
+         onClick={() => {
+  setSelectedCategory(key);
+  setFilterCategoryOpen(false);
+}}
         >
           {categoryLabels[key]}
         </div>
@@ -842,10 +877,10 @@ useEffect(() => {
         <div
           key={key}
           className={filterSelectedAddress === key ? "active select-row" : "select-row"}
-          onClick={() => {
-            setFilterSelectedAddress(key);
-            setFilterAddressOpen(false);
-          }}
+onClick={() => {
+  setSelectedAddress(key);
+  setFilterAddressOpen(false);
+}}
         >
           {addressLabels[key]}
         </div>
