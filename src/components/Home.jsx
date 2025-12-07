@@ -165,14 +165,20 @@ export default function Home() {
 
   // ===== Labels и категории =====
   const addressLabels = {
-    bishkek: "Бишкек",
-    osh: "Ош",
-    jalalabad: "Жалал-Абад",
-    naryn: "Нарын",
-    talas: "Талас",
-    batken: "Баткен",
-    issyk: "Ысык-Көл",
-    chui: "Чүй",
+    toktogul: "Токтгул",
+    janyjol: "Жаңы-Жол",
+    uchterek: "Үч-Терек",
+    tereksuu: "Терек-Суу",
+    ozgorush: "Өзгөрүш",
+    torken: "Торкен",
+    Toluk: "Толук",
+    belaldy: "Бел-Алды",
+		Cholponata: "Чолпон-Ата",
+		aktektir: "Ак-Тектир",
+		Karagungoi: "Кара-Күңгөй",
+		jetigen: "Жетиген",
+		Kambarata: "Камбар-Ата",
+		karakul: "Кара-Көл",
   };
 
   const categoryLabels = {
@@ -325,6 +331,8 @@ useEffect(() => {
   desc: "", 
   images: [null, null, null, null, null] 
 });
+      setPlusSelectedCategory(""); // ← кошуу
+      setPlusSelectedAddress("");  // ← кошуу
       localStorage.removeItem("newAdImages");
       setModalOpen(false);
 
