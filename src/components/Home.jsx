@@ -452,46 +452,45 @@ const filteredAds = useMemo(() => {
   let ads = allAdsOriginal;
 
   if (selectedTab === "favorites") {
-    ads = ads.filter((ad) => favorites.includes(ad.id));
+    ads = ads.filter(ad => favorites.includes(ad.id));
   }
 
   // Категория + Адрес фильтр
   if (selectedCategory || selectedAddress) {
-    ads = ads.filter((ad) => {
+    ads = ads.filter(ad => {
       const matchCategory = selectedCategory ? ad.category === selectedCategory : true;
       const matchAddress = selectedAddress ? ad.address === selectedAddress : true;
       return matchCategory && matchAddress;
     });
   }
 
+  // Издөө текст боюнча (категория аты + сүрөттөмө)
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    ads = ads.filter(
-      (ad) =>
-        ad.desc?.toLowerCase().includes(query) ||
-        ad.categoryName?.toLowerCase().includes(query)
-    );
+    ads = ads.filter(ad => {
+      const matchesDesc = ad.desc?.toLowerCase().includes(query);
+      const matchesCategory = categoryLabels[ad.category]?.toLowerCase().includes(query);
+      return matchesDesc || matchesCategory;
+    });
   }
 
+  // Баа боюнча фильтр
   const minPrice = Number(filterPrice.min);
   const maxPrice = Number(filterPrice.max);
-  if (!isNaN(minPrice) && minPrice > 0) {
-    ads = ads.filter((ad) => (ad.price || 0) >= minPrice);
-  }
-  if (!isNaN(maxPrice) && maxPrice > 0) {
-    ads = ads.filter((ad) => (ad.price || Infinity) <= maxPrice);
-  }
+  if (!isNaN(minPrice) && minPrice > 0) ads = ads.filter(ad => (ad.price || 0) >= minPrice);
+  if (!isNaN(maxPrice) && maxPrice > 0) ads = ads.filter(ad => (ad.price || Infinity) <= maxPrice);
 
   return ads;
 }, [
-  allAdsOriginal,
-  selectedTab,
-  favorites,
-  selectedCategory,
-  selectedAddress,   // ← кошулду
-  searchQuery,
-  filterPrice,
+	allAdsOriginal, 
+	selectedTab, 
+	favorites, 
+	selectedCategory, 
+	selectedAddress, 
+	searchQuery, 
+	filterPrice
 ]);
+
 
   const categoryCounts = useMemo(() => {
     const counts = {};

@@ -10,7 +10,7 @@
 /* Кнопка */
 .category-display {
   padding: 16px 22px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #5e22ce, #9774d8);
   color: #fff;
   font-weight: 700;
@@ -65,7 +65,7 @@
 /* Ар бир категория */
 .category-row {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 5px;
   background: #ede9fe;
   color: #4c1d95;
   transition: 0.25s;
@@ -89,7 +89,7 @@
 
 .address-display {
   padding: 16px 22px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #5e22ce, #9774d8);
   color: #fff;
   font-weight: 700;
@@ -128,7 +128,7 @@
 
 .address-dropdown::-webkit-scrollbar-thumb {
   background: #a855f7;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 .address-dropdown::-webkit-scrollbar-track {
@@ -177,7 +177,7 @@
 /* DISPLAY */
 .select-display {
   padding: 16px 22px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #5e22ce, #9774d8);
   color: #fff;
   font-weight: 700;
