@@ -1,19 +1,16 @@
 // === React ===
 import React, { useState, useEffect, useRef, useMemo } from "react";
-
 // === Стили ===
 import "./css/styles.css";
 import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import "./css/cotegory.css";
-
 // === Компоненты ===
 import SevenDaysAds from "./SevenDaysAds.jsx";
 import Profile from "./Profile.jsx";
 import SkeletonLoader from "./Skeleton.jsx";
 import SkeletonCard from "./SkeletCard.jsx";
-
 // === Картинки ===
 import sedanImg from "./img/sedan.png";
 import paintBucketImg from "./img/paint-bucket.png";
@@ -22,7 +19,6 @@ import buildingImg from "./img/building.png";
 import flowersImg from "./img/flowers.png";
 import phoneImg from "./img/phone.png";
 import CanvasImg from "./img/Canvas.svg";
-
 // === Firebase ===
 import { db } from "./Firebase.js";
 import firebase from "firebase/compat/app";
@@ -55,69 +51,115 @@ const renderColumns = (ads, numColumns) => {
   return columns;
 };
 
-// ===== React-компонент =====
-export default function Home_global() {
+// ===== Компонент башталат ушул жерден =====
+export default function Home() {
   // ===== Refs =====
-  const realGalleryInputRef = useRef(null); // Галереяны ачуу үчүн скрытый input
-  const touchStartRef = useRef(0);          // Свайптар үчүн
-  const dropdownRef = useRef(null);         // Dropdown анимациясы үчүн
+  const realGalleryInputRef = useRef(null);
+  const plusCategoryRef = useRef(null);
+  const plusAddressRef = useRef(null);
+  const filterCategoryRef = useRef(null);
+  const filterAddressRef = useRef(null);
+  const touchStartRef = useRef(0);
+  const dropdownRef = useRef(null);
 
   // ===== Общие state =====
-  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 }); // Галерея модал
+  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
   const [formData, setFormData] = useState({
     phone: "",
     category: "",
+    address: "",
     price: "",
     desc: "",
     images: [null, null, null, null, null],
-  }); // Жарнама формасы
-  const [loadingAds, setLoadingAds] = useState(true); // Загрузка объявлений
-  const [loading, setLoading] = useState(false);      // Загрузка при создании объявления
-  const [favorites, setFavorites] = useState([]);    // Избранные объявления
-  const [searchQuery, setSearchQuery] = useState(""); // Поиск
-  const [modalOpen, setModalOpen] = useState(false); // Плюс-модал (жарнама)
-  const [filterModalOpen, setFilterModalOpen] = useState(false); // Фильтр-модал
-  const [viewedAds, setViewedAds] = useState(() => {
-    const stored = localStorage.getItem("viewedAds");
-    return stored ? JSON.parse(stored) : [];
-  }); // Просмотренные объявления
-  const [allAds, setAllAds] = useState([]);          // Все объявления для отображения
-  const [allAdsOriginal, setAllAdsOriginal] = useState([]); // Все объявления оригинал
-  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" }); // Фильтр по цене
-  const [selectedTab, setSelectedTab] = useState("home"); // Текущий таб (home, favorites, profile)
-  const [user, setUser] = useState(null);            // Текущий пользователь
-  const [successMessages, setSuccessMessages] = useState([]); // Успешные уведомления
-  const [errorMessages, setErrorMessages] = useState([]);     // Ошибки уведомления
-  const [showCategories, setShowCategories] = useState(false); // Для общего dropdown категорий
+  });
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filterPrice, setFilterPrice] = useState({ min: "", max: "" });
 
-  // ===== Жарнама модал (плюс кнопка) =====
-  const [adCategoryOpen, setAdCategoryOpen] = useState(false); // Категория в модалке плюс
-  const [adSelectedCategory, setAdSelectedCategory] = useState(""); // Выбранная категория
-  const [adAddressOpen, setAdAddressOpen] = useState(false);   // Адрес в модалке плюс
-  const [adSelectedAddress, setAdSelectedAddress] = useState(""); // Выбранный адрес
+  // ===== Плюс модал dropdown =====
+  const [plusCategoryOpen, setPlusCategoryOpen] = useState(false);
+  const [plusSelectedCategory, setPlusSelectedCategory] = useState("");
+  const [plusAddressOpen, setPlusAddressOpen] = useState(false);
+  const [plusSelectedAddress, setPlusSelectedAddress] = useState("");
 
-  // ===== Фильтр модал =====
-  const [filterCategoryOpen, setFilterCategoryOpen] = useState(false); // Категория в фильтре
-  const [filterSelectedCategory, setFilterSelectedCategory] = useState(""); // Выбранная категория фильтра
-  const [filterAddressOpen, setFilterAddressOpen] = useState(false); // Адрес в фильтре
-  const [filterSelectedAddress, setFilterSelectedAddress] = useState(""); // Выбранный адрес фильтра
+  // ===== Фильтр модал dropdown =====
+  const [filterCategoryOpen, setFilterCategoryOpen] = useState(false);
+  const [filterSelectedCategory, setFilterSelectedCategory] = useState("");
+  const [filterAddressOpen, setFilterAddressOpen] = useState(false);
+  const [filterSelectedAddress, setFilterSelectedAddress] = useState("");
 
-  // ===== Для анимации dropdown =====
+  // ===== Notifications =====
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [successMessages, setSuccessMessages] = useState([]);
+
+  // ===== User/Auth =====
+  const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [selectedTab, setSelectedTab] = useState(null);
+
+  // ===== Ads =====
+  const [allAds, setAllAds] = useState([]);
+  const [allAdsOriginal, setAllAdsOriginal] = useState([]);
+  const [loadingAds, setLoadingAds] = useState(false);
+  const [viewedAds, setViewedAds] = useState([]);
+
+  // ===== Filters =====
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAddresses, setShowAddresses] = useState(false);
 
   // ===== Функция закрытия профиля =====
-  const closeProfile = () => setSelectedTab("home"); 
+  const closeProfile = () => setModalOpen(false);
 
-	 const [selectedCategory, setSelectedCategory] = useState(null); // <-- бул керек
-	 // Универсалдуу dropdown’дор
-const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-const [isAddressOpen, setIsAddressOpen] = useState(false);
+  // ===== Обработчики =====
+  const handlePlusSelectCategory = (category) => {
+    setPlusSelectedCategory(category);
+    setFormData((prev) => ({ ...prev, category }));
+    setPlusCategoryOpen(false);
+  };
+  const handlePlusSelectAddress = (address) => {
+    setPlusSelectedAddress(address);
+    setFormData((prev) => ({ ...prev, address }));
+    setPlusAddressOpen(false);
+  };
+  const handleFilterSelectCategory = (category) => {
+    setFilterSelectedCategory(category);
+    setFilterCategoryOpen(false);
+  };
+  const handleFilterSelectAddress = (address) => {
+    setFilterSelectedAddress(address);
+    setFilterAddressOpen(false);
+  };
 
-const categoryRef = useRef(null);
-const addressRef = useRef(null);
+  // ===== useEffect анимациялар =====
+  useEffect(() => {
+    if (!plusCategoryRef.current) return;
+    plusCategoryRef.current.style.maxHeight = plusCategoryOpen
+      ? plusCategoryRef.current.scrollHeight + "px"
+      : "0px";
+  }, [plusCategoryOpen]);
 
+  useEffect(() => {
+    if (!plusAddressRef.current) return;
+    plusAddressRef.current.style.maxHeight = plusAddressOpen
+      ? plusAddressRef.current.scrollHeight + "px"
+      : "0px";
+  }, [plusAddressOpen]);
 
+  useEffect(() => {
+    if (!filterCategoryRef.current) return;
+    filterCategoryRef.current.style.maxHeight = filterCategoryOpen
+      ? filterCategoryRef.current.scrollHeight + "px"
+      : "0px";
+  }, [filterCategoryOpen]);
 
+  useEffect(() => {
+    if (!filterAddressRef.current) return;
+    filterAddressRef.current.style.maxHeight = filterAddressOpen
+      ? filterAddressRef.current.scrollHeight + "px"
+      : "0px";
+  }, [filterAddressOpen]);
 
   // ===== Labels и категории =====
   const addressLabels = {
@@ -156,21 +198,21 @@ const addressRef = useRef(null);
   ];
 
 
-// Категория анимация
+// Категория анимация (плюс модалка)
 useEffect(() => {
-  if (!categoryRef.current) return;
-  categoryRef.current.style.maxHeight = isCategoryOpen
-    ? categoryRef.current.scrollHeight + "px"
+  if (!plusCategoryRef.current) return;
+  plusCategoryRef.current.style.maxHeight = plusCategoryOpen
+    ? plusCategoryRef.current.scrollHeight + "px"
     : "0px";
-}, [isCategoryOpen]);
+}, [plusCategoryOpen]);
 
-// Адрес анимация
+// Адрес анимация (плюс модалка)
 useEffect(() => {
-  if (!addressRef.current) return;
-  addressRef.current.style.maxHeight = isAddressOpen
-    ? addressRef.current.scrollHeight + "px"
+  if (!plusAddressRef.current) return;
+  plusAddressRef.current.style.maxHeight = plusAddressOpen
+    ? plusAddressRef.current.scrollHeight + "px"
     : "0px";
-}, [isAddressOpen]);
+}, [plusAddressOpen]);
 
 
 
@@ -650,30 +692,26 @@ useEffect(() => {
 
         {/* ===== Категория (Плюс модал) ===== */}
 <div className="select-wrapper">
-  <div
-    className="select-display"
-    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-  >
-    {adSelectedCategory ? categoryLabels[adSelectedCategory] : "Категорияны тандаңыз"}
-    <span className="arrow">{isCategoryOpen ? "▲" : "▼"}</span>
+  <div className="select-display" onClick={() => setPlusCategoryOpen(!plusCategoryOpen)}>
+    {plusSelectedCategory ? categoryLabels[plusSelectedCategory] : "Категорияны тандаңыз"}
+    <span className="arrow">{plusCategoryOpen ? "▲" : "▼"}</span>
   </div>
 
-  {isCategoryOpen && (
+  {plusCategoryOpen && (
     <div className="select-dropdown">
-      <div className="select-list">
-        {Object.entries(categoryLabels).map(([key, label]) => (
-          <div
-            className={`select-row ${adSelectedCategory === key ? "active" : ""}`}
-            key={key}
-            onClick={() => {
-              setAdSelectedCategory(key);
-              setIsCategoryOpen(false);
-            }}
-          >
-            {label}
-          </div>
-        ))}
-      </div>
+      {Object.entries(categoryLabels).map(([key, label]) => (
+        <div
+          key={key}
+          className={plusSelectedCategory === key ? "active select-row" : "select-row"}
+          onClick={() => {
+            setPlusSelectedCategory(key);
+            setFormData(prev => ({ ...prev, category: key }));
+            setPlusCategoryOpen(false);
+          }}
+        >
+          {label}
+        </div>
+      ))}
     </div>
   )}
 </div>
@@ -682,34 +720,29 @@ useEffect(() => {
 
         {/* ===== Адрес (Плюс модал) ===== */}
        <div className="select-wrapper">
-  <div
-    className="select-display"
-    onClick={() => setIsAddressOpen(!isAddressOpen)}
-  >
-    {adSelectedAddress ? addressLabels[adSelectedAddress] : "Адрес тандаңыз"}
-    <span className="arrow">{isAddressOpen ? "▲" : "▼"}</span>
+  <div className="select-display" onClick={() => setPlusAddressOpen(!plusAddressOpen)}>
+    {plusSelectedAddress ? addressLabels[plusSelectedAddress] : "Адрес тандаңыз"}
+    <span className="arrow">{plusAddressOpen ? "▲" : "▼"}</span>
   </div>
 
-  {isAddressOpen && (
+  {plusAddressOpen && (
     <div className="select-dropdown">
-      <div className="select-list">
-        {Object.entries(addressLabels).map(([key, label]) => (
-          <div
-            className={`select-row ${adSelectedAddress === key ? "active" : ""}`}
-            key={key}
-            onClick={() => {
-              setAdSelectedAddress(key);
-              setIsAddressOpen(false);
-            }}
-          >
-            {label}
-          </div>
-        ))}
-      </div>
+      {Object.entries(addressLabels).map(([key, label]) => (
+        <div
+          key={key}
+          className={plusSelectedAddress === key ? "active select-row" : "select-row"}
+          onClick={() => {
+            setPlusSelectedAddress(key);
+            setFormData(prev => ({ ...prev, address: key }));
+            setPlusAddressOpen(false);
+          }}
+        >
+          {label}
+        </div>
+      ))}
     </div>
   )}
 </div>
-
 
         {/* ===== Цена ===== */}
         <div className="input-group gr">
@@ -773,65 +806,52 @@ useEffect(() => {
       </div>
 
 {/* ===== Адрес ===== */}
-<div className="input-group gr" ref={addressRef}>
-  <label>Адрес</label>
-  <div className="select-wrapper">
-    <div
-      className={`select-display ${filterAddressOpen ? "open" : ""}`}
-      onClick={() => setFilterAddressOpen(!filterAddressOpen)}
-    >
-      {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
-      <span className="arrow">▼</span>
-    </div>
-
-    <div className={`select-dropdown ${filterAddressOpen ? "open" : ""}`}>
-      <div className="select-list">
-        {Object.keys(addressLabels).map((key) => (
-          <div
-            key={key}
-            className={`select-row ${filterSelectedAddress === key ? "active" : ""}`}
-            onClick={() => {
-              setFilterSelectedAddress(key);
-              setFilterAddressOpen(false);
-            }}
-          >
-            {addressLabels[key]}
-          </div>
-        ))}
-      </div>
-    </div>
+<div className="select-wrapper">
+  <div className="select-display" onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}>
+    {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
+    <span className="arrow">{filterCategoryOpen ? "▲" : "▼"}</span>
   </div>
+
+  {filterCategoryOpen && (
+    <div className="select-dropdown">
+      {Object.keys(categoryLabels).map(key => (
+        <div
+          key={key}
+          className={filterSelectedCategory === key ? "active select-row" : "select-row"}
+          onClick={() => {
+            setFilterSelectedCategory(key);
+            setFilterCategoryOpen(false);
+          }}
+        >
+          {categoryLabels[key]}
+        </div>
+      ))}
+    </div>
+  )}
 </div>
 
-{/* ===== Категория ===== */}
-<div className="input-group gr" ref={categoryRef}>
-  <label>Категория</label>
-  <div className="select-wrapper">
-    <div
-      className={`select-display ${filterCategoryOpen ? "open" : ""}`}
-      onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
-    >
-      {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
-      <span className="arrow">▼</span>
-    </div>
-
-    <div className={`select-dropdown ${filterCategoryOpen ? "open" : ""}`}>
-      <div className="select-list">
-        {Object.keys(categoryLabels).map((key) => (
-          <div
-            key={key}
-            className={`select-row ${filterSelectedCategory === key ? "active" : ""}`}
-            onClick={() => {
-              setFilterSelectedCategory(key);
-              setFilterCategoryOpen(false);
-            }}
-          >
-            {categoryLabels[key]}
-          </div>
-        ))}
-      </div>
-    </div>
+<div className="select-wrapper">
+  <div className="select-display" onClick={() => setFilterAddressOpen(!filterAddressOpen)}>
+    {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
+    <span className="arrow">{filterAddressOpen ? "▲" : "▼"}</span>
   </div>
+
+  {filterAddressOpen && (
+    <div className="select-dropdown">
+      {Object.keys(addressLabels).map(key => (
+        <div
+          key={key}
+          className={filterSelectedAddress === key ? "active select-row" : "select-row"}
+          onClick={() => {
+            setFilterSelectedAddress(key);
+            setFilterAddressOpen(false);
+          }}
+        >
+          {addressLabels[key]}
+        </div>
+      ))}
+    </div>
+  )}
 </div>
 
 

@@ -211,14 +211,14 @@
 }
 
 
-.category-dropdown::-webkit-scrollbar {
+.select-dropdown::-webkit-scrollbar {
 display: none;
 }
 
-.category-dropdown::-webkit-scrollbar-thumb {
+.select-dropdown::-webkit-scrollbar-thumb {
 display: none;
 }
-.category-dropdown::-webkit-scrollbar-track {
+.select-dropdown::-webkit-scrollbar-track {
 display: none;
 }
 
