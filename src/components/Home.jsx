@@ -340,7 +340,7 @@ const createAd = async () => {
       // Белгилеп коёбуз: бекер жарнама колдонулду
       await userRef.set({ hasFreeAd: true }, { merge: true });
 
-      showSuccess("Биринчи жарнамаңыз дароо чыкты!");
+      showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
     } else {
       // Экинчи жана кийинки жарнамалар — админге түшөт
       await db.collection("pendingAds").add({
