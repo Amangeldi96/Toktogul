@@ -307,83 +307,102 @@ useEffect(() => {
     e.target.value = null;
   };
 
-  // ===== Создание объявления =====
-  const createAd = async () => {
-  if (!formData.phone || !formData.category || !formData.desc) 
-    return showError("Сумасынан башкасын толтуруу зарыл!");
+
+//===== Жарнама берүү
+const createAd = async () => {
+  if (!formData.phone || !formData.category || !formData.desc)  
+    return showError("Бардык талааларды толтуруңуз!");
 
   if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
 
   setLoading(true);
 
   try {
-    // ===== АКЫСЫЗ 1 ЖОЛУНА ТЕКШЕРҮҮ =====
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
 
-    if (userDoc.exists && userDoc.data().hasFreeAd) {
-      setLoading(false);
-      return showError("Жарнама берүү үчүн админге байланышка чыгыныз!");
-    }
-
-    // ===== Жарнама сактоо =====
     const adData = {
       ...formData,
-      images: formData.images.filter(Boolean),
+      images: (formData.images || []).filter(Boolean),
       price: formData.price ? Number(formData.price) : 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       likes: 0,
       likedBy: [],
       views: 0,
       userId: user.uid,
+      userEmail: user.email || "",
     };
 
-    await db.collection("ads").add(adData);
+    if (!userDoc.exists || !userDoc.data().hasFreeAd) {
+      // Биринчи жарнама — дароо чыгат
+      await db.collection("ads").add(adData);
 
-    // ===== Эми белгилеп коебуз: бир жолу колдонду =====
-    await userRef.set({ hasFreeAd: true }, { merge: true });
+      // Белгилеп коёбуз: бекер жарнама колдонулду
+      await userRef.set({ hasFreeAd: true }, { merge: true });
 
-    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
-
-
-      // Очистка формы и localStorage
-      setFormData({ 
-  phone: "", 
-  category: "", 
-  address: "",   // ← кошуу керек
-  price: "", 
-  desc: "", 
-  images: [null, null, null, null, null] 
-});
-      setPlusSelectedCategory(""); // ← кошуу
-      setPlusSelectedAddress("");  // ← кошуу
-      localStorage.removeItem("newAdImages");
-      setModalOpen(false);
-
-      // Перезагрузка последних объявлений
-      const snapshot = await db.collection("ads").orderBy("timestamp", "desc").limit(20).get();
-      const adsData = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        const images = Array.isArray(data.images) ? data.images : data.images ? [data.images] : [];
-        return {
-          id: doc.id,
-          ...data,
-          firstImg: images[0] || CanvasImg,
-          images,
-          timestamp: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : Date.now(),
-          categoryName: categoryLabels[data.category] || data.category,
-          descText: data.desc?.length > 100 ? data.desc.substring(0, 100) + "..." : data.desc || "",
-        };
+      showSuccess("Биринчи жарнамаңыз дароо чыкты!");
+    } else {
+      // Экинчи жана кийинки жарнамалар — админге түшөт
+      await db.collection("pendingAds").add({
+        ...adData,
+        status: "pending",
       });
-      setAllAdsOriginal(adsData);
-      setAllAds(adsData);
-    } catch (error) {
-      console.error("Ошибка создания объявления:", error);
-      showError("Не удалось создать объявление. Попробуйте снова.");
-    } finally {
-      setLoading(false);
+
+      showSuccess("Жарнама админге жөнөтүлдү, ырастоону күтүңүз!");
     }
-  };
+
+    // ===== Очистка формы жана localStorage
+    setFormData({ 
+      phone: "", 
+      category: "", 
+      address: "",   // ← кошуу керек
+      price: "", 
+      desc: "", 
+      images: [null, null, null, null, null] 
+    });
+    setPlusSelectedCategory(""); 
+    setPlusSelectedAddress("");  
+    localStorage.removeItem("newAdImages");
+    setModalOpen(false);
+
+    // ===== Перезагрузка последних объявлений
+    const snapshot = await db.collection("ads")
+      .orderBy("timestamp", "desc")
+      .limit(20)
+      .get();
+
+    const adsData = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      const images = Array.isArray(data.images)
+        ? data.images
+        : data.images
+        ? [data.images]
+        : [];
+      return {
+        id: doc.id,
+        ...data,
+        firstImg: images[0] || CanvasImg,
+        images,
+        timestamp: data.timestamp?.toDate
+          ? data.timestamp.toDate().getTime()
+          : Date.now(),
+        categoryName: categoryLabels[data.category] || data.category,
+        descText: data.desc?.length > 100
+          ? data.desc.substring(0, 100) + "..."
+          : data.desc || "",
+      };
+    });
+
+    setAllAdsOriginal(adsData);
+    setAllAds(adsData);
+
+  } catch (error) {
+    console.error("Ошибка создания объявления:", error);
+    showError("Не удалось создать объявление. Попробуйте снова.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ===== Likes и избранное =====
   const toggleLike = async (adId) => {
