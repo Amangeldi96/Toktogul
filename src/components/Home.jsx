@@ -20,7 +20,8 @@ import flowersImg from "./img/flowers.png";
 import phoneImg from "./img/phone.png";
 import CanvasImg from "./img/Canvas.svg";
 // === Firebase ===
-import { db } from "./Firebase.js";
+import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
+import { auth, db } from "./Firebase";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import "firebase/compat/auth";
@@ -133,6 +134,12 @@ export default function Home() {
     setFilterSelectedAddress(address);
     setFilterAddressOpen(false);
   };
+
+
+
+	
+
+
 
   // ===== useEffect анимациялар =====
   useEffect(() => {
@@ -302,25 +309,42 @@ useEffect(() => {
 
   // ===== Создание объявления =====
   const createAd = async () => {
-    if (!formData.phone || !formData.category || !formData.desc) return showError("Сумасынан башкасын толтуруу зарыл!");
-    if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
+  if (!formData.phone || !formData.category || !formData.desc) 
+    return showError("Сумасынан башкасын толтуруу зарыл!");
 
-    setLoading(true);
+  if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
 
-    try {
-      const adData = {
-        ...formData,
-        images: formData.images.filter(Boolean),
-        price: formData.price ? Number(formData.price) : 0,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        likes: 0,
-        likedBy: [],
-        views: 0,
-        userId: user.uid,
-      };
+  setLoading(true);
 
-      await db.collection("ads").add(adData);
-      showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
+  try {
+    // ===== АКЫСЫЗ 1 ЖОЛУНА ТЕКШЕРҮҮ =====
+    const userRef = db.collection("users").doc(user.uid);
+    const userDoc = await userRef.get();
+
+    if (userDoc.exists && userDoc.data().hasFreeAd) {
+      setLoading(false);
+      return showError("Жарнама берүү үчүн админге байланышка чыгыныз!");
+    }
+
+    // ===== Жарнама сактоо =====
+    const adData = {
+      ...formData,
+      images: formData.images.filter(Boolean),
+      price: formData.price ? Number(formData.price) : 0,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      likes: 0,
+      likedBy: [],
+      views: 0,
+      userId: user.uid,
+    };
+
+    await db.collection("ads").add(adData);
+
+    // ===== Эми белгилеп коебуз: бир жолу колдонду =====
+    await userRef.set({ hasFreeAd: true }, { merge: true });
+
+    showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
+
 
       // Очистка формы и localStorage
       setFormData({ 

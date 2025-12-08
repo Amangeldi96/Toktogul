@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
-import { db } from "./Firebase";
+import { db } from "./Firebase";	
 import "./css/profileStyle.css";
 
 import Username from "./Username"; // ✅ МІНДЕТТҮҮ!!!
@@ -20,20 +20,37 @@ export default function Profile({ onClose }) {
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
-	const approveAd = async (id) => {
-  await db.collection("ads").doc(id).update({ status: "approved" });
-};
-
-const rejectAd = async (id) => {
-  await db.collection("ads").doc(id).update({ status: "rejected" });
-};
-const [ads, setAds] = useState([]);
-
-  const [showMyAdsModal, setShowMyAdsModal] = useState(false); // ✅ Менин жарнамам модалкасы
+  const [ads, setAds] = useState([]);
+  const [showMyAdsModal, setShowMyAdsModal] = useState(false); 
   const [role, setRole] = useState("user"); // ✅ роль коштук
 
   const auth = firebase.auth();
 
+  // ===== Админ функциялары =====
+  const approveAd = async (id) => {
+    const adRef = db.collection("pendingAds").doc(id);
+    const adDoc = await adRef.get();
+
+    if (adDoc.exists) {
+      const adData = adDoc.data();
+
+      // "ads" коллекциясына көчүрүү
+      await db.collection("ads").add({
+        ...adData,
+        status: "approved",
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // pendingAds'тен өчүрүү
+      await adRef.delete();
+    }
+  };
+
+  const rejectAd = async (id) => {
+    await db.collection("pendingAds").doc(id).update({ status: "rejected" });
+  };
+
+  // ===== Колдонуучу абалын угуу =====
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
@@ -54,6 +71,7 @@ const [ads, setAds] = useState([]);
     return () => unsub();
   }, []);
 
+  // ===== Success/Error таймер =====
   useEffect(() => {
     if (successMessage) {
       const t = setTimeout(() => setSuccessMessage(""), 4000);
@@ -68,18 +86,31 @@ const [ads, setAds] = useState([]);
     }
   }, [error]);
 
+  // ===== Админ үчүн pendingAds угуу =====
+  useEffect(() => {
+    if (role === "admin") {
+      const unsub = db.collection("pendingAds").onSnapshot(snapshot => {
+        const adsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAds(adsData);
+      });
+      return () => unsub();
+    }
+  }, [role]);
 
+  // ===== Колдонуучу үчүн өзүнүн жарнамаларын угуу =====
+  useEffect(() => {
+    if (user && role === "user") {
+      const unsub = db.collection("ads")
+        .where("userId", "==", user.uid)
+        .onSnapshot(snapshot => {
+          const myAds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setAds(myAds);
+        });
+      return () => unsub();
+    }
+  }, [user, role]);
 
-useEffect(() => {
-  const unsub = db.collection("ads").onSnapshot(snapshot => {
-    const adsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setAds(adsData);
-  });
-  return () => unsub();
-}, []);
-
-
-
+  // ===== Signup/Login/Logout =====
   const clearMessages = () => {
     setError("");
     setSuccessMessage("");
@@ -97,20 +128,16 @@ useEffect(() => {
     }
     try {
       const u = await auth.createUserWithEmailAndPassword(email, password);
-      // ✅ роль коштук
       await db.collection("users").doc(u.user.uid).set({ 
         name, 
         email, 
-        role: "user" // демейки user, админди кол менен өзгөртөсүң
+        role: "user" // демейки user
       });
       await u.user.updateProfile({ displayName: name });
 
       setSuccessMessage("Сиз ийгиликтүү катталдыңыз!");
       setTab("login");
-      setName("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+      setName(""); setEmail(""); setPassword(""); setConfirmPassword("");
     } catch (e) {
       setError(e.message);
     }
@@ -169,6 +196,44 @@ useEffect(() => {
     );
   }
 
+
+	 // ✅ Админ панель
+  if (user && tab === "admin" && role === "admin") {
+    return (
+      <div className="admin-panel">
+        <button className="prf-close-btn" onClick={() => setTab("profile")}>×</button>
+        <h2>Админ</h2>
+
+        {ads.length === 0 ? (
+          <p className="no-ads-text">Азырынча жарнама жок</p>
+        ) : (
+          <div className="admin-ads-list">
+            {ads.map(ad => (
+              <div key={ad.id} className="admin-ad-card">
+                {ad.imageUrl && (
+                  <img className="admin-ad-img" src={ad.imageUrl} alt="ad" />
+                )}
+                <h3 className="admin-ad-title">{ad.title}</h3>
+                <p className="admin-ad-desc">{ad.description}</p>
+                <p className="admin-ad-user">Автор: {ad.userEmail}</p>
+
+                <div className="admin-ad-btns">
+                  <button className="approve" onClick={() => approveAd(ad.id)}>
+                    Ырастоо
+                  </button>
+                  <button className="reject" onClick={() => rejectAd(ad.id)}>
+                    Четке кагуу
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+
  
 
   return (
@@ -219,36 +284,40 @@ useEffect(() => {
   <div className="admin-panel">
     <button className="prf-close-btn" onClick={() => setTab("profile")}>×</button>
     <h2>Админ</h2>
-    <p>Бул жерде жарнамаларды ырастоо/четке кагуу болот.</p>
 
-    {/* Жарнамалардын контейнери */}
-    {ads.length > 0 ? (
-      <div className="admin-ads-list">
-        {ads.map(ad => (
-          <div key={ad.id} className="admin-ad-card">
-            {ad.imageUrl && (
-              <img className="admin-ad-img" src={ad.imageUrl} alt="ad" />
-            )}
-            <h3 className="admin-ad-title">{ad.title}</h3>
-            <p className="admin-ad-desc">{ad.description}</p>
-            <p className="admin-ad-user">Автор: {ad.userEmail}</p>
-            <div className="admin-ad-btns">
-              <button className="approve" onClick={() => approveAd(ad.id)}>
-                Ырастоо
-              </button>
-              <button className="reject" onClick={() => rejectAd(ad.id)}>
-                Четке кагуу
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
+    {/* ФИЛЬТР – бош жарнамаларды жашырабыз */}
+    {ads.filter(ad => ad.title && ad.description).length === 0 ? (
       <p className="no-ads-text">Азырынча жарнама жок</p>
-    )}
+    ) : (
+      <div className="admin-ads-list">
+        {ads
+          .filter(ad => ad.title && ad.description) // ← бош документтер жок
+          .map(ad => (
+            <div key={ad.id} className="admin-ad-card">
 
+              {ad.imageUrl && (
+                <img className="admin-ad-img" src={ad.imageUrl} alt="ad" />
+              )}
+
+              <h3 className="admin-ad-title">{ad.title}</h3>
+              <p className="admin-ad-desc">{ad.description}</p>
+              <p className="admin-ad-user">Автор: {ad.userEmail}</p>
+
+              <div className="admin-ad-btns">
+                <button className="approve" onClick={() => approveAd(ad.id)}>
+                  Ырастоо
+                </button>
+                <button className="reject" onClick={() => rejectAd(ad.id)}>
+                  Четке кагуу
+                </button>
+              </div>
+            </div>
+          ))}
+      </div>
+    )}
   </div>
 )}
+
 
 
 
