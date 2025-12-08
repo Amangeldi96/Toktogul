@@ -46,9 +46,9 @@ export default function Profile({ onClose }) {
     }
   };
 
-  const rejectAd = async (id) => {
-    await db.collection("pendingAds").doc(id).update({ status: "rejected" });
-  };
+const rejectAd = async (id) => {
+  await db.collection("pendingAds").doc(id).delete();
+};
 
   // ===== Колдонуучу абалын угуу =====
   useEffect(() => {
