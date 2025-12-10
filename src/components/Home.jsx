@@ -307,10 +307,9 @@ useEffect(() => {
     e.target.value = null;
   };
 
-
 //===== Жарнама берүү
 const createAd = async () => {
-  if (!formData.phone || !formData.category || !formData.desc)  
+  if (!formData.phone || !formData.category || !formData.desc)
     return showError("Бардык талааларды толтуруңуз!");
 
   if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
@@ -318,6 +317,10 @@ const createAd = async () => {
   setLoading(true);
 
   try {
+    // 🎯 Ким админ?
+    const adminEmail = "Amangeldi-9696@mail.ru";
+    const isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
 
@@ -330,79 +333,62 @@ const createAd = async () => {
       likedBy: [],
       views: 0,
       userId: user.uid,
-      userEmail: user.email || "",
+      userEmail: user.email,
     };
 
-    if (!userDoc.exists || !userDoc.data().hasFreeAd) {
-      // Биринчи жарнама — дароо чыгат
+    // ====================================
+    // 1) АДМИН → ТИКЕЛЕЙ ADS'КЕ ЧЫГАТ
+    // ====================================
+    if (isAdmin) {
       await db.collection("ads").add(adData);
+      showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
+    }
 
-      // Белгилеп коёбуз: бекер жарнама колдонулду
+    // ====================================
+    // 2) Жөнөкөй колдонуучу — БИРИНЧИ ЖАРНАМА ТҮЗ эле ads
+    // ====================================
+    else if (!userDoc.exists || !userDoc.data().hasFreeAd) {
+      await db.collection("ads").add(adData);
       await userRef.set({ hasFreeAd: true }, { merge: true });
+      showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
+    }
 
-      showSuccess("Жарнамаңыз ийгиликтүү жөнөтүлдү!");
-    } else {
-      // Экинчи жана кийинки жарнамалар — админге түшөт
+    // ====================================
+    // 3) Андан кийинки жарнамалар → pendingAds
+    // ====================================
+    else {
       await db.collection("pendingAds").add({
         ...adData,
         status: "pending",
       });
-
-      showSuccess("Жарнама админге жөнөтүлдү, чыгаруу үчүн админге байланышыңыз");
+      showSuccess("Жарнама админге жөнөтүлдү.");
     }
 
-    // ===== Очистка формы жана localStorage
-    setFormData({ 
-      phone: "", 
-      category: "", 
-      address: "",   // ← кошуу керек
-      price: "", 
-      desc: "", 
-      images: [null, null, null, null, null] 
+    // Форманы тазалоо
+    setFormData({
+      phone: "",
+      category: "",
+      address: "",
+      price: "",
+      desc: "",
+      images: [null, null, null, null, null],
     });
-    setPlusSelectedCategory(""); 
-    setPlusSelectedAddress("");  
+
+    setPlusSelectedCategory("");
+    setPlusSelectedAddress("");
     localStorage.removeItem("newAdImages");
     setModalOpen(false);
 
-    // ===== Перезагрузка последних объявлений
-    const snapshot = await db.collection("ads")
-      .orderBy("timestamp", "desc")
-      .limit(20)
-      .get();
-
-    const adsData = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      const images = Array.isArray(data.images)
-        ? data.images
-        : data.images
-        ? [data.images]
-        : [];
-      return {
-        id: doc.id,
-        ...data,
-        firstImg: images[0] || CanvasImg,
-        images,
-        timestamp: data.timestamp?.toDate
-          ? data.timestamp.toDate().getTime()
-          : Date.now(),
-        categoryName: categoryLabels[data.category] || data.category,
-        descText: data.desc?.length > 100
-          ? data.desc.substring(0, 100) + "..."
-          : data.desc || "",
-      };
-    });
-
-    setAllAdsOriginal(adsData);
-    setAllAds(adsData);
-
   } catch (error) {
     console.error("Ошибка создания объявления:", error);
-    showError("Не удалось создать объявление. Попробуйте снова.");
+    showError("Жарнама түзүүдө ката кетти!");
   } finally {
     setLoading(false);
   }
 };
+
+
+
 
   // ===== Likes и избранное =====
   const toggleLike = async (adId) => {
