@@ -59,6 +59,16 @@ export default function Home() {
   const plusCategoryRef = useRef(null);
   const plusAddressRef = useRef(null);
   const filterCategoryRef = useRef(null);
+
+	const resetFilter = () => {
+  setFilterSelectedCategory(null);
+  setFilterSelectedAddress(null);
+
+  setSelectedCategory(null);
+  setSelectedAddress(null);
+};
+
+
   const filterAddressRef = useRef(null);
   const touchStartRef = useRef(0);
   const dropdownRef = useRef(null);
@@ -126,14 +136,18 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, address }));
     setPlusAddressOpen(false);
   };
-  const handleFilterSelectCategory = (category) => {
-    setFilterSelectedCategory(category);
-    setFilterCategoryOpen(false);
-  };
-  const handleFilterSelectAddress = (address) => {
-    setFilterSelectedAddress(address);
-    setFilterAddressOpen(false);
-  };
+const handleFilterSelectCategory = (category) => {
+  setFilterSelectedCategory(category); // модалкадагы текст үчүн
+  setSelectedCategory(category);       // негизги фильтр иштеши үчүн
+  setFilterCategoryOpen(false);
+};
+
+const handleFilterSelectAddress = (address) => {
+  setFilterSelectedAddress(address); // модалкадагы текст үчүн
+  setSelectedAddress(address);       // негизги фильтр иштеши үчүн
+  setFilterAddressOpen(false);
+};
+
 
 
 
@@ -874,6 +888,8 @@ const filteredAds = useMemo(() => {
   </div>
 )}
 
+
+
 {/* ===== Модалка фильтра ===== */}
 {filterModalOpen && (
   <div
@@ -895,23 +911,31 @@ const filteredAds = useMemo(() => {
         <div style={{ width: "36px" }}></div>
       </div>
 
-{/* ===== Адрес ===== */}
+{/* ===== Категория ===== */}
 <div className="select-wrapper">
-  <div className="select-display" onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}>
-    {filterSelectedCategory ? categoryLabels[filterSelectedCategory] : "Категорияны танда"}
+  <div
+    className="select-display"
+    onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
+  >
+    {filterSelectedCategory
+      ? categoryLabels[filterSelectedCategory]
+      : "Категорияны танда"}
     <span className="arrow">{filterCategoryOpen ? "▲" : "▼"}</span>
   </div>
 
   {filterCategoryOpen && (
     <div className="select-dropdown">
-      {Object.keys(categoryLabels).map(key => (
+      {Object.keys(categoryLabels).map((key) => (
         <div
           key={key}
-          className={filterSelectedCategory === key ? "active select-row" : "select-row"}
-         onClick={() => {
-  setSelectedCategory(key);
-  setFilterCategoryOpen(false);
-}}
+          className={
+            filterSelectedCategory === key ? "active select-row" : "select-row"
+          }
+          onClick={() => {
+            setFilterSelectedCategory(key); // Модалкадагы текст жаңылат
+            setSelectedCategory(key);       // Негизги фильтр иштейт
+            setFilterCategoryOpen(false);
+          }}
         >
           {categoryLabels[key]}
         </div>
@@ -920,22 +944,31 @@ const filteredAds = useMemo(() => {
   )}
 </div>
 
+{/* ===== Адрес ===== */}
 <div className="select-wrapper">
-  <div className="select-display" onClick={() => setFilterAddressOpen(!filterAddressOpen)}>
-    {filterSelectedAddress ? addressLabels[filterSelectedAddress] : "Адрес танда"}
+  <div
+    className="select-display"
+    onClick={() => setFilterAddressOpen(!filterAddressOpen)}
+  >
+    {filterSelectedAddress
+      ? addressLabels[filterSelectedAddress]
+      : "Адрес танда"}
     <span className="arrow">{filterAddressOpen ? "▲" : "▼"}</span>
   </div>
 
   {filterAddressOpen && (
     <div className="select-dropdown">
-      {Object.keys(addressLabels).map(key => (
+      {Object.keys(addressLabels).map((key) => (
         <div
           key={key}
-          className={filterSelectedAddress === key ? "active select-row" : "select-row"}
-onClick={() => {
-  setSelectedAddress(key);
-  setFilterAddressOpen(false);
-}}
+          className={
+            filterSelectedAddress === key ? "active select-row" : "select-row"
+          }
+          onClick={() => {
+            setFilterSelectedAddress(key); // Модалкадагы текст жаңылат
+            setSelectedAddress(key);       // Негизги фильтр иштейт
+            setFilterAddressOpen(false);
+          }}
         >
           {addressLabels[key]}
         </div>
@@ -943,6 +976,7 @@ onClick={() => {
     </div>
   )}
 </div>
+
 
 
 
@@ -968,6 +1002,7 @@ onClick={() => {
 
       {/* ===== Кнопка ===== */}
       <div className="actions">
+								 <button className="btn-green" onClick={resetFilter}>Жоюу</button>
         <button className="btn-green" onClick={() => setFilterModalOpen(false)}>Көрсөтүү</button>
       </div>
     </div>
