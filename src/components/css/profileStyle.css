@@ -73,7 +73,10 @@ text-align: center;
 }
 
 .prf-tab:hover {
-color: #1a202c;
+color: #ffffff;
+}
+.prf-tab:active {
+color: #ffffff;
 }
 
 .prf-active {
@@ -125,7 +128,7 @@ transition: background-color 0.2s, transform 0.1s;
 }
 
 .prf-btn:hover {
-background-color: #434199;
+background-color: #8b8ad1;
 }
 
 .prf-btn:active {
@@ -170,7 +173,7 @@ color: #6b7280;
 }
 
 .prf-password-toggle:hover {
-color: #1f2937;
+color: #697483;
 }
 
 .prf-buttons {
