@@ -1002,8 +1002,8 @@ const filteredAds = useMemo(() => {
 
       {/* ===== Кнопка ===== */}
       <div className="actions">
-								 <button className="btn-green" onClick={resetFilter}>Жоюу</button>
         <button className="btn-green" onClick={() => setFilterModalOpen(false)}>Көрсөтүү</button>
+				 <button className="btn-green" onClick={resetFilter}>Жоюу</button>
       </div>
     </div>
   </div>
