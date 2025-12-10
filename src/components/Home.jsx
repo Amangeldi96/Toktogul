@@ -31,20 +31,57 @@ import "firebase/compat/storage";
 const formatPrice = (value) =>
   value ? `${value.toLocaleString("ru-RU")} сом` : "Келишим түрүндө";
 
+// ===== Кыргыз номерин текшерүү функциясы =====
+const isValidKyrgyzPhone = (phone) => {
+  if (!phone) return false;
+  const digits = phone.replace(/\D/g, "");
+  return digits.length === 10 && digits.startsWith("0");
+};
+
+
 const formatPhoneDisplay = (phone) => {
   if (!phone) return "";
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("996") && digits.length === 12) return "0" + digits.slice(3);
-  if (digits.length === 9) return "0" + digits;
+
+  let digits = phone.replace(/\D/g, ""); // Сан гана
+
+  // Эгер +996700604604 форматы менен кирсе → 0700604604 кылып чыгарабыз
+  if (digits.length === 12 && digits.startsWith("996")) {
+    return "0" + digits.slice(3); // 996700604604 → 0700604604
+  }
+
+  // Эгер 700604604 (9 сан) болсо → 0700604604
+  if (digits.length === 9) {
+    return "0" + digits;
+  }
+
+  // Эгер 0700604604 (10 сан) болсо → ошол боюнча кайтара берет
   return digits;
 };
 
+
 const createWhatsAppLink = (phone) => {
   if (!phone) return "#";
+
   let digits = phone.replace(/\D/g, "");
-  if (digits.length === 9 && digits.startsWith("0")) digits = "996" + digits.slice(1);
+
+  // Эгер 0700604604 форматы болсо
+  if (digits.length === 10 && digits.startsWith("0")) {
+    digits = "996" + digits.slice(1);  // 0'ды алып, +996 кошобуз
+  }
+
+  // Эгер 700604604 (9 сан) болсо
+  if (digits.length === 9) {
+    digits = "996" + digits; // Башына 996 кошобуз
+  }
+
+  // Эгер +996700604604 болсо — ошол боюнча кете берет
+  if (digits.length === 12 && digits.startsWith("996")) {
+    // өзгөртпөйбүз
+  }
+
   return `https://wa.me/${digits}`;
 };
+
 
 const renderColumns = (ads, numColumns) => {
   const columns = Array.from({ length: numColumns }, () => []);
@@ -325,15 +362,25 @@ useEffect(() => {
 const createAd = async () => {
   if (!formData.phone || !formData.category || !formData.desc)
     return showError("Бардык талааларды толтуруңуз!");
+	  // 📞 Кыргыз номерин текшерүү
+  if (!isValidKyrgyzPhone(formData.phone))
+    return showError("Телефон номерди туура толтурунуз(мисалы: 0700604604)");
 
   if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
 
   setLoading(true);
 
   try {
-    // 🎯 Ким админ?
-    const adminEmail = "Amangeldi-9696@mail.ru";
-    const isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+// 🎯 Админдердин тизмеси
+const adminEmails = [
+  "Amangeldi-9696@mail.ru",
+  "smagilov91@gmail.com"
+];
+
+// 🎯 Учурактуу колдонуучу админби?
+const isAdmin =
+  user.email &&
+  adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
@@ -983,7 +1030,7 @@ const filteredAds = useMemo(() => {
       {/* ===== Цена ===== */}
       <div className="price-row" style={{ display: "flex", gap: "10px" }}>
         <div className="input-group" style={{ flex: 1 }}>
-          <label>Цена от</label>
+          <label>Мин сумма</label>
           <input
             type="number"
             value={filterPrice.min}
@@ -991,7 +1038,7 @@ const filteredAds = useMemo(() => {
           />
         </div>
         <div className="input-group" style={{ flex: 1 }}>
-          <label>Цена до</label>
+          <label>Мах сумма</label>
           <input
             type="number"
             value={filterPrice.max}
