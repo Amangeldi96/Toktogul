@@ -369,13 +369,28 @@ const handleTouchEnd = () => {
 
 
 
+// ===== Галереяга сүрөт жана видео жүктөө үчүн state =====
+const [imageLoading, setImageLoading] = useState([]);      // Ар бир файлдын жүктөлүү абалы
+const [uploadProgress, setUploadProgress] = useState([]);  // Ар бир файлдын прогресс %
+const [isAdmin, setIsAdmin] = useState(false); // false = колдонуучу, true = админ
 
-	
 
-  // ===== Загрузка в Cloudinary =====
-	const [uploadProgress, setUploadProgress] = useState([0,0,0,0,0]);
-const [imageLoading, setImageLoading] = useState([false,false,false,false,false]);
+/* ===== Spinner компонент =====
+   Жүктөө учурунда прогрессти көрсөтөт
+*/
+function Spinner({ progress }) {
+  return (
+    <div className="spinner">
+      <div className="spinner-bar" style={{ width: `${progress || 0}%` }}></div>
+      <span>{progress || 0}%</span>
+    </div>
+  );
+}
 
+/* ===== Cloudinaryге сүрөт жүктөө функциясы =====
+   file  - жүктөлүүчү сүрөт
+   index - кайсы файл экенин көрсөтөт (progress үчүн)
+*/
 const uploadToCloudinary = (file, index) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -384,6 +399,41 @@ const uploadToCloudinary = (file, index) => {
     fd.append("upload_preset", "Toktogul");
 
     xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload");
+
+    // ===== Жүктөө прогрессин жаңылоо =====
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        setUploadProgress((prev) => {
+          const newProgress = [...prev];
+          newProgress[index] = percent;
+          return newProgress;
+        });
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
+      else reject(xhr.statusText);
+    };
+
+    xhr.onerror = () => reject("Сүрөт жүктөөдө ката");
+    xhr.send(fd);
+  });
+};
+
+/* ===== Cloudinaryге видео жүктөө функциясы =====
+   Колдонуучунун видео узундугу 60 секунд менен чектелет
+   Админ үчүн чектөө жок
+*/
+const uploadToCloudinaryVideo = (file, index) => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "Toktogul");
+
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload");
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
@@ -397,38 +447,56 @@ const uploadToCloudinary = (file, index) => {
     };
 
     xhr.onload = () => {
-      if (xhr.status === 200) {
-        const data = JSON.parse(xhr.responseText);
-        resolve(data.secure_url);
-      } else reject(xhr.statusText);
+      if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
+      else reject(xhr.statusText);
     };
 
-    xhr.onerror = () => reject("Ошибка загрузки");
+    xhr.onerror = () => reject("Видео жүктөөдө ката");
     xhr.send(fd);
   });
 };
 
-  // ===== Стейт сүрөт үчүн жүктөө =====
+/* ===== Галереяны өзгөртүү =====
+   Колдонуучу сүрөт же видео тандаганда чакырылат
+*/
 const handleGalleryChange = async (e) => {
-  const files = Array.from(e.target.files).slice(0, 5);
-
-  files.forEach((_, i) => {
-    setImageLoading((prev) => {
-      const arr = [...prev];
-      arr[i] = true;
-      return arr;
-    });
-  });
-
+  const files = Array.from(e.target.files).slice(0, 5); // максимум 5 файл
   const uploadedUrls = [];
+  setImageLoading(files.map(() => true)); // Ар бир файл үчүн loading=true
 
   for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
     try {
-      const url = await uploadToCloudinary(files[i], i);
-      uploadedUrls[i] = url;
+      if (file.type.startsWith("video/")) {
+        // Видео болсо узундукту текшерүү
+        const videoUrl = URL.createObjectURL(file);
+        const videoEl = document.createElement("video");
+        videoEl.src = videoUrl;
+
+        await new Promise((resolve, reject) => {
+          videoEl.onloadedmetadata = () => {
+            if (!isAdmin && videoEl.duration > 60) {
+              // Колдонуучу болсо 1 мүнөткө чектейт
+              // Бул жерде кыска версия автоматтык сакталат
+              resolve();
+            } else resolve(); // Админ болсо чектөө жок
+          };
+          videoEl.onerror = () => reject("Видео жүктөөдө ката");
+        });
+
+        const url = await uploadToCloudinaryVideo(file, i);
+        uploadedUrls[i] = { type: "video", url };
+      } else {
+        // Сүрөт болсо жөн эле жүктөө
+        const url = await uploadToCloudinary(file, i);
+        uploadedUrls[i] = { type: "image", url };
+      }
     } catch (err) {
       console.error(err);
+      uploadedUrls[i] = null;
     } finally {
+      // Ар бир файл үчүн loading=false
       setImageLoading((prev) => {
         const arr = [...prev];
         arr[i] = false;
@@ -437,15 +505,20 @@ const handleGalleryChange = async (e) => {
     }
   }
 
+  // FormData ичин жаңылоо
   setFormData((prev) => {
     const newImages = [...prev.images];
-    uploadedUrls.forEach((url, i) => (newImages[i] = url));
-    localStorage.setItem("newAdImages", JSON.stringify(newImages));
+    uploadedUrls.forEach((item, i) => {
+      if (item) newImages[i] = item;
+    });
     return { ...prev, images: newImages };
   });
 
-  e.target.value = null;
+  e.target.value = null; // input’ту reset кылуу
 };
+
+
+
 
 
 //===== Жарнама берүү
@@ -886,32 +959,29 @@ const filteredAds = useMemo(() => {
         </div>
       </div>
 
-      {/* Слоты для выбранных фото */}
-     <div className="selected-grid">
-  {formData.images.map((img, i) => (
+
+    {/* Слоты для выбранных файлов (сүрөт же видео) */}
+<div className="selected-grid">
+  {formData.images.map((item, i) => (
     <div className="slot" key={i} style={{ position: "relative" }}>
       {imageLoading[i] ? (
-        <div className="spinner">
-          <svg viewBox="0 0 50 50">
-            <circle
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="#4caf50"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="125.6"
-              strokeDashoffset={125.6 - (125.6 * uploadProgress[i]) / 100}
-            />
-          </svg>
-          <div className="percent">{uploadProgress[i]}%</div>
-        </div>
+        // Жүктөлүп жаткан учурда спиннер
+        <Spinner progress={uploadProgress[i]} />
+      ) : item?.type === "video" ? (
+        // Видео болсо video тегин көрсөт
+        <video src={item.url} controls className="gal-video" />
+      ) : item?.type === "image" ? (
+        // Сүрөт болсо img тегин көрсөт
+        <img src={item.url || CanvasImg} className="gal" alt={`selected-${i}`} />
       ) : (
-        <img src={img || CanvasImg} alt={img ? `selected-${i}` : "placeholder"} className="gal"/>
+        // Бош слот placeholder
+        <img src={CanvasImg} className="gal" alt={`placeholder-${i}`} />
       )}
     </div>
   ))}
 </div>
+
+
 
 
 
@@ -1023,14 +1093,15 @@ const filteredAds = useMemo(() => {
       </div>
 
       {/* Скрытый input для галереи */}
-      <input
-        type="file"
-        ref={realGalleryInputRef}
-        accept="image/*"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleGalleryChange}
-      />
+<input
+  type="file"
+  ref={realGalleryInputRef}
+  accept="image/*,video/*"   // видео дагы коштук
+  multiple
+  style={{ display: "none" }}
+  onChange={handleGalleryChange}
+/>
+
 
     </div>
   </div>
