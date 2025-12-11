@@ -1326,23 +1326,30 @@ const filteredAds = useMemo(() => {
     </div>
 
     {/* Галерея контейнер */}
-    <div className="gallery-inner">
-     <div
+    <div
   ref={galleryTrackRef}
   className="gallery-track"
   style={{
-    width: `${gallery.images.length * 100}vw`, // Бул керек!
+    width: `${gallery.images.length * 100}vw`,
     transform: `translateX(-${gallery.index * 100}vw)`,
     transition: "transform 0.3s ease",
   }}
 >
-  {gallery.images.map((img, i) => (
+  {gallery.images.map((item, i) => (
     <div key={i} className="gallery-slide">
-      <img src={img || CanvasImg} alt={`Фото ${i + 1}`} className="gallery-img" />
+      {item.type === "video" ? (
+        <video
+          src={item.url}
+          className="gallery-video"
+          controls
+          autoPlay={false}
+        />
+      ) : (
+        <img src={item.url || CanvasImg} alt={`Фото ${i + 1}`} className="gallery-img" />
+      )}
     </div>
   ))}
-      </div>
-    </div>
+</div>
 
     {/* Сол стрелка */}
     <button className="gallery-btn left" onClick={(e) => {
