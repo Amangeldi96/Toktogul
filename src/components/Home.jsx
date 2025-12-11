@@ -190,6 +190,7 @@ const handleFilterSelectAddress = (address) => {
 
 
 
+
 	
 
 
@@ -372,40 +373,80 @@ const handleTouchEnd = () => {
 	
 
   // ===== Загрузка в Cloudinary =====
-  const uploadToCloudinary = async (file) => {
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "Toktogul");
+	const [uploadProgress, setUploadProgress] = useState([0,0,0,0,0]);
+const [imageLoading, setImageLoading] = useState([false,false,false,false,false]);
 
-      const res = await fetch("https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.error) return null;
-      return data.secure_url;
-    } catch (error) {
-      console.error("Ошибка загрузки в Cloudinary:", error);
-      return null;
-    }
-  };
+const uploadToCloudinary = (file, index) => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "Toktogul");
 
-  const handleGalleryChange = async (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    const uploadedUrls = [];
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload");
 
-    for (let file of files) {
-      const url = await uploadToCloudinary(file);
-      if (url) uploadedUrls.push(url);
-    }
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        setUploadProgress((prev) => {
+          const newProgress = [...prev];
+          newProgress[index] = percent;
+          return newProgress;
+        });
+      }
+    };
 
-    setFormData((prev) => {
-      const newImages = [...prev.images];
-      uploadedUrls.forEach((url, i) => (newImages[i] = url));
-      localStorage.setItem("newAdImages", JSON.stringify(newImages));
-      return { ...prev, images: newImages };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        resolve(data.secure_url);
+      } else reject(xhr.statusText);
+    };
+
+    xhr.onerror = () => reject("Ошибка загрузки");
+    xhr.send(fd);
+  });
+};
+
+  // ===== Стейт сүрөт үчүн жүктөө =====
+const handleGalleryChange = async (e) => {
+  const files = Array.from(e.target.files).slice(0, 5);
+
+  files.forEach((_, i) => {
+    setImageLoading((prev) => {
+      const arr = [...prev];
+      arr[i] = true;
+      return arr;
     });
+  });
 
-    e.target.value = null;
-  };
+  const uploadedUrls = [];
+
+  for (let i = 0; i < files.length; i++) {
+    try {
+      const url = await uploadToCloudinary(files[i], i);
+      uploadedUrls[i] = url;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setImageLoading((prev) => {
+        const arr = [...prev];
+        arr[i] = false;
+        return arr;
+      });
+    }
+  }
+
+  setFormData((prev) => {
+    const newImages = [...prev.images];
+    uploadedUrls.forEach((url, i) => (newImages[i] = url));
+    localStorage.setItem("newAdImages", JSON.stringify(newImages));
+    return { ...prev, images: newImages };
+  });
+
+  e.target.value = null;
+};
+
 
 //===== Жарнама берүү
 const createAd = async () => {
@@ -846,23 +887,34 @@ const filteredAds = useMemo(() => {
       </div>
 
       {/* Слоты для выбранных фото */}
-      <div className="selected-grid">
-        {formData.images.map((img, i) => (
-          <div className="slot" key={i}>
-            <div className="placeholder">
-              {loading && typeof img !== "string" ? (
-                <SkeletonLoader width="100%" height="100%" />
-              ) : (
-                <img
-                  className="gal"
-                  src={img || CanvasImg}
-                  alt={img ? `selected-${i}` : "placeholder"}
-                />
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+     <div className="selected-grid">
+  {formData.images.map((img, i) => (
+    <div className="slot" key={i} style={{ position: "relative" }}>
+      {imageLoading[i] ? (
+        <div className="spinner">
+          <svg viewBox="0 0 50 50">
+            <circle
+              cx="25"
+              cy="25"
+              r="20"
+              stroke="#4caf50"
+              strokeWidth="5"
+              fill="none"
+              strokeDasharray="125.6"
+              strokeDashoffset={125.6 - (125.6 * uploadProgress[i]) / 100}
+            />
+          </svg>
+          <div className="percent">{uploadProgress[i]}%</div>
+        </div>
+      ) : (
+        <img src={img || CanvasImg} alt={img ? `selected-${i}` : "placeholder"} className="gal"/>
+      )}
+    </div>
+  ))}
+</div>
+
+
+
 
       {/* ===== Информация ===== */}
       <div className="info-block">

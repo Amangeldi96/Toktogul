@@ -189,6 +189,7 @@ body {
   justify-content: center;
 }
 .slot {
+	position: relative; /* Прогресс бар үчүн */
   background: #f4f6f9;
   border-radius: 10px;
   height: 56px;
@@ -203,6 +204,43 @@ body {
   max-height: 100%;
   object-fit: contain; /* фото вписывается полностью, сохраняя пропорции */
 }
+
+
+.progress-bar {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  height: 6px;
+  background-color: green;
+  color: white;
+  font-size: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: auto;
+}
+
+.spinner svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.spinner .percent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+
 
 .desc-block {
   margin-top: 18px;
