@@ -855,17 +855,35 @@ const filteredAds = useMemo(() => {
           >
             {col.map(ad => (
               <div key={ad.id} className="card">
-                <div className="img">
-                  <img
-                    src={ad.images && ad.images[0] ? ad.images[0] : CanvasImg}
-                    className="card-img"
-                    alt={ad.descText || "Фото объявления"}
-                    onClick={() => {
-                      handleView(ad.id);
-                      openGallery(ad.images, 0);
-                    }}
-                  />
-                </div>
+<div className="img">
+  {ad.images && ad.images[0] ? (
+    ad.images[0].type === "image" ? (
+      <img
+        src={ad.images[0].url}
+        className="card-img"
+        alt={ad.descText || "Фото объявления"}
+        onClick={() => {
+          handleView(ad.id);
+          openGallery(ad.images, 0);
+        }}
+      />
+    ) : (
+      <video
+        className="card-img"
+        src={ad.images[0].url}
+        poster={CanvasImg} // placeholder сүрөт
+        muted
+        preload="metadata"
+        onClick={() => {
+          handleView(ad.id);
+          openGallery(ad.images, 0);
+        }}
+      />
+    )
+  ) : (
+    <img src={CanvasImg} className="card-img" alt="placeholder" />
+  )}
+</div>
 
                 <div className="body">
                   <div className="price">{formatPrice(ad.price)}</div>
