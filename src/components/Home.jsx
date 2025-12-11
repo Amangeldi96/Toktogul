@@ -188,6 +188,8 @@ const handleFilterSelectAddress = (address) => {
 
 
 
+
+
 	
 
 
@@ -315,12 +317,35 @@ useEffect(() => {
   const nextImage = () => setGallery((g) => ({ ...g, index: g.index + 1 < g.images.length ? g.index + 1 : 0 }));
   const prevImage = () => setGallery((g) => ({ ...g, index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1 }));
 
-  const handleTouchStart = (e) => (touchStartRef.current = e.touches[0].clientX);
-  const handleTouchEnd = (e) => {
-    const delta = e.changedTouches[0].clientX - touchStartRef.current;
-    if (delta > 50) prevImage();
-    else if (delta < -50) nextImage();
-  };
+const galleryRef = useRef(null);
+const swipe = useRef({ startX: 0 });
+
+const handleTouchStart = (e) => {
+  swipe.current.startX = e.touches[0].clientX;
+};
+
+const handleTouchEnd = (e) => {
+  const endX = e.changedTouches[0].clientX;
+  const diff = swipe.current.startX - endX;
+
+  if (diff > 50) {
+    setGallery(g => ({
+      ...g,
+      index: g.index < g.images.length - 1 ? g.index + 1 : 0
+    }));
+  }
+
+  if (diff < -50) {
+    setGallery(g => ({
+      ...g,
+      index: g.index > 0 ? g.index - 1 : g.images.length - 1
+    }));
+  }
+};
+
+
+
+	
 
   // ===== Загрузка в Cloudinary =====
   const uploadToCloudinary = async (file) => {
