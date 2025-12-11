@@ -188,7 +188,23 @@ const handleFilterSelectAddress = (address) => {
 
 
 
+function getVideoThumbnail(videoUrl, callback) {
+  const video = document.createElement("video");
+  video.src = videoUrl;
+  video.crossOrigin = "anonymous";
+  video.preload = "metadata";
+  video.muted = true;
 
+  video.addEventListener("loadeddata", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const thumbnail = canvas.toDataURL("image/png");
+    callback(thumbnail);
+  });
+}
 
 
 	
@@ -855,11 +871,24 @@ const filteredAds = useMemo(() => {
           >
             {col.map(ad => (
               <div key={ad.id} className="card">
+								
 <div className="img">
   {ad.images && ad.images[0] ? (
-    ad.images[0].type === "image" ? (
+    ad.images[0].type === "video" ? (
+<video
+  className="card-img"
+  src={ad.images[0].url}
+  poster={ad.images[0].thumbnail || CanvasImg} // 👈 thumbnail болсо ошону көрсөтөт
+  muted
+  preload="metadata"
+  onClick={() => {
+    handleView(ad.id);
+    openGallery(ad.images, 0);
+  }}
+/>
+    ) : (
       <img
-        src={ad.images[0].url}
+        src={ad.images[0]}
         className="card-img"
         alt={ad.descText || "Фото объявления"}
         onClick={() => {
@@ -867,23 +896,16 @@ const filteredAds = useMemo(() => {
           openGallery(ad.images, 0);
         }}
       />
-    ) : (
-      <video
-        className="card-img"
-        src={ad.images[0].url}
-        poster={CanvasImg} // placeholder сүрөт
-        muted
-        preload="metadata"
-        onClick={() => {
-          handleView(ad.id);
-          openGallery(ad.images, 0);
-        }}
-      />
     )
   ) : (
-    <img src={CanvasImg} className="card-img" alt="placeholder" />
+    <img
+      src={CanvasImg}
+      className="card-img"
+      alt="placeholder"
+    />
   )}
 </div>
+
 
                 <div className="body">
                   <div className="price">{formatPrice(ad.price)}</div>
