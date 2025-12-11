@@ -317,31 +317,55 @@ useEffect(() => {
   const nextImage = () => setGallery((g) => ({ ...g, index: g.index + 1 < g.images.length ? g.index + 1 : 0 }));
   const prevImage = () => setGallery((g) => ({ ...g, index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1 }));
 
-const galleryRef = useRef(null);
-const swipe = useRef({ startX: 0 });
+const galleryTrackRef = useRef(null);
+const startX = useRef(0);
+const isDragging = useRef(false);
+const currentX = useRef(0);
+const [index, setIndex] = useState(0);
+
 
 const handleTouchStart = (e) => {
-  swipe.current.startX = e.touches[0].clientX;
+  startX.current = e.touches[0].clientX;
+  isDragging.current = true;
 };
 
-const handleTouchEnd = (e) => {
-  const endX = e.changedTouches[0].clientX;
-  const diff = swipe.current.startX - endX;
+const handleTouchMove = (e) => {
+  if (!isDragging.current) return;
 
-  if (diff > 50) {
+  currentX.current = e.touches[0].clientX - startX.current;
+
+  // свайп учурунда сүрөт жылып турушу үчүн
+  galleryTrackRef.current.style.transition = "none";
+  galleryTrackRef.current.style.transform =
+    `translateX(calc(-${gallery.index * 100}vw + ${currentX.current}px))`;
+};
+
+const handleTouchEnd = () => {
+  isDragging.current = false;
+
+  const threshold = 50; // канча пикселден кийин сүрөт алмашат
+
+  galleryTrackRef.current.style.transition = "transform 0.3s ease";
+
+  if (currentX.current > threshold) {
+    // солго жылдырды
+    setGallery(g => ({
+      ...g,
+      index: g.index > 0 ? g.index - 1 : g.images.length - 1
+    }));
+  } else if (currentX.current < -threshold) {
+    // оңго жылдырды
     setGallery(g => ({
       ...g,
       index: g.index < g.images.length - 1 ? g.index + 1 : 0
     }));
   }
 
-  if (diff < -50) {
-    setGallery(g => ({
-      ...g,
-      index: g.index > 0 ? g.index - 1 : g.images.length - 1
-    }));
-  }
+  // кайра 0го кайтарабыз
+  currentX.current = 0;
 };
+
+
 
 
 
@@ -1160,47 +1184,65 @@ const filteredAds = useMemo(() => {
       )}
     </div>
 
- {/* ===== Галерея (слайдер) ===== */}
+
+
+{/* ===== Галерея (слайдер) ===== */}
 {gallery.open && gallery.images.length > 0 && (
-  <div className="gallery-modal" onClick={closeGallery}>
-    <div
-      className="gallery-inner"
-      onClick={e => e.stopPropagation()}
-      onTouchStart={handleTouchStart}
-      onTouchMove={() => {}}
-      onTouchEnd={handleTouchEnd}>
-				
-      <button className="gallery-close" onClick={closeGallery}>✕</button>
-      <img
-        className="gallery-img"
-        src={gallery.images[gallery.index] || CanvasImg}
-        alt={`Фото ${gallery.index + 1}`} />
-      <button
-        className="gallery-btn left"
-        onClick={() =>
-          setGallery(g => ({
-            ...g,
-            index: g.index > 0 ? g.index - 1 : g.images.length - 1
-          }))
-        } >       
-      </button>
-      <button
-        className="gallery-btn right"
-        onClick={() =>
-          setGallery(g => ({
-            ...g,
-            index: g.index < g.images.length - 1 ? g.index + 1 : 0
-          }))
-        }
-      >
-        
-      </button>
-      <div className="gallery-counter">
-        {gallery.index + 1} / {gallery.images.length}
+  <div
+    className="gallery-modal"
+    onTouchStart={handleTouchStart}
+    onTouchMove={handleTouchMove}
+    onTouchEnd={handleTouchEnd}
+  >
+    {/* X кнопка */}
+    <button className="gallery-close" onClick={closeGallery}>✕</button>
+
+    {/* Счетчик */}
+    <div className="gallery-counter">
+      {gallery.index + 1} / {gallery.images.length}
+    </div>
+
+    {/* Галерея контейнер */}
+    <div className="gallery-inner">
+     <div
+  ref={galleryTrackRef}
+  className="gallery-track"
+  style={{
+    width: `${gallery.images.length * 100}vw`, // Бул керек!
+    transform: `translateX(-${gallery.index * 100}vw)`,
+    transition: "transform 0.3s ease",
+  }}
+>
+  {gallery.images.map((img, i) => (
+    <div key={i} className="gallery-slide">
+      <img src={img || CanvasImg} alt={`Фото ${i + 1}`} className="gallery-img" />
+    </div>
+  ))}
       </div>
     </div>
+
+    {/* Сол стрелка */}
+    <button className="gallery-btn left" onClick={(e) => {
+      e.stopPropagation();
+      setGallery(g => ({
+        ...g,
+        index: g.index > 0 ? g.index - 1 : g.images.length - 1
+      }));
+    }}>‹</button>
+
+    {/* Оң стрелка */}
+    <button className="gallery-btn right" onClick={(e) => {
+      e.stopPropagation();
+      setGallery(g => ({
+        ...g,
+        index: g.index < g.images.length - 1 ? g.index + 1 : 0
+      }));
+    }}>›</button>
   </div>
 )}
+
+
+
 </div>
 	);
 }
