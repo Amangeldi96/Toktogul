@@ -188,23 +188,7 @@ const handleFilterSelectAddress = (address) => {
 
 
 
-function getVideoThumbnail(videoUrl, callback) {
-  const video = document.createElement("video");
-  video.src = videoUrl;
-  video.crossOrigin = "anonymous";
-  video.preload = "metadata";
-  video.muted = true;
 
-  video.addEventListener("loadeddata", () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const thumbnail = canvas.toDataURL("image/png");
-    callback(thumbnail);
-  });
-}
 
 
 	
@@ -328,11 +312,41 @@ useEffect(() => {
     }
   };
 
+
   // ===== Галерея =====
-  const openGallery = (images, index) => setGallery({ open: true, images: images.filter(Boolean), index });
-  const closeGallery = () => setGallery({ open: false, images: [], index: 0 });
-  const nextImage = () => setGallery((g) => ({ ...g, index: g.index + 1 < g.images.length ? g.index + 1 : 0 }));
-  const prevImage = () => setGallery((g) => ({ ...g, index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1 }));
+// Ар дайым бирдиктүү форматка айландыруу
+const normalizeImages = (images = []) =>
+  images
+    .filter(img => img && (typeof img === "string" || img.url)) // ❌ url жокторду алып салабыз
+    .map((img) => {
+      if (typeof img === "string") {
+        return { type: "image", url: img };
+      }
+      return { type: img.type || "image", url: img.url };
+    });
+
+
+const openGallery = (images, index) =>
+  setGallery({
+    open: true,
+    images: normalizeImages(images), // 👈 пустойлор автоматтык жок болот
+    index,
+  });
+
+const closeGallery = () =>
+  setGallery({ open: false, images: [], index: 0 });
+
+const nextImage = () =>
+  setGallery((g) => ({
+    ...g,
+    index: g.index + 1 < g.images.length ? g.index + 1 : 0,
+  }));
+
+const prevImage = () =>
+  setGallery((g) => ({
+    ...g,
+    index: g.index - 1 >= 0 ? g.index - 1 : g.images.length - 1,
+  }));
 
 const galleryTrackRef = useRef(null);
 const startX = useRef(0);
@@ -476,62 +490,54 @@ const uploadToCloudinaryVideo = (file, index) => {
    Колдонуучу сүрөт же видео тандаганда чакырылат
 */
 const handleGalleryChange = async (e) => {
-  const files = Array.from(e.target.files).slice(0, 5); // максимум 5 файл
+  const files = Array.from(e.target.files).slice(0, 5);
   const uploadedUrls = [];
-  setImageLoading(files.map(() => true)); // Ар бир файл үчүн loading=true
+
+  // Жүктөлүү статусун башында true кылып коёбуз
+  const loadingArray = [...imageLoading];
+  const progressArray = [...uploadProgress];
+
+  files.forEach((_, i) => {
+    loadingArray[i] = true;
+    progressArray[i] = 0;
+  });
+
+  setImageLoading(loadingArray);
+  setUploadProgress(progressArray);
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
 
     try {
       if (file.type.startsWith("video/")) {
-        // Видео болсо узундукту текшерүү
-        const videoUrl = URL.createObjectURL(file);
-        const videoEl = document.createElement("video");
-        videoEl.src = videoUrl;
-
-        await new Promise((resolve, reject) => {
-          videoEl.onloadedmetadata = () => {
-            if (!isAdmin && videoEl.duration > 60) {
-              // Колдонуучу болсо 1 мүнөткө чектейт
-              // Бул жерде кыска версия автоматтык сакталат
-              resolve();
-            } else resolve(); // Админ болсо чектөө жок
-          };
-          videoEl.onerror = () => reject("Видео жүктөөдө ката");
-        });
-
         const url = await uploadToCloudinaryVideo(file, i);
-        uploadedUrls[i] = { type: "video", url };
+        uploadedUrls.push({ type: "video", url });
       } else {
-        // Сүрөт болсо жөн эле жүктөө
         const url = await uploadToCloudinary(file, i);
-        uploadedUrls[i] = { type: "image", url };
+        uploadedUrls.push({ type: "image", url });
       }
     } catch (err) {
       console.error(err);
-      uploadedUrls[i] = null;
     } finally {
-      // Ар бир файл үчүн loading=false
       setImageLoading((prev) => {
         const arr = [...prev];
-        arr[i] = false;
+        arr[i] = false;      // ❗ жүктөлүп бүттү
         return arr;
       });
     }
   }
 
-  // FormData ичин жаңылоо
   setFormData((prev) => {
     const newImages = [...prev.images];
     uploadedUrls.forEach((item, i) => {
-      if (item) newImages[i] = item;
+      newImages[i] = item;
     });
     return { ...prev, images: newImages };
   });
 
-  e.target.value = null; // input’ту reset кылуу
+  e.target.value = null;
 };
+
 
 
 
@@ -875,36 +881,47 @@ const filteredAds = useMemo(() => {
 <div className="img">
   {ad.images && ad.images[0] ? (
     ad.images[0].type === "video" ? (
-<video
+      <div
+        className="video-thumbnail"
+        onClick={() => {
+          handleView(ad.id);
+          openGallery(ad.images, 0);
+        }}
+      >
+        <img
+          src={ad.images[0].thumbnail}
+          className="card-img"
+          alt="Видео пласхолдер"
+        />
+        <div className="play-overlay">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 12L3 18.9671C3 21.2763 5.53435 22.736 7.59662 21.6145L10.7996 19.8727M3 8L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L14.0026 18.131"
+              stroke="#3b2f98"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      </div>
+    ) : (
+      <img
+  src={typeof ad.images[0] === "string" ? ad.images[0] : ad.images[0]?.url || CanvasImg}
   className="card-img"
-  src={ad.images[0].url}
-  poster={ad.images[0].thumbnail || CanvasImg} // 👈 thumbnail болсо ошону көрсөтөт
-  muted
-  preload="metadata"
+  alt={ad.descText || "Фото объявления"}
   onClick={() => {
     handleView(ad.id);
     openGallery(ad.images, 0);
   }}
 />
-    ) : (
-      <img
-        src={ad.images[0]}
-        className="card-img"
-        alt={ad.descText || "Фото объявления"}
-        onClick={() => {
-          handleView(ad.id);
-          openGallery(ad.images, 0);
-        }}
-      />
     )
-  ) : (
-    <img
-      src={CanvasImg}
-      className="card-img"
-      alt="placeholder"
-    />
-  )}
+  ) : null}
 </div>
+
 
 
                 <div className="body">
@@ -1000,26 +1017,24 @@ const filteredAds = useMemo(() => {
       </div>
 
 
-    {/* Слоты для выбранных файлов (сүрөт же видео) */}
+{/* Слоты для выбранных файлов (сүрөт же видео) */}
 <div className="selected-grid">
   {formData.images.map((item, i) => (
-    <div className="slot" key={i} style={{ position: "relative" }}>
-      {imageLoading[i] ? (
-        // Жүктөлүп жаткан учурда спиннер
-        <Spinner progress={uploadProgress[i]} />
-      ) : item?.type === "video" ? (
-        // Видео болсо video тегин көрсөт
-        <video src={item.url} controls className="gal-video" />
-      ) : item?.type === "image" ? (
-        // Сүрөт болсо img тегин көрсөт
-        <img src={item.url || CanvasImg} className="gal" alt={`selected-${i}`} />
-      ) : (
-        // Бош слот placeholder
-        <img src={CanvasImg} className="gal" alt={`placeholder-${i}`} />
-      )}
+    <div className="slot" key={i}>
+     {imageLoading[i] ? (
+  <Spinner progress={uploadProgress[i]} />
+) : item?.type === "video" ? (
+  <video src={item.url} controls className="slot-media" />
+) : item?.type === "image" ? (
+  <img src={item.url} alt={`selected-${i}`} className="slot-media" />
+) : (
+  <img src={CanvasImg} alt={`placeholder-${i}`} className="slot-media" />
+)}
     </div>
   ))}
 </div>
+
+
 
 
 
@@ -1349,49 +1364,34 @@ const filteredAds = useMemo(() => {
 
 
 
-{/* ===== Галерея (слайдер) ===== */}
 {gallery.open && gallery.images.length > 0 && (
-  <div
-    className="gallery-modal"
-    onTouchStart={handleTouchStart}
-    onTouchMove={handleTouchMove}
-    onTouchEnd={handleTouchEnd}
-  >
-    {/* X кнопка */}
+  <div className="gallery-modal">
     <button className="gallery-close" onClick={closeGallery}>✕</button>
-
-    {/* Счетчик */}
     <div className="gallery-counter">
       {gallery.index + 1} / {gallery.images.length}
     </div>
 
-    {/* Галерея контейнер */}
     <div
-  ref={galleryTrackRef}
-  className="gallery-track"
-  style={{
-    width: `${gallery.images.length * 100}vw`,
-    transform: `translateX(-${gallery.index * 100}vw)`,
-    transition: "transform 0.3s ease",
-  }}
->
-  {gallery.images.map((item, i) => (
-    <div key={i} className="gallery-slide">
-      {item.type === "video" ? (
-        <video
-          src={item.url}
-          className="gallery-video"
-          controls
-          autoPlay={false}
-        />
-      ) : (
-        <img src={item.url || CanvasImg} alt={`Фото ${i + 1}`} className="gallery-img" />
-      )}
+      ref={galleryTrackRef}
+      className="gallery-track"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        transform: `translateX(-${gallery.index * 100}vw)`,
+      }}
+    >
+      {gallery.images.map((item, i) => (
+        <div key={i} className="gallery-slide">
+          {item.type === "video" ? (
+            <video src={item.url} className="gallery-video" controls />
+          ) : (
+            <img src={item.url} alt={`Фото ${i + 1}`} className="gallery-img" />
+          )}
+        </div>
+      ))}
     </div>
-  ))}
-</div>
 
-    {/* Сол стрелка */}
     <button className="gallery-btn left" onClick={(e) => {
       e.stopPropagation();
       setGallery(g => ({
@@ -1400,7 +1400,6 @@ const filteredAds = useMemo(() => {
       }));
     }}>‹</button>
 
-    {/* Оң стрелка */}
     <button className="gallery-btn right" onClick={(e) => {
       e.stopPropagation();
       setGallery(g => ({

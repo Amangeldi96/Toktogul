@@ -158,42 +158,36 @@
   inset: 0;
   z-index: 99999;
   background: rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+}
+
+.gallery-track {
+  display: flex;
+  height: 100vh;
+  transition: transform 0.3s ease;
+}
+
+.gallery-slide {
+  min-width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.gallery-inner {
-  position: relative;
-  max-width: 95%;
-  max-height: 95%;
-}
-
-.gallery-img-wrapper {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.gallery-img {
-  width: 100%;
-  height: auto;
-  transition: transform 0.3s ease;
-}
-
-.gallery-img-wrapper.left .gallery-img {
-  transform: translateX(-100%);
-}
-
-.gallery-img-wrapper.right .gallery-img {
-  transform: translateX(100%);
+.gallery-img,
+.gallery-video {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .gallery-close {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: 20px;
+  right: 20px;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
   border: none;
@@ -218,20 +212,22 @@
 }
 
 .gallery-btn.left {
-  left: -60px;
+  left: 20px;
 }
 .gallery-btn.right {
-  right: -60px;
+  right: 20px;
 }
 
 .gallery-counter {
   position: absolute;
-  bottom: -34px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   color: #fff;
   font-size: 14px;
 }
+
+
 
 
 .ad-date{
@@ -255,6 +251,12 @@ font-size: 12px;
 
 
 /**/
+.gallery-video {
+  width: 100%;        /* модалка кеңдигине туура */
+  max-height: 80vh;   /* вертикалдык өлчөмүн чектөө */
+  object-fit: contain; /* видео пропорциясын сактоо */
+}
+
 
 
 .img video {
@@ -265,3 +267,30 @@ font-size: 12px;
   object-fit: cover;
 }
 
+
+.video-thumbnail {
+  position: relative;
+  cursor: pointer;
+}
+
+.video-thumbnail img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.play-overlay {
+  position: absolute;
+	margin: -35% 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  padding: 10px;
+}
+.play-overlay svg {
+  width: 32px;
+  height: 32px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
