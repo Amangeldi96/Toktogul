@@ -6,6 +6,17 @@ import "./css/style.css";
 import "./css/card.css";
 import "./css/filter.css";
 import "./css/cotegory.css";
+import { galleryModal,
+  galleryClose,
+  galleryCounter,
+  galleryTrack,
+  gallerySlide,
+  galleryImg,
+  galleryVideo,
+  galleryBtn,
+  galleryBtnLeft,
+  galleryBtnRight,
+} from "./galleryModal";
 // === Компоненты ===
 import SevenDaysAds from "./SevenDaysAds.jsx";
 import Profile from "./Profile.jsx";
@@ -1365,48 +1376,54 @@ const filteredAds = useMemo(() => {
 
 
 {gallery.open && gallery.images.length > 0 && (
-  <div className="gallery-modal">
+  <div style={galleryModal}>
     <button className="gallery-close" onClick={closeGallery}>✕</button>
-    <div className="gallery-counter">
+    <div style={galleryCounter}>
       {gallery.index + 1} / {gallery.images.length}
     </div>
 
     <div
       ref={galleryTrackRef}
-      className="gallery-track"
+      style={{
+        ...galleryTrack,
+        transform: `translateX(-${gallery.index * 100}vw)`,
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      style={{
-        transform: `translateX(-${gallery.index * 100}vw)`,
-      }}
     >
       {gallery.images.map((item, i) => (
-        <div key={i} className="gallery-slide">
+        <div key={i} style={gallerySlide}>
           {item.type === "video" ? (
-            <video src={item.url} className="gallery-video" controls />
+            <video src={item.url} style={galleryVideo} controls />
           ) : (
-            <img src={item.url} alt={`Фото ${i + 1}`} className="gallery-img" />
+            <img src={item.url} alt={`Фото ${i + 1}`} style={galleryImg} />
           )}
         </div>
       ))}
     </div>
 
-    <button className="gallery-btn left" onClick={(e) => {
-      e.stopPropagation();
-      setGallery(g => ({
-        ...g,
-        index: g.index > 0 ? g.index - 1 : g.images.length - 1
-      }));
-    }}>‹</button>
+    <button
+      style={{ ...galleryBtn, ...galleryBtnLeft }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setGallery(g => ({
+          ...g,
+          index: g.index > 0 ? g.index - 1 : g.images.length - 1
+        }));
+      }}
+    >‹</button>
 
-    <button className="gallery-btn right" onClick={(e) => {
-      e.stopPropagation();
-      setGallery(g => ({
-        ...g,
-        index: g.index < g.images.length - 1 ? g.index + 1 : 0
-      }));
-    }}>›</button>
+    <button
+      style={{ ...galleryBtn, ...galleryBtnRight }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setGallery(g => ({
+          ...g,
+          index: g.index < g.images.length - 1 ? g.index + 1 : 0
+        }));
+      }}
+    >›</button>
   </div>
 )}
 
