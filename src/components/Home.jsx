@@ -553,19 +553,36 @@ const createAd = async () => {
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
 
-    // Firestore’го сактоо үчүн сүрөттөр
-    const images = (formData.images || []).filter(Boolean);
+    // 👇 Сүрөттөрдү Cloudinary'ге жүктөө жана чыныгы public_id сактоо
+    const uploadedImages = [];
+    for (const file of (formData.images || []).filter(Boolean)) {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "your_upload_preset"); // 👈 Cloudinary'де түзгөн preset
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: data,
+      });
+      const result = await res.json();
+
+      uploadedImages.push({
+        url: result.secure_url,
+        public_id: result.public_id,
+        type: "image",
+      });
+    }
 
     const adData = {
       ...formData,
-      images, // ар бир элемент { url, public_id, type }
+      images: uploadedImages, // 👈 эми ар бир сүрөттө url жана public_id бар
       price: formData.price ? Number(formData.price) : 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       likes: 0,
       likedBy: [],
       views: 0,
       userId: user.uid,
-      userEmail: user.email
+      userEmail: user.email,
     };
 
     // Admin жана pending логикасы
@@ -601,7 +618,6 @@ const createAd = async () => {
     setLoading(false);
   }
 };
-
 
 
 
