@@ -1,11 +1,11 @@
 {
-  "name": "toktogul-server",
+  "name": "toktogul-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "server.js",
+  "main": "delete-image.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node delete-image.js",
+    "dev": "nodemon delete-image.js"
   },
   "dependencies": {
     "express": "^5.2.1",
