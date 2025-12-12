@@ -445,11 +445,16 @@ const uploadToCloudinary = (file, index) => {
     xhr.onload = () => {
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.responseText);
+        console.log("✅ Сүрөт жүктөлдү:", res);
         resolve({
           url: res.secure_url,
-          public_id: res.public_id  // Cloudinary ID, өчүрүү үчүн
+          public_id: res.public_id, // 👈 Cloudinary ID
+          type: "image"
         });
-      } else reject(xhr.responseText);
+      } else {
+        console.error("❌ Cloudinary сүрөт жүктөө катасы:", xhr.responseText);
+        reject(xhr.responseText);
+      }
     };
 
     xhr.onerror = () => reject("Сүрөт жүктөөдө ката");
@@ -481,12 +486,16 @@ const uploadToCloudinaryVideo = (file, index) => {
     xhr.onload = () => {
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.responseText);
+        console.log("✅ Видео жүктөлдү:", res);
         resolve({
           url: res.secure_url,
-          public_id: res.public_id, // Cloudinary ID
+          public_id: res.public_id, // 👈 Cloudinary ID
           type: "video"
         });
-      } else reject(xhr.statusText);
+      } else {
+        console.error("❌ Cloudinary видео жүктөө катасы:", xhr.responseText);
+        reject(xhr.statusText);
+      }
     };
 
     xhr.onerror = () => reject("Видео жүктөөдө ката");
@@ -500,21 +509,22 @@ const handleGalleryChange = async (e) => {
   const uploadedItems = [];
 
   // Loading жана прогресс баштоо
-  setImageLoading((prev) => files.map(() => true));
-  setUploadProgress((prev) => files.map(() => 0));
+  setImageLoading(files.map(() => true));
+  setUploadProgress(files.map(() => 0));
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     try {
+      let uploaded;
       if (file.type.startsWith("video/")) {
-        const uploaded = await uploadToCloudinaryVideo(file, i);
-        uploadedItems.push(uploaded);
+        uploaded = await uploadToCloudinaryVideo(file, i);
       } else {
-        const uploaded = await uploadToCloudinary(file, i);
-        uploadedItems.push({ ...uploaded, type: "image" });
+        uploaded = await uploadToCloudinary(file, i);
       }
+      console.log("✅ Жүктөлдү:", uploaded);
+      uploadedItems.push(uploaded);
     } catch (err) {
-      console.error("Жүктөөдө ката:", err);
+      console.error("❌ Жүктөө катасы:", err);
     } finally {
       setImageLoading((prev) => {
         const arr = [...prev];
@@ -546,57 +556,54 @@ const createAd = async () => {
   setLoading(true);
 
   try {
+    console.log("👉 createAd башталды");
+    console.log("Формадагы маалыматтар:", formData);
+
     const adminEmails = ["Amangeldi-9696@mail.ru", "smagilov91@gmail.com"];
     const isAdmin =
       user.email && adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
+    console.log("Колдонуучу:", user.email, "isAdmin:", isAdmin);
+
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
+    console.log("User документ:", userDoc.exists ? userDoc.data() : "Документ жок");
 
-    // 👇 Сүрөттөрдү Cloudinary'ге жүктөө жана чыныгы public_id сактоо
-    const uploadedImages = [];
-    for (const file of (formData.images || []).filter(Boolean)) {
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", "your_upload_preset"); // 👈 Cloudinary'де түзгөн preset
-
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload`, {
-        method: "POST",
-        body: data,
-      });
-      const result = await res.json();
-
-      uploadedImages.push({
-        url: result.secure_url,
-        public_id: result.public_id,
-        type: "image",
-      });
-    }
+    // 👇 Сүрөттөрдү текшерүү
+    const images = (formData.images || []).filter(img => img && img.url && img.public_id);
+    console.log("📦 Firestore'го сакталчу сүрөттөр:", images);
 
     const adData = {
       ...formData,
-      images: uploadedImages, // 👈 эми ар бир сүрөттө url жана public_id бар
+      images, // ар бир элемент { url, public_id, type }
       price: formData.price ? Number(formData.price) : 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       likes: 0,
       likedBy: [],
       views: 0,
       userId: user.uid,
-      userEmail: user.email,
+      userEmail: user.email
     };
+
+    console.log("Firestore'го сакталчу adData:", adData);
 
     // Admin жана pending логикасы
     if (isAdmin) {
+      console.log("👉 Admin жарнама кошууда");
       await db.collection("ads").add(adData);
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
     } else if (!userDoc.exists || !userDoc.data().hasFreeAd) {
+      console.log("👉 FreeAd логикасы иштеп жатат");
       await db.collection("ads").add(adData);
       await userRef.set({ hasFreeAd: true }, { merge: true });
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
     } else {
+      console.log("👉 PendingAds логикасы иштеп жатат");
       await db.collection("pendingAds").add({ ...adData, status: "pending" });
       showSuccess("Жарнама админге жөнөтүлдү.");
     }
+
+    console.log("👉 Жарнама ийгиликтүү сакталды");
 
     setFormData({
       phone: "",
@@ -612,10 +619,11 @@ const createAd = async () => {
     setModalOpen(false);
 
   } catch (err) {
-    console.error("Жарнама түзүүдө ката:", err);
+    console.error("❌ Жарнама түзүүдө ката:", err.message, err);
     showError("Жарнама түзүүдө ката кетти!");
   } finally {
     setLoading(false);
+    console.log("👉 createAd аяктады");
   }
 };
 
