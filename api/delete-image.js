@@ -1,10 +1,10 @@
 import cloudinary from "cloudinary";
 
 // === Cloudinary конфигурациясы ===
-cloudinary.v2.config({
+console.log("🌐 Cloudinary конфигурация:", {
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_KEY,
-  api_secret: process.env.CLOUD_SECRET,
+  api_secret: process.env.CLOUD_SECRET ? "✅ бар" : "❌ жок",
 });
 
 // === Vercel Serverless Function ===
