@@ -89,6 +89,8 @@ export default function Username({ user }) {
     if (adData.images && Array.isArray(adData.images)) {
       for (const img of adData.images) {
         const publicId = img.public_id || img.publicId;
+				 console.log("Deleting image with publicId:", publicId);
+
         if (publicId) {
          await fetch("/api/delete-image", {
   method: "DELETE",
