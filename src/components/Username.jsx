@@ -90,11 +90,11 @@ export default function Username({ user }) {
       for (const img of adData.images) {
         const publicId = img.public_id || img.publicId;
         if (publicId) {
-          await fetch("http://localhost:5000/delete-image", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ publicId }),
-          });
+         await fetch("/api/delete-image", {
+  method: "DELETE",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ publicId }),
+});
         }
       }
     }
