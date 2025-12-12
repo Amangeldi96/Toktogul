@@ -80,16 +80,18 @@ export default function Username({ user }) {
   // 🚀 Жарнаманы (сүрөттөр менен) толук өчүрүү
   // ======================================================
  const handleDelete = async (adId) => {
+  console.log("Deleting adId:", adId); // ✅ Бул жерде текшерип көрө аласың
+
   try {
     const adDoc = await db.collection("ads").doc(adId).get();
     const adData = adDoc.data();
 
     if (adData.images && Array.isArray(adData.images)) {
       for (const img of adData.images) {
-        const publicId = typeof img === "string" ? null : img.publicId || img.public_id;
+        const publicId = img.public_id || img.publicId;
         if (publicId) {
           await fetch("http://localhost:5000/delete-image", {
-            method: "POST",
+            method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ publicId }),
           });
@@ -99,7 +101,7 @@ export default function Username({ user }) {
 
     await db.collection("ads").doc(adId).delete();
     setAds((prev) => prev.filter((ad) => ad.id !== adId));
-    setSuccess("жарнамаңыз ийгиликтүү өчүрүлдү!");
+    setSuccess("Жарнама ийгиликтүү өчүрүлдү!");
     setTimeout(() => setSuccess(""), 3000);
   } catch (err) {
     console.error("Өчүрүү катасы:", err);
@@ -107,6 +109,8 @@ export default function Username({ user }) {
     setTimeout(() => setError(""), 3000);
   }
 };
+
+
 
 
 

@@ -432,6 +432,7 @@ function Spinner({ progress }) {
    file  - жүктөлүүчү сүрөт
    index - кайсы файл экенин көрсөтөт (progress үчүн)
 */
+// ===== Cloudinaryге сүрөт жүктөө =====
 const uploadToCloudinary = (file, index) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -441,21 +442,14 @@ const uploadToCloudinary = (file, index) => {
 
     xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload");
 
-    // ===== Жүктөө прогрессин жаңылоо =====
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        setUploadProgress((prev) => {
-          const newProgress = [...prev];
-          newProgress[index] = percent;
-          return newProgress;
-        });
-      }
-    };
-
     xhr.onload = () => {
-      if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
-      else reject(xhr.statusText);
+      if (xhr.status === 200) {
+        const res = JSON.parse(xhr.responseText);
+        resolve({
+          url: res.secure_url,
+          public_id: res.public_id  // Cloudinary ID, өчүрүү үчүн
+        });
+      } else reject(xhr.responseText);
     };
 
     xhr.onerror = () => reject("Сүрөт жүктөөдө ката");
@@ -463,18 +457,13 @@ const uploadToCloudinary = (file, index) => {
   });
 };
 
-/* ===== Cloudinaryге видео жүктөө функциясы =====
-   Колдонуучунун видео узундугу 60 секунд менен чектелет
-   Админ үчүн чектөө жок
-*/
+// ===== Cloudinaryге видео жүктөө =====
 const uploadToCloudinaryVideo = (file, index) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const fd = new FormData();
     fd.append("file", file);
     fd.append("upload_preset", "Toktogul");
-
-    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload");
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
@@ -487,9 +476,17 @@ const uploadToCloudinaryVideo = (file, index) => {
       }
     };
 
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload");
+
     xhr.onload = () => {
-      if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
-      else reject(xhr.statusText);
+      if (xhr.status === 200) {
+        const res = JSON.parse(xhr.responseText);
+        resolve({
+          url: res.secure_url,
+          public_id: res.public_id, // Cloudinary ID
+          type: "video"
+        });
+      } else reject(xhr.statusText);
     };
 
     xhr.onerror = () => reject("Видео жүктөөдө ката");
@@ -497,42 +494,31 @@ const uploadToCloudinaryVideo = (file, index) => {
   });
 };
 
-/* ===== Галереяны өзгөртүү =====
-   Колдонуучу сүрөт же видео тандаганда чакырылат
-*/
+// ===== Галерея өзгөртүү (сүрөт/видео тандоо) =====
 const handleGalleryChange = async (e) => {
   const files = Array.from(e.target.files).slice(0, 5);
-  const uploadedUrls = [];
+  const uploadedItems = [];
 
-  // Жүктөлүү статусун башында true кылып коёбуз
-  const loadingArray = [...imageLoading];
-  const progressArray = [...uploadProgress];
-
-  files.forEach((_, i) => {
-    loadingArray[i] = true;
-    progressArray[i] = 0;
-  });
-
-  setImageLoading(loadingArray);
-  setUploadProgress(progressArray);
+  // Loading жана прогресс баштоо
+  setImageLoading((prev) => files.map(() => true));
+  setUploadProgress((prev) => files.map(() => 0));
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-
     try {
       if (file.type.startsWith("video/")) {
-        const url = await uploadToCloudinaryVideo(file, i);
-        uploadedUrls.push({ type: "video", url });
+        const uploaded = await uploadToCloudinaryVideo(file, i);
+        uploadedItems.push(uploaded);
       } else {
-        const url = await uploadToCloudinary(file, i);
-        uploadedUrls.push({ type: "image", url });
+        const uploaded = await uploadToCloudinary(file, i);
+        uploadedItems.push({ ...uploaded, type: "image" });
       }
     } catch (err) {
-      console.error(err);
+      console.error("Жүктөөдө ката:", err);
     } finally {
       setImageLoading((prev) => {
         const arr = [...prev];
-        arr[i] = false;      // ❗ жүктөлүп бүттү
+        arr[i] = false;
         return arr;
       });
     }
@@ -540,7 +526,7 @@ const handleGalleryChange = async (e) => {
 
   setFormData((prev) => {
     const newImages = [...prev.images];
-    uploadedUrls.forEach((item, i) => {
+    uploadedItems.forEach((item, i) => {
       newImages[i] = item;
     });
     return { ...prev, images: newImages };
@@ -549,79 +535,52 @@ const handleGalleryChange = async (e) => {
   e.target.value = null;
 };
 
-
-
-
-
-
-//===== Жарнама берүү
+// ===== Жарнама берүү =====
 const createAd = async () => {
   if (!formData.phone || !formData.category || !formData.desc)
     return showError("Бардык талааларды толтуруңуз!");
-	  // 📞 Кыргыз номерин текшерүү
   if (!isValidKyrgyzPhone(formData.phone))
     return showError("Телефон номерди туура толтурунуз(мисалы: 0700604604)");
-
   if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
 
   setLoading(true);
 
   try {
-// 🎯 Админдердин тизмеси
-const adminEmails = [
-  "Amangeldi-9696@mail.ru",
-  "smagilov91@gmail.com"
-];
-
-// 🎯 Учурактуу колдонуучу админби?
-const isAdmin =
-  user.email &&
-  adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+    const adminEmails = ["Amangeldi-9696@mail.ru", "smagilov91@gmail.com"];
+    const isAdmin =
+      user.email && adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
 
+    // Firestore’го сактоо үчүн сүрөттөр
+    const images = (formData.images || []).filter(Boolean);
+
     const adData = {
       ...formData,
-      images: (formData.images || []).filter(Boolean),
+      images, // ар бир элемент { url, public_id, type }
       price: formData.price ? Number(formData.price) : 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       likes: 0,
       likedBy: [],
       views: 0,
       userId: user.uid,
-      userEmail: user.email,
+      userEmail: user.email
     };
 
-    // ====================================
-    // 1) АДМИН → ТИКЕЛЕЙ ADS'КЕ ЧЫГАТ
-    // ====================================
+    // Admin жана pending логикасы
     if (isAdmin) {
       await db.collection("ads").add(adData);
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
-    }
-
-    // ====================================
-    // 2) Жөнөкөй колдонуучу — БИРИНЧИ ЖАРНАМА ТҮЗ эле ads
-    // ====================================
-    else if (!userDoc.exists || !userDoc.data().hasFreeAd) {
+    } else if (!userDoc.exists || !userDoc.data().hasFreeAd) {
       await db.collection("ads").add(adData);
       await userRef.set({ hasFreeAd: true }, { merge: true });
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
-    }
-
-    // ====================================
-    // 3) Андан кийинки жарнамалар → pendingAds
-    // ====================================
-    else {
-      await db.collection("pendingAds").add({
-        ...adData,
-        status: "pending",
-      });
+    } else {
+      await db.collection("pendingAds").add({ ...adData, status: "pending" });
       showSuccess("Жарнама админге жөнөтүлдү.");
     }
 
-    // Форманы тазалоо
     setFormData({
       phone: "",
       category: "",
@@ -630,19 +589,21 @@ const isAdmin =
       desc: "",
       images: [null, null, null, null, null],
     });
-
     setPlusSelectedCategory("");
     setPlusSelectedAddress("");
     localStorage.removeItem("newAdImages");
     setModalOpen(false);
 
-  } catch (error) {
-    console.error("Ошибка создания объявления:", error);
+  } catch (err) {
+    console.error("Жарнама түзүүдө ката:", err);
     showError("Жарнама түзүүдө ката кетти!");
   } finally {
     setLoading(false);
   }
 };
+
+
+
 
 
 
@@ -888,6 +849,7 @@ const filteredAds = useMemo(() => {
           >
             {col.map(ad => (
               <div key={ad.id} className="card">
+
 								
 <div className="img">
   {ad.images && ad.images[0] ? (
@@ -895,14 +857,14 @@ const filteredAds = useMemo(() => {
       <div
         className="video-thumbnail"
         onClick={() => {
-          handleView(ad.id);
-          openGallery(ad.images, 0);
+          handleView(ad.id);       // Views count логика
+          openGallery(ad.images, 0); // Галерея ачуу
         }}
       >
         <img
-          src={ad.images[0].thumbnail}
+          src={ad.images[0].thumbnail || CanvasImg}  // Thumbnail жок болсо placeholder
           className="card-img"
-          alt="Видео пласхолдер"
+          alt="Видео placeholder"
         />
         <div className="play-overlay">
           <svg
@@ -921,17 +883,18 @@ const filteredAds = useMemo(() => {
       </div>
     ) : (
       <img
-  src={typeof ad.images[0] === "string" ? ad.images[0] : ad.images[0]?.url || CanvasImg}
-  className="card-img"
-  alt={ad.descText || "Фото объявления"}
-  onClick={() => {
-    handleView(ad.id);
-    openGallery(ad.images, 0);
-  }}
-/>
+        src={ad.images[0]?.url || (typeof ad.images[0] === "string" ? ad.images[0] : CanvasImg)}
+        className="card-img"
+        alt={ad.descText || "Фото объявления"}
+        onClick={() => {
+          handleView(ad.id);
+          openGallery(ad.images, 0);
+        }}
+      />
     )
   ) : null}
 </div>
+
 
 
 
