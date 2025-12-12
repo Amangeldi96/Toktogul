@@ -10,13 +10,14 @@ cloudinary.v2.config({
 // === Vercel Serverless Function ===
 export default async function handler(req, res) {
   if (req.method === "DELETE") {
-    const { publicId } = req.body;
-
-    if (!publicId) {
-      return res.status(400).json({ error: "publicId керек" });
-    }
-
     try {
+      // 👇 req.body'ни кол менен парсинг кыл
+      const { publicId } = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+
+      if (!publicId) {
+        return res.status(400).json({ error: "publicId керек" });
+      }
+
       const result = await cloudinary.v2.uploader.destroy(publicId);
       return res.json({ success: true, result });
     } catch (err) {
