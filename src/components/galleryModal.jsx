@@ -65,8 +65,8 @@ export const galleryBtn = {
   color: '#fff',
   background: 'rgba(0,0,0,0.4)',
   border: 'none',
-  borderRadius: '50%',
-  width: 48,
+  borderRadius: '10%',
+  width: 28,
   height: 48,
   cursor: 'pointer',
 };

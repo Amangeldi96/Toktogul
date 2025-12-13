@@ -649,7 +649,7 @@ const toggleLike = async (ad) => {
 
   const increment = alreadyLiked ? -1 : 1;
 
-  // 🔥 UI жаңыртуу: бардык ads жана filteredAds
+  // UI жаңыртуу: бардык ads жана filteredAds
   setAllAdsOriginal(prev =>
     prev.map(a =>
       a.id === ad.id
@@ -657,6 +657,15 @@ const toggleLike = async (ad) => {
         : a
     )
   );
+
+  // Favorites массивин жаңыртуу
+  setFavorites(prev => {
+    const newFavs = alreadyLiked
+      ? prev.filter(id => id !== ad.id)
+      : [...prev, ad.id];
+    localStorage.setItem("favorites", JSON.stringify(newFavs));
+    return newFavs;
+  });
 
   try {
     await adRef.update({
@@ -668,6 +677,7 @@ const toggleLike = async (ad) => {
     showError("Like жаңыланган жок!");
   }
 };
+
 
 
 
