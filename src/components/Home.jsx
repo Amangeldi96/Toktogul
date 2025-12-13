@@ -325,6 +325,24 @@ useEffect(() => {
 
 
   // ===== Галерея =====
+
+
+	// Галерея ачууну өзгөрт
+useEffect(() => {
+  if (gallery.open) {
+    // Галерея ачык болсо, арттагы скроллду токтотуу
+    document.body.style.overflow = "hidden";
+  } else {
+    // Галерея жабылганда, арттагы скроллду кайра активдештирүү
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    // Компонент жок кылынганда overflow калыбына келтирүү
+    document.body.style.overflow = "";
+  };
+}, [gallery.open]);
+
 // Ар дайым бирдиктүү форматка айландыруу
 const normalizeImages = (images = []) =>
   images
@@ -376,7 +394,7 @@ const handleTouchMove = (e) => {
 
   currentX.current = e.touches[0].clientX - startX.current;
 
-  // свайп учурунда сүрөт жылып турушу үчүн
+  // swipe учурундагы real-time кыймыл
   galleryTrackRef.current.style.transition = "none";
   galleryTrackRef.current.style.transform =
     `translateX(calc(-${gallery.index * 100}vw + ${currentX.current}px))`;
@@ -384,28 +402,22 @@ const handleTouchMove = (e) => {
 
 const handleTouchEnd = () => {
   isDragging.current = false;
-
-  const threshold = 50; // канча пикселден кийин сүрөт алмашат
+  const threshold = 50; 
 
   galleryTrackRef.current.style.transition = "transform 0.3s ease";
 
   if (currentX.current > threshold) {
-    // солго жылдырды
-    setGallery(g => ({
-      ...g,
-      index: g.index > 0 ? g.index - 1 : g.images.length - 1
-    }));
+    prevImage();
   } else if (currentX.current < -threshold) {
-    // оңго жылдырды
-    setGallery(g => ({
-      ...g,
-      index: g.index < g.images.length - 1 ? g.index + 1 : 0
-    }));
+    nextImage();
+  } else {
+    // threshold жетпесе ошол эле сүрөттө кал
+    galleryTrackRef.current.style.transform = `translateX(-${gallery.index * 100}vw)`;
   }
 
-  // кайра 0го кайтарабыз
   currentX.current = 0;
 };
+
 
 
 
