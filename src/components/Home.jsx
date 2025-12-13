@@ -633,7 +633,7 @@ const createAd = async () => {
 
 
   // ===== Likes и избранное =====
-  const toggleLike = async (ad) => {
+const toggleLike = async (ad) => {
   if (!user) {
     showError("Тандалгандарга салуу үчүн аккаунт менен кириңиз!");
     return;
@@ -668,6 +668,7 @@ const createAd = async () => {
     showError("Like жаңыланган жок!");
   }
 };
+
 
 
   // ===== Просмотры объявлений =====
