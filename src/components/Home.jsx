@@ -633,41 +633,42 @@ const createAd = async () => {
 
 
   // ===== Likes и избранное =====
-  const toggleLike = async (adId) => {
-    if (!user) return showError("Тандалгандарга салуу үчүн аккаунт менен кириңиз!");
-    const adRef = db.collection("ads").doc(adId);
-    const ad = allAds.find((a) => a.id === adId);
-    const likedBy = ad.likedBy || [];
-    let newLikedBy, increment;
+  const toggleLike = async (ad) => {
+  if (!user) {
+    showError("Тандалгандарга салуу үчүн аккаунт менен кириңиз!");
+    return;
+  }
 
-    if (likedBy.includes(user.uid)) {
-      newLikedBy = likedBy.filter((uid) => uid !== user.uid);
-      increment = -1;
-      setFavorites((prev) => {
-        const updated = prev.filter((id) => id !== adId);
-        localStorage.setItem("favorites", JSON.stringify(updated));
-        return updated;
-      });
-    } else {
-      newLikedBy = [...likedBy, user.uid];
-      increment = 1;
-      setFavorites((prev) => {
-        const updated = [...prev, adId];
-        localStorage.setItem("favorites", JSON.stringify(updated));
-        return updated;
-      });
-    }
+  const adRef = db.collection("ads").doc(ad.id);
+  const likedBy = ad.likedBy || [];
+  const alreadyLiked = likedBy.includes(user.uid);
 
-    try {
-      await adRef.update({ likedBy: newLikedBy, likes: firebase.firestore.FieldValue.increment(increment) });
-      setAllAds((prev) =>
-        prev.map((a) => (a.id === adId ? { ...a, likedBy: newLikedBy, likes: (a.likes || 0) + increment } : a))
-      );
-    } catch (err) {
-      console.error("Мыйтыкчаны жаңылоодо ката чыкты:", err);
-      showError("тилеке каршы мыйтыкчаны жаңлоо болбоду!");
-    }
-  };
+  const newLikedBy = alreadyLiked
+    ? likedBy.filter(uid => uid !== user.uid)
+    : [...likedBy, user.uid];
+
+  const increment = alreadyLiked ? -1 : 1;
+
+  // 🔥 UI дароо жаңылансын (optimistic update)
+  setAllAdsOriginal(prev =>
+    prev.map(a =>
+      a.id === ad.id
+        ? { ...a, likedBy: newLikedBy, likes: (a.likes || 0) + increment }
+        : a
+    )
+  );
+
+  try {
+    await adRef.update({
+      likedBy: newLikedBy,
+      likes: firebase.firestore.FieldValue.increment(increment),
+    });
+  } catch (err) {
+    console.error("Like жаңылоодо ката:", err);
+    showError("Like жаңыланган жок!");
+  }
+};
+
 
   // ===== Просмотры объявлений =====
   const handleView = async (adId) => {
@@ -924,7 +925,17 @@ const filteredAds = useMemo(() => {
 
                 <div className="body">
                   <div className="price">{formatPrice(ad.price)}</div>
-                  <div className="sub">{ad.categoryName}</div>
+                    {/* Категория */}
+  <div className="sub">
+    {categoryLabels[ad.category] || ad.category}
+  </div>
+
+  {/* Адрес */}
+  {ad.address && (
+<div className="address">
+  📍 {addressLabels[ad.address] || ad.address}
+</div>
+  )}
                   <div className="title">{ad.desc || "Жарнама тууралу маалымат жок"}</div>
 
                   <div className="phone">
@@ -964,11 +975,12 @@ const filteredAds = useMemo(() => {
                       <span className="view-count">{ad.views}</span>
                     </div>
                     <div className="right-actions">
-                      <button
-                        type="button"
-                        className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
-                        onClick={() => toggleLike(ad.id)}
-                      >
+                     <button
+  type="button"
+  className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
+  onClick={() => toggleLike(ad)}
+>
+
                         <svg className="like" viewBox="0 0 24 24" fill="none">
                           <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
                         </svg>
