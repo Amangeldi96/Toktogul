@@ -899,7 +899,7 @@ const filteredAds = useMemo(() => {
         }}
       >
         <img
-          src={ad.images[0].thumbnail || CanvasImg}  // Thumbnail жок болсо placeholder
+          src={ad.images[0].thumbnail}  // Thumbnail жок болсо placeholder
           className="card-img"
           alt="Видео placeholder"
         />
