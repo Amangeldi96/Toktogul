@@ -423,14 +423,11 @@ const handleTouchEnd = () => {
 
 
 // ===== Галереяга сүрөт жана видео жүктөө үчүн state =====
-const [imageLoading, setImageLoading] = useState([]);      // Ар бир файлдын жүктөлүү абалы
-const [uploadProgress, setUploadProgress] = useState([]);  // Ар бир файлдын прогресс %
-const [isAdmin, setIsAdmin] = useState(false); // false = колдонуучу, true = админ
+const [imageLoading, setImageLoading] = useState([]);      
+const [uploadProgress, setUploadProgress] = useState([]);  
+const [isAdmin, setIsAdmin] = useState(false); 
 
-
-/* ===== Spinner компонент =====
-   Жүктөө учурунда прогрессти көрсөтөт
-*/
+/* ===== Spinner компонент ===== */
 function Spinner({ progress }) {
   return (
     <div className="spinner">
@@ -440,80 +437,57 @@ function Spinner({ progress }) {
   );
 }
 
-/* ===== Cloudinaryге сүрөт жүктөө функциясы =====
-   file  - жүктөлүүчү сүрөт
-   index - кайсы файл экенин көрсөтөт (progress үчүн)
-*/
-// ===== Cloudinaryге сүрөт жүктөө =====
-const uploadToCloudinary = (file, index) => {
+/* ===== Cloudinaryге сүрөт / видео жүктөө (preset: cmpoo61j) ===== */
+const uploadToCloudinaryFile = (file, index) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", "Toktogul");
 
-    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload");
+    fd.append("file", file);
+    fd.append("upload_preset", "cmpoo61j"); // ✅ preset аты
+    fd.append("folder", "ads"); 
+
+    // Видео болсо progress кошобуз
+    if (file.type.startsWith("video")) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress((prev) => {
+            const newProgress = [...prev];
+            newProgress[index] = percent;
+            return newProgress;
+          });
+        }
+      };
+    }
+
+    xhr.open(
+      "POST",
+      file.type.startsWith("video")
+        ? "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload"
+        : "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload"
+    );
 
     xhr.onload = () => {
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.responseText);
-        console.log("✅ Сүрөт жүктөлдү:", res);
+
+        // ✅ Eager трансформациядан URL алуу
+        const url = res.eager?.[0]?.secure_url || res.secure_url;
+
         resolve({
-          url: res.secure_url,
-          public_id: res.public_id, // 👈 Cloudinary ID
-          type: "image"
+          url: url,
+          public_id: res.public_id,
+          type: file.type.startsWith("video") ? "video" : "image"
         });
-      } else {
-        console.error("❌ Cloudinary сүрөт жүктөө катасы:", xhr.responseText);
-        reject(xhr.responseText);
-      }
+      } else reject(xhr.statusText);
     };
 
-    xhr.onerror = () => reject("Сүрөт жүктөөдө ката");
+    xhr.onerror = () => reject("Файл жүктөөдө ката");
     xhr.send(fd);
   });
 };
 
-// ===== Cloudinaryге видео жүктөө =====
-const uploadToCloudinaryVideo = (file, index) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", "Toktogul");
-
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        setUploadProgress((prev) => {
-          const newProgress = [...prev];
-          newProgress[index] = percent;
-          return newProgress;
-        });
-      }
-    };
-
-    xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload");
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        const res = JSON.parse(xhr.responseText);
-        console.log("✅ Видео жүктөлдү:", res);
-        resolve({
-          url: res.secure_url,
-          public_id: res.public_id, // 👈 Cloudinary ID
-          type: "video"
-        });
-      } else {
-        console.error("❌ Cloudinary видео жүктөө катасы:", xhr.responseText);
-        reject(xhr.statusText);
-      }
-    };
-
-    xhr.onerror = () => reject("Видео жүктөөдө ката");
-    xhr.send(fd);
-  });
-};
 
 // ===== Галерея өзгөртүү (сүрөт/видео тандоо) =====
 const handleGalleryChange = async (e) => {
