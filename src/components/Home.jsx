@@ -428,171 +428,111 @@ const handleTouchEnd = () => {
 
 
 /* ===== Галереяга сүрөт жана видео жүктөө үчүн state ===== */
-  const [uploadProgress, setUploadProgress] = useState([]); // Ар бир файлдын прогресс %
-  const [isAdmin, setIsAdmin] = useState(false); // false = колдонуучу, true = админ
+ const [uploadProgress, setUploadProgress] = useState([]);
 
-  /* ===== Spinner компонент =====
-     Жүктөө учурунда прогрессти көрсөтөт
-  */
+  /* ===== Spinner ===== */
   function Spinner({ progress }) {
     return (
-      <div className="spinner">
+      <div style={{ marginTop: 5 }}>
         <div
-          className="spinner-bar"
-          style={{ width: `${progress || 0}%`, background: "#4929b4", height: 6 }}
-        ></div>
-        <span>{progress || 0}%</span>
+          style={{
+            width: `${progress || 0}%`,
+            height: 6,
+            background: "#4929b4",
+            transition: "width 0.2s",
+          }}
+        />
+        <small>{progress || 0}%</small>
       </div>
     );
   }
 
-  /* ===== Cloudinaryге сүрөт жүктөө ===== */
-  const uploadToCloudinaryImage = (file, index) => {
+  /* ===== Cloudinary upload (IMAGE + VIDEO) ===== */
+  const uploadToCloudinary = (file, index) => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const fd = new FormData();
+
       fd.append("file", file);
-      fd.append("upload_preset", "cmpoo6ij"); // 👈 preset туура
+      fd.append("upload_preset", "cmpoo61j"); // UNSIGNED preset
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           const percent = Math.round((e.loaded / e.total) * 100);
           setUploadProgress((prev) => {
-            const newProgress = [...prev];
-            newProgress[index] = percent;
-            return newProgress;
+            const arr = [...prev];
+            arr[index] = percent;
+            return arr;
           });
         }
       };
 
-      xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/image/upload");
+      xhr.open(
+        "POST",
+        "https://api.cloudinary.com/v1_1/dqzgtlvlu/auto/upload"
+      );
 
       xhr.onload = () => {
-        if (xhr.status === 200) {
-          const res = JSON.parse(xhr.responseText);
-          console.log("✅ Сүрөт жүктөлдү:", res);
+        const res = JSON.parse(xhr.responseText || "{}");
+        if (res.error) {
+          console.error("❌ Cloudinary error:", res.error.message);
+          reject(res.error.message);
+          return;
+        }
+
+        if (res.secure_url) {
           resolve({
             url: res.secure_url,
             public_id: res.public_id,
-            type: "image",
+            type: res.resource_type, // image | video
           });
         } else {
-          console.error("❌ Cloudinary сүрөт жүктөө катасы:", xhr.responseText);
-          reject(xhr.responseText);
+          reject("Cloudinary жооп кайтарган жок");
         }
       };
 
-      xhr.onerror = () => reject("Сүрөт жүктөөдө ката");
+      xhr.onerror = () => reject("Network error");
       xhr.send(fd);
     });
   };
 
-  /* ===== Cloudinaryге видео жүктөө ===== */
-  const uploadToCloudinaryVideo = (file, index) => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "cmpoo6ij"); // 👈 preset туура
+  /* ===== Галерея файл тандоо ===== */
+  const handleGalleryChange = async (e) => {
+    const files = Array.from(e.target.files).slice(0, 5);
+    if (!files.length) return;
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress((prev) => {
-            const newProgress = [...prev];
-            newProgress[index] = percent;
-            return newProgress;
-          });
-        }
-      };
+    setUploadProgress(files.map(() => 0));
+    setImageLoading(files.map(() => true));
 
-      xhr.open("POST", "https://api.cloudinary.com/v1_1/dqzgtlvlu/video/upload");
+    const uploadedItems = [];
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          const res = JSON.parse(xhr.responseText);
-          console.log("✅ Видео жүктөлдү:", res);
-          resolve({
-            url: res.secure_url,
-            public_id: res.public_id,
-            type: "video",
-          });
-        } else {
-          console.error("❌ Cloudinary видео жүктөө катасы:", xhr.responseText);
-          reject(xhr.statusText);
-        }
-      };
-
-      xhr.onerror = () => reject("Видео жүктөөдө ката");
-      xhr.send(fd);
-    });
-  };
-
-  /* ===== Бириктирилген функция (сүрөт/видео автоматтык аныктайт) ===== */
-  const uploadMedia = (file, index) => {
-    const isVideo = file.type.startsWith("video/");
-    return isVideo
-      ? uploadToCloudinaryVideo(file, index)
-      : uploadToCloudinaryImage(file, index);
-  };
-
-  /* ===== Файл тандоо жана жүктөө ===== */
-  const handleChange = async (e) => {
-    const files = Array.from(e.target.files);
-    setUploadProgress(new Array(files.length).fill(0));
-
-    files.forEach((file, index) => {
-      uploadMedia(file, index).then((res) => {
-        console.log("Жүктөлдү:", res);
-      });
-    });
-  };
-
-
-
-// ===== Галерея өзгөртүү (сүрөт/видео тандоо) =====
-const handleGalleryChange = async (e) => {
-  const files = Array.from(e.target.files).slice(0, 5);
-  const uploadedItems = [];
-
-  // Loading жана прогресс баштоо
-  setImageLoading(files.map(() => true));
-  setUploadProgress(files.map(() => 0));
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    try {
-      let uploaded;
-if (file.type.startsWith("video/")) {
-  uploaded = await uploadToCloudinaryVideo(file, index);
-} else {
-  uploaded = await uploadToCloudinaryImage(file, index);
-}
-
-      console.log("✅ Жүктөлдү:", uploaded);
-      uploadedItems.push(uploaded);
-    } catch (err) {
-      console.error("❌ Жүктөө катасы:", err);
-    } finally {
-      setImageLoading((prev) => {
-        const arr = [...prev];
-        arr[i] = false;
-        return arr;
-      });
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const uploaded = await uploadToCloudinary(files[i], i);
+        uploadedItems.push(uploaded);
+      } catch (err) {
+        console.error("❌ Жүктөө катасы:", err);
+      } finally {
+        setImageLoading((prev) => {
+          const arr = [...prev];
+          arr[i] = false;
+          return arr;
+        });
+      }
     }
-  }
 
-  setFormData((prev) => {
-    const newImages = [...prev.images];
-    uploadedItems.forEach((item, i) => {
-      newImages[i] = item;
-    });
-    return { ...prev, images: newImages };
+setFormData((prev) => {
+  const newImages = [...prev.images];
+  uploadedItems.forEach((item, idx) => {
+    const firstEmptyIndex = newImages.findIndex(img => img === null);
+    if (firstEmptyIndex !== -1) newImages[firstEmptyIndex] = item;
   });
+  return { ...prev, images: newImages };
+});
 
-  e.target.value = null;
-};
 
+    e.target.value = null;
+  };
 // ===== Жарнама берүү =====
 const createAd = async () => {
   if (!formData.phone || !formData.category || !formData.desc)
@@ -1090,19 +1030,19 @@ const filteredAds = useMemo(() => {
 
 {/* Слоты для выбранных файлов (сүрөт же видео) */}
 <div className="selected-grid">
-  {formData.images.map((item, i) => (
-    <div className="slot" key={i}>
-     {imageLoading[i] ? (
-  <Spinner progress={uploadProgress[i]} />
-) : item?.type === "video" ? (
-  <video src={item.url} controls className="slot-media" />
-) : item?.type === "image" ? (
-  <img src={item.url} alt={`selected-${i}`} className="slot-media" />
-) : (
-  <img src={CanvasImg} alt={`placeholder-${i}`} className="slot-media" />
-)}
-    </div>
-  ))}
+{formData.images.map((item, i) => (
+  <div className="slot" key={i}>
+    {imageLoading[i] ? (
+      <Spinner progress={uploadProgress[i]} />
+    ) : item?.type === "video" ? (
+      <video src={item.url} controls className="slot-media" />
+    ) : item?.type === "image" ? (
+      <img src={item.url} alt={`selected-${i}`} className="slot-media" />
+    ) : (
+      <img src={CanvasImg} alt={`placeholder-${i}`} className="slot-media" />
+    )}
+  </div>
+))}
 </div>
 
 
