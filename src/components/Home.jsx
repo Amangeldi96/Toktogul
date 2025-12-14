@@ -488,6 +488,24 @@ const uploadToCloudinaryFile = (file, index) => {
   });
 };
 
+/* ===== Бардык файлдарды бир функция менен жүктөө ===== */
+const handleUploadFiles = async (files) => {
+  const results = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    try {
+      const uploaded = await uploadToCloudinaryFile(file, i);
+      results.push(uploaded);
+    } catch (err) {
+      console.error("Файл жүктөөдө ката:", err);
+    }
+  }
+
+  console.log("Бардык файлдар жүктөлдү:", results);
+  // results массиви ар бир файлдын {url, public_id, type}
+};
+
 
 // ===== Галерея өзгөртүү (сүрөт/видео тандоо) =====
 const handleGalleryChange = async (e) => {
