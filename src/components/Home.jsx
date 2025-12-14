@@ -23,12 +23,17 @@ import Profile from "./Profile.jsx";
 import SkeletonLoader from "./Skeleton.jsx";
 import SkeletonCard from "./SkeletCard.jsx";
 // === Картинки ===
-import sedanImg from "./img/sedan.png";
-import paintBucketImg from "./img/paint-bucket.png";
-import repairToolsImg from "./img/repair-tools.png";
-import buildingImg from "./img/building.png";
-import flowersImg from "./img/flowers.png";
-import phoneImg from "./img/phone.png";
+import sedanImg from "./img/1.jpg";
+import paintBucketImg from "./img/2.jpeg";
+import repairToolsImg from "./img/3.jpeg";
+import buildingImg from "./img/4.jpeg";
+import flowersImg from "./img/5.jpeg";
+import phoneImg from "./img/6.jpeg";
+import jobImg from "./img/7.jpeg";
+import animalImg from "./img/8.jpeg";
+import clothesImg from "./img/10.jpeg";
+import serviceImg from "./img/2.jpeg";
+import sportImg from "./img/9.jpeg";
 import CanvasImg from "./img/Canvas.svg";
 // === Firebase ===
 import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
@@ -263,18 +268,22 @@ const handleFilterSelectAddress = (address) => {
     personal: "Жеке буюмдар",
     home_garden: "Дыйкан чарба",
     repair: "Курулуш",
-    hobby: "Мал жандык",
+    animal: "Мал жандык",
     tehno: "Үй тричилик",
     other: "Башкалар",
   };
 
   const categories = [
-    { img: sedanImg, label: "Транспорт", key: "cars", bgClass: "bg-blue" },
-    { img: paintBucketImg, label: "Кызматтар", key: "services", bgClass: "bg-cream" },
-    { img: repairToolsImg, label: "Курулуш", key: "repair", bgClass: "bg-light" },
-    { img: buildingImg, label: "Кыймылсыз мүлк", key: "real_estate", bgClass: "bg-purple" },
-    { img: flowersImg, label: "Дыйкан чарба", key: "home_garden", bgClass: "bg-green" },
-    { img: phoneImg, label: "Электроника", key: "electronics", bgClass: "bg-peach" },
+    { img: sedanImg, label: "Транспорт", key: "cars", bgClass: "bg-color" },
+    { img: paintBucketImg, label: "Кызматтар", key: "services", bgClass: "bg-color" },
+    { img: repairToolsImg, label: "Курулуш", key: "repair", bgClass: "bg-color" },
+    { img: buildingImg, label: "Кыймылсыз мүлк", key: "real_estate", bgClass: "bg-color big-info" },
+    { img: flowersImg, label: "Үй тричиликтери", key: "home_garden", bgClass: "bg-color big-info" },
+    { img: phoneImg, label: "Электроника", key: "electronics", bgClass: "bg-color" },
+		{ img: clothesImg, label: "Кийим кече", key: "clothes", bgClass: "bg-color" },
+		{ img: animalImg, label: "Үй жаныбары", key: "animal", bgClass: "bg-color" },
+		{ img: jobImg, label: "Жумуш", key: "jobs", bgClass: "bg-color" },
+		{ img: sportImg, label: "Спорттук жабдуулар", key: "sport", bgClass: "bg-color big-info" },
   ];
 
 
@@ -831,24 +840,23 @@ const filteredAds = useMemo(() => {
     <div className="btn-filter" onClick={() => setFilterModalOpen(true)}>Фильтр</div>
   </div>
 
-  {/* ===== Горизонтальная лента категорий ===== */}
-  <div className="categories-scroll">
-    {categories.map((cat, i) => (
-      <div
-        className={`cat-card ${cat.bgClass} ${selectedCategory === cat.key ? "selected" : ""}`}
-        key={i}
-        onClick={() => handleCategoryClick(cat.key)}
-      >
-        <div className="icon">
-          <img src={cat.img} alt={cat.label} />
-        </div>
-        <div className="text-block">
-          <div className="label">{cat.label}</div>
-          <div className="count">{categoryCounts[cat.key] || 0}</div>
-        </div>
+<div className="categories-scroll">
+  {categories.map((cat, i) => (
+    <div
+      className={`cat-card ${cat.bgClass} ${selectedCategory === cat.key ? "selected" : ""}`}
+      key={i}
+      onClick={() => handleCategoryClick(cat.key)}
+    >
+      <div className="icon">
+        <img src={cat.img} alt={cat.label} />
       </div>
-    ))}
-  </div>
+      <div className="count">{categoryCounts[cat.key] || 0}</div> {/* 👈 сүрөттөн кийин */}
+      <div className="bottom">
+        <div className="label">{cat.label}</div>
+      </div>
+    </div>
+  ))}
+</div>
 
   {/* ===== Основной контент ===== */}
   <main className="content">

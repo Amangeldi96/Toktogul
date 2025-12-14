@@ -75,12 +75,14 @@
   height: 14px;
 }
 
+
+
 /* Горизонтальная лента категорий */
 .categories-scroll {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding: 8px 2px 14px;
   scrollbar-width: none;
 }
 
@@ -88,72 +90,88 @@
   display: none;
 }
 
+/* Карточка */
 .cat-card {
-  display: flex; /* горизонтальный ряд */
-  align-items: center;
-  gap: 8px;
-  min-width: 120px;
-  padding: 8px 12px;
-  border-radius: 10px;
+  min-width: 119px;
+  height: 170px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #f3f4f6;
   flex-shrink: 0;
-  background-color: #f0f0f0;
 }
 
+
+/* Чоң иконка */
+/* Чоң иконка контейнер */
+.cat-card .icon {
+  position: relative;
+  height: 115px;
+  width: 100%;
+  overflow: hidden;
+	border-radius: 20px;
+	background: none;
+}
+
+/* Сүрөт */
 .cat-card .icon img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;              /* радиус картанын өзүнөн */
 }
 
-.cat-card .text-block {
-  display: flex;
-  flex-direction: column; /* текст сверху, счетчик снизу */
-  align-items: center; /* счетчик по центру под текстом */
-  flex: 1;
-  min-width: 0; /* важно для ellipsis */
+
+.cat-card .count {
+  position: relative;
+  bottom: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;   /* 👈 туурасы текстке жараша */
+  font-size: 13px;
+  color: #333;
+  padding: 5px 10px;
+  background: #ecececbe;
+  border-radius: 8px;
+  text-align: center;
+  white-space: nowrap;     /* 👈 бир сапта кармайт */
+  line-height: 1.3;
+  max-width: 80%;
+  z-index: 10;
+}
+
+.cat-card .bottom {
+  background-color: #fff;
+  padding: 8px 10px;
 }
 
 .cat-card .label {
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+	margin-top: -15px;
+	/* width: 50%; */
 }
 
-.cat-card .count {
-  font-size: 12px;
-  color: #555;
-  margin-top: 4px;
-}
+
+
 
 /* Цвета карточек */
-.bg-blue {
-  background: #e7f5ff;
-  width: 150px;
+.bg-color {
+  background: #ffffff;
 }
-.bg-cream {
-  background: #fff7df;
-  width: 120px;
+.big-info{
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  white-space: normal;
+  overflow-wrap: break-word;
+	width: 30%;
 }
-.bg-light {
-  background: #e5f3ff;
-  width: 125px;
-}
-.bg-purple {
-  background: #f6eaff;
-  width: 190px;
-}
-.bg-green {
-  background: #e8f7ed;
-  width: 150px;
-}
-.bg-peach {
-  background: #ffe8e0;
-  width: 150px;
-}
+
+
+
 
 /* TABS */
 .tabs {
