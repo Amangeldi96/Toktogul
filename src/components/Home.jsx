@@ -447,54 +447,90 @@ const handleTouchEnd = () => {
     );
   }
 
-  /* ===== Cloudinary upload (IMAGE + VIDEO) ===== */
-  const uploadToCloudinary = (file, index) => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const fd = new FormData();
+// ===== Cloudinary upload (IMAGE + VIDEO) =====
+const uploadToCloudinary = (file, index) => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const fd = new FormData();
 
-      fd.append("file", file);
-      fd.append("upload_preset", "cmpoo61j"); // UNSIGNED preset
+    fd.append("file", file);
+    fd.append("upload_preset", "cmpoo61j"); // UNSIGNED preset
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress((prev) => {
-            const arr = [...prev];
-            arr[index] = percent;
-            return arr;
-          });
-        }
-      };
+    // Видеонун жана сүрөттүн түрүн аныктоо
+    const type = file.type.startsWith("video") ? "video" : "image";
 
-      xhr.open(
-        "POST",
-        "https://api.cloudinary.com/v1_1/dqzgtlvlu/auto/upload"
+    // Трансформацияны кошуу
+    if (type === "video") {
+      // Видео үчүн: пропорцияны сактап, 4K болсо Full HD кысат
+      fd.append(
+        "transformation",
+        JSON.stringify([
+          {
+            crop: "limit",      // Пропорцияны сактоо
+            width: 1920,        // Максималдык Full HD
+            height: 1080,
+            quality: "auto:good", 
+            fetch_format: "mp4", 
+            video_codec: "auto"
+          }
+        ])
       );
+    } else {
+      // Сүрөт үчүн: пропорцияны сактап максималдык өлчөм
+      fd.append(
+        "transformation",
+        JSON.stringify([
+          {
+            crop: "limit",
+            width: 2000,
+            height: 2000,
+            quality: "auto:good",
+            fetch_format: "auto"
+          }
+        ])
+      );
+    }
 
-      xhr.onload = () => {
-        const res = JSON.parse(xhr.responseText || "{}");
-        if (res.error) {
-          console.error("❌ Cloudinary error:", res.error.message);
-          reject(res.error.message);
-          return;
-        }
+    // Жүктөө прогресси
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        setUploadProgress((prev) => {
+          const arr = [...prev];
+          arr[index] = percent;
+          return arr;
+        });
+      }
+    };
 
-        if (res.secure_url) {
-          resolve({
-            url: res.secure_url,
-            public_id: res.public_id,
-            type: res.resource_type, // image | video
-          });
-        } else {
-          reject("Cloudinary жооп кайтарган жок");
-        }
-      };
+    // Cloudinaryге POST кылуу
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/dqzgtlvlu/${type}/upload`);
 
-      xhr.onerror = () => reject("Network error");
-      xhr.send(fd);
-    });
-  };
+    xhr.onload = () => {
+      const res = JSON.parse(xhr.responseText || "{}");
+      if (res.error) {
+        console.error("❌ Cloudinary error:", res.error.message);
+        reject(res.error.message);
+        return;
+      }
+
+      if (res.secure_url) {
+        resolve({
+          url: res.secure_url,
+          public_id: res.public_id,
+          type: res.resource_type,
+        });
+      } else {
+        reject("Cloudinary жооп кайтарган жок");
+      }
+    };
+
+    xhr.onerror = () => reject("Network error");
+    xhr.send(fd);
+  });
+};
+
+
 
   /* ===== Галерея файл тандоо ===== */
   const handleGalleryChange = async (e) => {
