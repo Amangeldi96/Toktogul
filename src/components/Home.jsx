@@ -428,9 +428,10 @@ const handleTouchEnd = () => {
 
 
 /* ===== Галереяга сүрөт жана видео жүктөө үчүн state ===== */
- const [uploadProgress, setUploadProgress] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState([]); // прогресс үчүн
+  const [uploadedFiles, setUploadedFiles] = useState([]);   // жүктөлгөн файлдар
 
-  /* ===== Spinner ===== */
+  // ===== Spinner =====
   function Spinner({ progress }) {
     return (
       <div style={{ marginTop: 5 }}>
@@ -447,88 +448,53 @@ const handleTouchEnd = () => {
     );
   }
 
-// ===== Cloudinary upload (IMAGE + VIDEO) =====
-const uploadToCloudinary = (file, index) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const fd = new FormData();
+  // ===== Cloudinary upload (IMAGE + VIDEO) =====
+  const uploadToCloudinary = (file, index) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const fd = new FormData();
 
-    fd.append("file", file);
-    fd.append("upload_preset", "cmpoo61j"); // UNSIGNED preset
+      fd.append("file", file);
+      fd.append("upload_preset", "cmpoo61j"); // unsigned preset, preset ичинде трансформация бар
 
-    // Видеонун жана сүрөттүн түрүн аныктоо
-    const type = file.type.startsWith("video") ? "video" : "image";
+      const type = file.type.startsWith("video") ? "video" : "image";
 
-    // Трансформацияны кошуу
-    if (type === "video") {
-      // Видео үчүн: пропорцияны сактап, 4K болсо Full HD кысат
-      fd.append(
-        "transformation",
-        JSON.stringify([
-          {
-            crop: "limit",      // Пропорцияны сактоо
-            width: 1920,        // Максималдык Full HD
-            height: 1080,
-            quality: "auto:good", 
-            fetch_format: "mp4", 
-            video_codec: "auto"
-          }
-        ])
-      );
-    } else {
-      // Сүрөт үчүн: пропорцияны сактап максималдык өлчөм
-      fd.append(
-        "transformation",
-        JSON.stringify([
-          {
-            crop: "limit",
-            width: 2000,
-            height: 2000,
-            quality: "auto:good",
-            fetch_format: "auto"
-          }
-        ])
-      );
-    }
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress((prev) => {
+            const arr = [...prev];
+            arr[index] = percent;
+            return arr;
+          });
+        }
+      };
 
-    // Жүктөө прогресси
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        setUploadProgress((prev) => {
-          const arr = [...prev];
-          arr[index] = percent;
-          return arr;
-        });
-      }
-    };
+      xhr.open("POST", `https://api.cloudinary.com/v1_1/dqzgtlvlu/${type}/upload`);
 
-    // Cloudinaryге POST кылуу
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/dqzgtlvlu/${type}/upload`);
+      xhr.onload = () => {
+        const res = JSON.parse(xhr.responseText || "{}");
+        if (res.error) {
+          console.error("❌ Cloudinary error:", res.error.message);
+          reject(res.error.message);
+          return;
+        }
+        if (res.secure_url) {
+          resolve({
+            url: res.secure_url,
+            public_id: res.public_id,
+            type: res.resource_type,
+          });
+        } else {
+          reject("Cloudinary жооп кайтарган жок");
+        }
+      };
 
-    xhr.onload = () => {
-      const res = JSON.parse(xhr.responseText || "{}");
-      if (res.error) {
-        console.error("❌ Cloudinary error:", res.error.message);
-        reject(res.error.message);
-        return;
-      }
+      xhr.onerror = () => reject("Network error");
+      xhr.send(fd);
+    });
+  };
 
-      if (res.secure_url) {
-        resolve({
-          url: res.secure_url,
-          public_id: res.public_id,
-          type: res.resource_type,
-        });
-      } else {
-        reject("Cloudinary жооп кайтарган жок");
-      }
-    };
-
-    xhr.onerror = () => reject("Network error");
-    xhr.send(fd);
-  });
-};
 
 
 
