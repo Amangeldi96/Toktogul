@@ -455,7 +455,7 @@ const handleTouchEnd = () => {
       const fd = new FormData();
 
       fd.append("file", file);
-      fd.append("upload_preset", "cmpoo61j"); // unsigned preset, preset ичинде трансформация бар
+      fd.append("upload_preset", "Amangeldi"); // unsigned preset, preset ичинде трансформация бар
 
       const type = file.type.startsWith("video") ? "video" : "image";
 
