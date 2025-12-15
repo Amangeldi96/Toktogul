@@ -223,13 +223,13 @@ body {
 
 /* Hover болгондо */
 .desc:hover {
-  border-color: #a855f7;
+  border-color: #c0c0c0;
   background: #f9f5ff;
 }
 
 /* Активдүү (фокус болгондо) */
 .desc:focus {
-  border-color: #9333ea;
+  border-color: #c4c4c4;
   background: #ede9fe;
   outline: none;
 }
@@ -237,7 +237,7 @@ body {
 /* Disabled (иштебеген) */
 .desc:disabled {
   background: #f3f0f9;
-  border-color: #ddd6fe;
+  border-color: #ffffff;
   color: #6b7280;
   cursor: not-allowed;
 }
@@ -308,7 +308,7 @@ body {
   padding: 8px 10px;
   border-radius: 6px;
   background: #fff;
-  border: 1px solid #a855f7;
+  border: 1px solid #e2e2e2;
   font-size: 14px;
   transition: 0.3s; /* жылмакай эффект */
 }
@@ -316,21 +316,21 @@ body {
 /* Hover болгондо */
 .input-group input:hover,
 .input-group select:hover {
-  border-color: #a855f7;   /* фиолетовый чек */
+  border-color: #b1b1b1;   /* фиолетовый чек */
   background: #f9f5ff;     /* жеңил фиолетовый фон */
 }
 
 /* Фокус болгондо (басканда) */
 .input-group input:focus,
 .input-group select:focus {
-  border-color: #9333ea;   /* терең фиолетовый чек */
+  border-color: #c4c4c4;   /* терең фиолетовый чек */
   background: #ede9fe;     /* фиолетовый фон */
   outline: none;           /* стандарттык outline алып салынат */
 }
 
 .input-group input,
 .input-group select:hover{
-	border: 1 solid #5223d3
+	border: 1 solid #696377
 }
 
 .modal {

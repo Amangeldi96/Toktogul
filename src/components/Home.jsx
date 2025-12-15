@@ -154,6 +154,10 @@ export default function Home() {
   const [filterSelectedCategory, setFilterSelectedCategory] = useState("");
   const [filterAddressOpen, setFilterAddressOpen] = useState(false);
   const [filterSelectedAddress, setFilterSelectedAddress] = useState("");
+	const [filterCategoryModalOpen, setFilterCategoryModalOpen] = useState(false);
+  const [filterAddressModalOpen, setFilterAddressModalOpen] = useState(false);
+
+
 
   // ===== Notifications =====
   const [errorMessages, setErrorMessages] = useState([]);
@@ -208,6 +212,10 @@ const handleFilterSelectAddress = (address) => {
 
 
 
+
+
+const [plusCategoryModalOpen, setPlusCategoryModalOpen] = useState(false);
+const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
 
 	
 
@@ -272,6 +280,7 @@ const handleFilterSelectAddress = (address) => {
     repair: "Курулуш",
     animal: "Мал жандык",
     tehno: "Үй тричилик",
+		sport: "Спорттук жабдуулар",
     other: "Башкалар",
   };
 
@@ -1082,59 +1091,70 @@ const filteredAds = useMemo(() => {
           />
         </div>
 
-        {/* ===== Категория (Плюс модал) ===== */}
-<div className="select-wrapper">
-  <div className="select-display" onClick={() => setPlusCategoryOpen(!plusCategoryOpen)}>
-    {plusSelectedCategory ? categoryLabels[plusSelectedCategory] : "Категорияны тандаңыз"}
-    <span className="arrow">{plusCategoryOpen ? "▲" : "▼"}</span>
-  </div>
 
-  {plusCategoryOpen && (
-    <div className="select-dropdown">
+<div className="select-wrapper">
+  <div
+    className="select-display"
+    onClick={() => setPlusCategoryModalOpen(true)}
+  >
+    {plusSelectedCategory ? categoryLabels[plusSelectedCategory] : "Категорияны тандаңыз"}
+    <span className="arrow">▼</span>
+  </div>
+</div>
+
+<div className="select-wrapper">
+  <div
+    className="select-display"
+    onClick={() => setPlusAddressModalOpen(true)}
+  >
+    {plusSelectedAddress ? addressLabels[plusSelectedAddress] : "Адрес тандаңыз"}
+    <span className="arrow">▼</span>
+  </div>
+</div>
+
+{/* ===== Категория модал ===== */}
+{plusCategoryModalOpen && (
+  <div className="modal-backdrop" onClick={() => setPlusCategoryModalOpen(false)}>
+    <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-close" onClick={() => setPlusCategoryModalOpen(false)}>✖</div>
       {Object.entries(categoryLabels).map(([key, label]) => (
         <div
           key={key}
-          className={plusSelectedCategory === key ? "active select-row" : "select-row"}
+          className={plusSelectedCategory === key ? "active modal-row" : "modal-row"}
           onClick={() => {
             setPlusSelectedCategory(key);
             setFormData(prev => ({ ...prev, category: key }));
-            setPlusCategoryOpen(false);
+            setPlusCategoryModalOpen(false);
           }}
         >
           {label}
         </div>
       ))}
     </div>
-  )}
-</div>
-
-
-
-        {/* ===== Адрес (Плюс модал) ===== */}
-       <div className="select-wrapper">
-  <div className="select-display" onClick={() => setPlusAddressOpen(!plusAddressOpen)}>
-    {plusSelectedAddress ? addressLabels[plusSelectedAddress] : "Адрес тандаңыз"}
-    <span className="arrow">{plusAddressOpen ? "▲" : "▼"}</span>
   </div>
+)}
 
-  {plusAddressOpen && (
-    <div className="select-dropdown">
+{/* ===== Адрес модал ===== */}
+{plusAddressModalOpen && (
+  <div className="modal-backdrop" onClick={() => setPlusAddressModalOpen(false)}>
+    <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-close" onClick={() => setPlusAddressModalOpen(false)}>✖</div>
       {Object.entries(addressLabels).map(([key, label]) => (
         <div
           key={key}
-          className={plusSelectedAddress === key ? "active select-row" : "select-row"}
+          className={plusSelectedAddress === key ? "active modal-row" : "modal-row"}
           onClick={() => {
             setPlusSelectedAddress(key);
             setFormData(prev => ({ ...prev, address: key }));
-            setPlusAddressOpen(false);
+            setPlusAddressModalOpen(false);
           }}
         >
           {label}
         </div>
       ))}
     </div>
-  )}
-</div>
+  </div>
+)}
 
         {/* ===== Цена ===== */}
         <div className="input-group gr">
@@ -1215,67 +1235,72 @@ const filteredAds = useMemo(() => {
 <div className="select-wrapper">
   <div
     className="select-display"
-    onClick={() => setFilterCategoryOpen(!filterCategoryOpen)}
+    onClick={() => setFilterCategoryModalOpen(true)}
   >
     {filterSelectedCategory
       ? categoryLabels[filterSelectedCategory]
       : "Категорияны танда"}
-    <span className="arrow">{filterCategoryOpen ? "▲" : "▼"}</span>
+    <span className="arrow">▼</span>
   </div>
+</div>
 
-  {filterCategoryOpen && (
-    <div className="select-dropdown">
-      {Object.keys(categoryLabels).map((key) => (
+{/* Категория модалка */}
+{filterCategoryModalOpen && (
+  <div className="modal-backdrop" onClick={() => setFilterCategoryModalOpen(false)}>
+    <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-close" onClick={() => setFilterCategoryModalOpen(false)}>✖</div>
+      {Object.entries(categoryLabels).map(([key, label]) => (
         <div
           key={key}
-          className={
-            filterSelectedCategory === key ? "active select-row" : "select-row"
-          }
+          className={filterSelectedCategory === key ? "active modal-row" : "modal-row"}
           onClick={() => {
-            setFilterSelectedCategory(key); // Модалкадагы текст жаңылат
-            setSelectedCategory(key);       // Негизги фильтр иштейт
-            setFilterCategoryOpen(false);
+            setFilterSelectedCategory(key);  // Модалкадагы текст жаңылат
+            setSelectedCategory(key);        // Негизги фильтр иштейт
+            setFilterCategoryModalOpen(false);
           }}
         >
-          {categoryLabels[key]}
+          {label}
         </div>
       ))}
     </div>
-  )}
-</div>
+  </div>
+)}
 
 {/* ===== Адрес ===== */}
 <div className="select-wrapper">
   <div
     className="select-display"
-    onClick={() => setFilterAddressOpen(!filterAddressOpen)}
+    onClick={() => setFilterAddressModalOpen(true)}
   >
     {filterSelectedAddress
       ? addressLabels[filterSelectedAddress]
       : "Адрес танда"}
-    <span className="arrow">{filterAddressOpen ? "▲" : "▼"}</span>
+    <span className="arrow">▼</span>
   </div>
+</div>
 
-  {filterAddressOpen && (
-    <div className="select-dropdown">
-      {Object.keys(addressLabels).map((key) => (
+{/* Адрес модалка */}
+{filterAddressModalOpen && (
+  <div className="modal-backdrop" onClick={() => setFilterAddressModalOpen(false)}>
+    <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-close" onClick={() => setFilterAddressModalOpen(false)}>✖</div>
+      {Object.entries(addressLabels).map(([key, label]) => (
         <div
           key={key}
-          className={
-            filterSelectedAddress === key ? "active select-row" : "select-row"
-          }
+          className={filterSelectedAddress === key ? "active modal-row" : "modal-row"}
           onClick={() => {
             setFilterSelectedAddress(key); // Модалкадагы текст жаңылат
             setSelectedAddress(key);       // Негизги фильтр иштейт
-            setFilterAddressOpen(false);
+            setFilterAddressModalOpen(false);
           }}
         >
-          {addressLabels[key]}
+          {label}
         </div>
       ))}
     </div>
-  )}
-</div>
+  </div>
+)}
+
 
 
 
