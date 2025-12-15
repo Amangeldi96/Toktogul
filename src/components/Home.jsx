@@ -27,7 +27,7 @@ import sedanImg from "./img/1.jpg";
 import paintBucketImg from "./img/2.jpeg";
 import repairToolsImg from "./img/3.jpeg";
 import buildingImg from "./img/4.jpeg";
-import flowersImg from "./img/5.jpeg";
+import tehnoImg from "./img/5.jpeg";
 import phoneImg from "./img/6.jpeg";
 import jobImg from "./img/7.jpeg";
 import animalImg from "./img/8.jpeg";
@@ -284,12 +284,30 @@ const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
     other: "Башкалар",
   };
 
+
+	const categoryUI = {
+		electronics: {img: phoneImg},
+  cars: {img: sedanImg},
+  real_estate: {img: buildingImg},
+  clothes: {img: clothesImg},
+  services: {img: paintBucketImg},
+  jobs: { img: jobImg},
+  personal: {img: PersonalImg},
+  home_garden: { img: farmImg},
+  repair: {img: repairToolsImg},
+  animal: {img: animalImg},
+  tehno: {img: tehnoImg},
+  sport: { img: sportImg},
+  other: {img: othersImg},
+};
+
+
   const categories = [
     { img: sedanImg, label: "Транспорт", key: "cars", bgClass: "bg-color" },
     { img: paintBucketImg, label: "Кызматтар", key: "services", bgClass: "bg-color" },
     { img: repairToolsImg, label: "Курулуш", key: "repair", bgClass: "bg-color" },
     { img: buildingImg, label: "Кыймылсыз мүлк", key: "real_estate", bgClass: "bg-color big-info" },
-    { img: flowersImg, label: "Үй тричиликтери", key: "home_garden", bgClass: "bg-color big-info" },
+    { img: tehnoImg, label: "Үй тричиликтери", key: "home_garden", bgClass: "bg-color big-info" },
     { img: phoneImg, label: "Электроника", key: "electronics", bgClass: "bg-color" },
 		{ img: clothesImg, label: "Кийим кече", key: "clothes", bgClass: "bg-color" },
 		{ img: animalImg, label: "Үй жаныбары", key: "animal", bgClass: "bg-color" },
@@ -1231,75 +1249,91 @@ const filteredAds = useMemo(() => {
         <div style={{ width: "36px" }}></div>
       </div>
 
-{/* ===== Категория ===== */}
-<div className="select-wrapper">
-  <div
-    className="select-display"
-    onClick={() => setFilterCategoryModalOpen(true)}
-  >
-    {filterSelectedCategory
-      ? categoryLabels[filterSelectedCategory]
-      : "Категорияны танда"}
-    <span className="arrow">▼</span>
-  </div>
-</div>
+      {/* ===== Категория ===== */}
+      <div className="select-wrapper">
+        <div
+          className="select-display"
+          onClick={() => setFilterCategoryModalOpen(true)}
+        >
+          {filterSelectedCategory
+            ? categoryLabels[filterSelectedCategory]
+            : "Категорияны танда"}
+          <span className="arrow">▼</span>
+        </div>
+      </div>
 
-{/* Категория модалка */}
+     {/* Категория модалка */}
 {filterCategoryModalOpen && (
   <div className="modal-backdrop" onClick={() => setFilterCategoryModalOpen(false)}>
-    <div className="modal-content" onClick={e => e.stopPropagation()}>
-      <div className="modal-close" onClick={() => setFilterCategoryModalOpen(false)}>✖</div>
-      {Object.entries(categoryLabels).map(([key, label]) => (
-        <div
-          key={key}
-          className={filterSelectedCategory === key ? "active modal-row" : "modal-row"}
-          onClick={() => {
-            setFilterSelectedCategory(key);  // Модалкадагы текст жаңылат
-            setSelectedCategory(key);        // Негизги фильтр иштейт
-            setFilterCategoryModalOpen(false);
-          }}
-        >
-          {label}
-        </div>
-      ))}
+    <div className="modal-side" onClick={e => e.stopPropagation()}>
+      <div className="modal-header">
+        <button className="close-btn" onClick={() => setFilterCategoryModalOpen(false)}>✖</button>
+        <h2>Категория</h2>
+      </div>
+      <div className="category-list">
+        {Object.keys(categoryLabels).map(key => (
+          <div
+            key={key}
+            className={`category-row ${filterSelectedCategory === key ? "active" : ""}`}
+            onClick={() => {
+              setFilterSelectedCategory(key);
+              setSelectedCategory(key);
+              setFilterCategoryModalOpen(false);
+              setFilterModalOpen(false);
+            }}
+          >
+            <div className="left">
+              <img src={categoryUI[key]?.img} alt={categoryLabels[key]} />
+              <span>{categoryLabels[key]}</span>
+            </div>
+            <div className="right">
+              <span className="count">{categoryUI[key]?.count?.toLocaleString()}</span>
+              <span className="arrow">›</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 )}
 
-{/* ===== Адрес ===== */}
-<div className="select-wrapper">
-  <div
-    className="select-display"
-    onClick={() => setFilterAddressModalOpen(true)}
-  >
-    {filterSelectedAddress
-      ? addressLabels[filterSelectedAddress]
-      : "Адрес танда"}
-    <span className="arrow">▼</span>
-  </div>
-</div>
 
-{/* Адрес модалка */}
-{filterAddressModalOpen && (
-  <div className="modal-backdrop" onClick={() => setFilterAddressModalOpen(false)}>
-    <div className="modal-content" onClick={e => e.stopPropagation()}>
-      <div className="modal-close" onClick={() => setFilterAddressModalOpen(false)}>✖</div>
-      {Object.entries(addressLabels).map(([key, label]) => (
+      {/* ===== Адрес ===== */}
+      <div className="select-wrapper">
         <div
-          key={key}
-          className={filterSelectedAddress === key ? "active modal-row" : "modal-row"}
-          onClick={() => {
-            setFilterSelectedAddress(key); // Модалкадагы текст жаңылат
-            setSelectedAddress(key);       // Негизги фильтр иштейт
-            setFilterAddressModalOpen(false);
-          }}
+          className="select-display"
+          onClick={() => setFilterAddressModalOpen(true)}
         >
-          {label}
+          {filterSelectedAddress
+            ? addressLabels[filterSelectedAddress]
+            : "Адрес танда"}
+          <span className="arrow">▼</span>
         </div>
-      ))}
-    </div>
-  </div>
-)}
+      </div>
+
+      {/* Адрес модалка */}
+      {filterAddressModalOpen && (
+        <div className="modal-backdrop" onClick={() => setFilterAddressModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-close" onClick={() => setFilterAddressModalOpen(false)}>✖</div>
+            {Object.entries(addressLabels).map(([key, label]) => (
+              <div
+                key={key}
+                className={filterSelectedAddress === key ? "active modal-row" : "modal-row"}
+                onClick={() => {
+                  setFilterSelectedAddress(key); // Модалкадагы текст жаңылат
+                  setSelectedAddress(key);       // Негизги фильтр иштейт
+                  setFilterAddressModalOpen(false);
+                }}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
 
 
 

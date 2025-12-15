@@ -7,74 +7,7 @@
   margin-bottom: 28px;
 }
 
-/* Кнопка */
-.category-display {
-  padding: 16px 22px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #5e22ce, #9774d8);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: 0.3s;
-}
 
-.category-display:hover {
-  transform: translateY(-3px) scale(1.03);
-}
-
-/* Dropdown жабык абалда */
-.category-dropdown {
-  position: absolute;
-  width: 100%;
-  margin-top: 12px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  z-index: 10;
-}
-
-/* Dropdown ачык абалда */
-.category-dropdown.open {
-  max-height: 220px; /* Бул бийиктикти каалаганыңдай өзгөртсөң болот */
-  overflow-y: auto;
-}
-
-/* Скрол стили */
-.category-dropdown::-webkit-scrollbar {
-  width: 6px;
-}
-
-.category-dropdown::-webkit-scrollbar-thumb {
-  background-color: #a855f7;
-  border-radius: 3px;
-}
-
-.category-dropdown::-webkit-scrollbar-track {
-  background: #f5f3ff;
-}
-
-/* Категориялардын тизмеси */
-.category-list {
-  background: #f5f3ff;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid #e9d5ff;
-}
-
-/* Ар бир категория */
-.category-row {
-  padding: 12px;
-  border-radius: 5px;
-  background: #ede9fe;
-  color: #4c1d95;
-  transition: 0.25s;
-}
-
-.category-row:hover {
-  background: #c4b5fd;
-  transform: translateX(8px);
-}
 
 
 /* ======================= */
@@ -90,7 +23,6 @@
 .address-display {
   padding: 16px 22px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #5e22ce, #9774d8);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
@@ -121,6 +53,132 @@
   overflow-y: auto;
 }
 
+
+
+
+
+
+
+
+/* ===== Фон модалкасы ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* экраны кара полупрозрачный жабат */
+  display: flex;
+  justify-content: flex-start; /* сол жакта */
+  align-items: flex-start;
+  z-index: 1000;
+  padding: 24px;
+}
+
+/* ===== Модалка сол тарапта ===== */
+.modal-side {
+  background: #fff;
+  border-radius: 16px;
+  width: 280px;
+  max-height: 90%;
+  overflow-y: auto;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== Башкы бөлүк: Close + Заголовок ===== */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 auto;
+	text-align: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* ===== Категория тизмеси ===== */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* карточкалардын ортосунда боштук */
+}
+
+/* ===== Категория карточка ===== */
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* жумшак тень */
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.category-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.category-row.active {
+  background: #f0f0ff; /* активдүү категория */
+}
+
+/* ===== Сол жактагы сүрөт жана текст ===== */
+.category-row .left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.category-row .left img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.category-row .left span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Оң жактагы count жана arrow ===== */
+.category-row .right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.category-row .right .count {
+  font-size: 12px;
+  color: #555;
+}
+
+.category-row .right .arrow {
+  font-size: 14px;
+  color: #888;
+}
 
 
 
