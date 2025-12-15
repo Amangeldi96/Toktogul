@@ -32,8 +32,10 @@ import phoneImg from "./img/6.jpeg";
 import jobImg from "./img/7.jpeg";
 import animalImg from "./img/8.jpeg";
 import clothesImg from "./img/10.jpeg";
-import serviceImg from "./img/2.jpeg";
 import sportImg from "./img/9.jpeg";
+import farmImg from "./img/11.jpeg";
+import PersonalImg from "./img/13.png";
+import othersImg from "./img/11.jpeg";
 import CanvasImg from "./img/Canvas.svg";
 // === Firebase ===
 import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
@@ -284,6 +286,9 @@ const handleFilterSelectAddress = (address) => {
 		{ img: animalImg, label: "Үй жаныбары", key: "animal", bgClass: "bg-color" },
 		{ img: jobImg, label: "Жумуш", key: "jobs", bgClass: "bg-color" },
 		{ img: sportImg, label: "Спорттук жабдуулар", key: "sport", bgClass: "bg-color big-info" },
+		{ img: farmImg, label: "Дыйкан чарба", key: "farm", bgClass: "bg-color big-info" },
+		{ img: PersonalImg, label: "Жекке буйумдар", key: "Personal", bgClass: "bg-color big-info" },
+		{ img: othersImg, label: "Башкалар", key: "othera", bgClass: "bg-color" },   
   ];
 
 
