@@ -1267,7 +1267,7 @@ const filteredAds = useMemo(() => {
   <div className="modal-backdrop" onClick={() => setFilterCategoryModalOpen(false)}>
     <div className="modal-side" onClick={e => e.stopPropagation()}>
       <div className="modal-header">
-        <button className="close-btn" onClick={() => setFilterCategoryModalOpen(false)}>✖</button>
+        <button className="close-btn" onClick={() => setFilterCategoryModalOpen(false)}>✕</button>
         <h2>Категория</h2>
       </div>
       <div className="category-list">
