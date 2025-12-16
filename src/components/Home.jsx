@@ -35,7 +35,7 @@ import clothesImg from "./img/10.jpeg";
 import sportImg from "./img/9.jpeg";
 import farmImg from "./img/11.jpeg";
 import PersonalImg from "./img/13.png";
-import othersImg from "./img/12.jpeg";
+import othersImg from "./img/12.png";
 import CanvasImg from "./img/Canvas.svg";
 // === Firebase ===
 import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
