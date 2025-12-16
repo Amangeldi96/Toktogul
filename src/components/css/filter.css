@@ -208,12 +208,12 @@
 }
 
 .category-select select:hover {
-  border-color: #a547b1;
+  border-color: #eaf7ff;
   background: #faf5fc;
 }
 
 .category-select select:focus {
-  border-color: #2575fc;
+  border-color: #e9f1ff;
   box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
   outline: none;
 }
@@ -229,7 +229,7 @@
 }
 
 .category-select:hover .arrow {
-  color: #a547b1;
+  color: #f8fbff;
 }
 
 
@@ -262,19 +262,14 @@
 .price-row .input-group input {
   padding: 12px 14px;
   border-radius: 12px;
-  border: 2px solid #ddd;
+  border: 1px solid #fff0f0;
   font-size: 15px;
   background: #fff;
   transition: all 0.25s ease;
 }
 
 .price-row .input-group input:hover {
-  border-color: #a547b1;
-  background: #faf5fc;
+  border-color: #ffffff;
+  background: #f5fbfc;
 }
 
-.price-row .input-group input:focus {
-  border-color: #2575fc;
-  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
-  outline: none;
-}

@@ -316,21 +316,21 @@ body {
 /* Hover болгондо */
 .input-group input:hover,
 .input-group select:hover {
-  border-color: #dadada;   /* фиолетовый чек */
-  background: #f9f5ff;     /* жеңил фиолетовый фон */
+  border-color: #ffffff;   /* фиолетовый чек */
+  background: #ffffff;     /* жеңил фиолетовый фон */
 }
 
 /* Фокус болгондо (басканда) */
 .input-group input:focus,
 .input-group select:focus {
-  border-color: #c4c4c4;   /* терең фиолетовый чек */
-  background: #ede9fe;     /* фиолетовый фон */
+  border-color: #ffffff;   /* терең фиолетовый чек */
+  background: #ffffff;     /* фиолетовый фон */
   outline: none;           /* стандарттык outline алып салынат */
 }
 
 .input-group input,
 .input-group select:hover{
-	border: 1 solid #696377
+	border: 1 solid #ffffff
 }
 
 .modal {
