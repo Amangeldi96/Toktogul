@@ -316,7 +316,7 @@ body {
 /* Hover болгондо */
 .input-group input:hover,
 .input-group select:hover {
-  border-color: #b1b1b1;   /* фиолетовый чек */
+  border-color: #dadada;   /* фиолетовый чек */
   background: #f9f5ff;     /* жеңил фиолетовый фон */
 }
 

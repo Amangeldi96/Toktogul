@@ -2,7 +2,7 @@
   --bg: #f6f8fa;
   --card-bg: #fff;
   --accent: #2ecc71;
-  --muted: #8e97a6;
+  --muted: #7d8ca7;
   --vip: #ff4da6;
   --pro: #3da0ff;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -25,8 +25,8 @@
 
 .search {
   flex: 1;
-  background: #eef2f7;
-  padding: 14px 18px;
+  background: #f1f2f7;
+  padding: 12px 18px;
   border-radius: 10px;
   display: flex;
   gap: 12px;
@@ -39,8 +39,12 @@
   width: 100%;
   background: none;
   font-size: 17px;
+	color: #556783;
 }
-
+.search input::placeholder {
+  font-size: 17px;
+	color: #556783;
+}
 .filter-btn {
   color: #ff9100;
   font-size: 18px;
@@ -97,6 +101,9 @@
   border-radius: 20px;
   overflow: hidden;
   background: #f3f4f6;
+-webkit-box-shadow: 0px 1px 12px 0px rgba(34, 60, 80, 0.070);
+-moz-box-shadow: 0px 1px 12px 0px rgba(34, 60, 80, 0.070);
+box-shadow: 0px 1px 12px 0px rgba(34, 60, 80, 0.070);
   flex-shrink: 0;
 }
 
