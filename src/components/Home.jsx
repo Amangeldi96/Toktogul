@@ -1134,7 +1134,7 @@ const filteredAds = useMemo(() => {
 {plusCategoryModalOpen && (
   <div className="modal-backdrop" onClick={() => setPlusCategoryModalOpen(false)}>
     <div className="modal-content" onClick={e => e.stopPropagation()}>
-      <div className="modal-close" onClick={() => setPlusCategoryModalOpen(false)}>✖</div>
+      <div className="modal-close" onClick={() => setPlusCategoryModalOpen(false)}>✕</div>
       {Object.entries(categoryLabels).map(([key, label]) => (
         <div
           key={key}
@@ -1156,7 +1156,7 @@ const filteredAds = useMemo(() => {
 {plusAddressModalOpen && (
   <div className="modal-backdrop" onClick={() => setPlusAddressModalOpen(false)}>
     <div className="modal-content" onClick={e => e.stopPropagation()}>
-      <div className="modal-close" onClick={() => setPlusAddressModalOpen(false)}>✖</div>
+      <div className="modal-close" onClick={() => setPlusAddressModalOpen(false)}>✕</div>
       {Object.entries(addressLabels).map(([key, label]) => (
         <div
           key={key}
@@ -1315,7 +1315,7 @@ const filteredAds = useMemo(() => {
       {filterAddressModalOpen && (
         <div className="modal-backdrop" onClick={() => setFilterAddressModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-close" onClick={() => setFilterAddressModalOpen(false)}>✖</div>
+            <div className="modal-close" onClick={() => setFilterAddressModalOpen(false)}>✕</div>
             {Object.entries(addressLabels).map(([key, label]) => (
               <div
                 key={key}
