@@ -218,6 +218,43 @@ const handleFilterSelectAddress = (address) => {
 const [plusCategoryModalOpen, setPlusCategoryModalOpen] = useState(false);
 const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
 
+
+
+useEffect(() => {
+  // Кайсы бир модалка ачык экенин текшерүү
+  const isAnyModalOpen = 
+    modalOpen || 
+    filterModalOpen || 
+    gallery.open || 
+    filterCategoryModalOpen || 
+    filterAddressModalOpen || 
+    plusCategoryModalOpen || 
+    plusAddressModalOpen;
+
+  if (isAnyModalOpen) {
+    // Скроллду өчүрүү жана оң жактагы "секирүүнү" (scrollbar jump) алдын алуу
+    document.body.style.overflow = "hidden";
+    document.body.style.paddingRight = "0px"; // Керек болсо scrollbar ордуна padding кошсо болот
+  } else {
+    // Скроллду кайра жандыруу
+    document.body.style.overflow = "";
+    document.body.style.paddingRight = "0px";
+  }
+
+  // Компонент жабылганда скроллду сөзсүз кайтарып берүү (cleanup)
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [
+  modalOpen, 
+  filterModalOpen, 
+  gallery.open, 
+  filterCategoryModalOpen, 
+  filterAddressModalOpen,
+  plusCategoryModalOpen,
+  plusAddressModalOpen
+]);
+
 	
 
 
@@ -442,9 +479,20 @@ const handleTouchStart = (e) => {
 const handleTouchMove = (e) => {
   if (!isDragging.current) return;
 
-  currentX.current = e.touches[0].clientX - startX.current;
+  let deltaX = e.touches[0].clientX - startX.current;
 
-  // swipe учурундагы real-time кыймыл
+  // 1. Пружина эффектиси: Эгер бир эле сүрөт болсо же четине жетсе
+  const isFirstSlide = gallery.index === 0;
+  const isLastSlide = gallery.index === gallery.images.length - 1;
+
+  if ((isFirstSlide && deltaX > 0) || (isLastSlide && deltaX < 0)) {
+    // Жылдыруу аралыгын 3 эсеге азайтабыз (пружина эффектиси)
+    deltaX = deltaX / 3; 
+  }
+
+  currentX.current = deltaX;
+
+  // Swipe учурундагы real-time кыймыл
   galleryTrackRef.current.style.transition = "none";
   galleryTrackRef.current.style.transform =
     `translateX(calc(-${gallery.index * 100}vw + ${currentX.current}px))`;
@@ -454,20 +502,20 @@ const handleTouchEnd = () => {
   isDragging.current = false;
   const threshold = 50; 
 
-  galleryTrackRef.current.style.transition = "transform 0.3s ease";
+  // Кайра ордуна келиши үчүн жумшак анимация кошуу
+  galleryTrackRef.current.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
 
-  if (currentX.current > threshold) {
-    prevImage();
-  } else if (currentX.current < -threshold) {
+  if (currentX.current < -threshold && gallery.index < gallery.images.length - 1) {
     nextImage();
+  } else if (currentX.current > threshold && gallery.index > 0) {
+    prevImage();
   } else {
-    // threshold жетпесе ошол эле сүрөттө кал
+    // Эгер бир эле сүрөт болсо же чегинен ашпаса, кайра ордуна секирип келет
     galleryTrackRef.current.style.transform = `translateX(-${gallery.index * 100}vw)`;
   }
 
   currentX.current = 0;
 };
-
 
 
 
