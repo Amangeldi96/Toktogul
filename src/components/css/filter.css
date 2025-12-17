@@ -363,6 +363,27 @@
   color: #8c97a8;
 }
 
+/* Поисктун сырткы контейнери */
+/* 2. ИЗДӨӨ ТИЛКЕСИНИН КОНТЕЙНЕРИ (Узундугу ушул жерден өзгөрөт) */
+.sticky-wrapper .search {
+  flex: 1;
+  background: #f1f2f7;
+  padding: 4px 18px;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 3. ИЧИНДЕГИ ТЕКСТ ЖАЗУУЧУ ЖЕР (INPUT) */
+.sticky-wrapper .search input {
+  width: 100%;        /* Контейнердин ичин толук ээлейт */
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;    /* Тексттин өлчөмү */
+}
 
 
 

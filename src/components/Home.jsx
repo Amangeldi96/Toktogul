@@ -955,7 +955,7 @@ const filteredAds = useMemo(() => {
 	<div className={`sticky-wrapper ${showHeader ? "show" : "hide"}`}>
   <div className="top-row">
     <div className="search">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
         <circle cx="11" cy="11" r="6.2" stroke="#556783" strokeWidth="1.6" />
         <path d="M21 21l-4.35-4.35" stroke="#556783" strokeWidth="1.6" />
       </svg>
