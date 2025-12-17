@@ -35,6 +35,7 @@ import clothesImg from "./img/10.jpeg";
 import sportImg from "./img/9.jpeg";
 import farmImg from "./img/11.jpeg";
 import PersonalImg from "./img/13.png";
+import babyImg from "./img/15.jpeg";
 import othersImg from "./img/12.jpeg";
 import CanvasImg from "./img/Canvas.svg";
 // === Firebase ===
@@ -280,6 +281,7 @@ const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
     repair: "Курулуш",
     animal: "Мал жандык",
     tehno: "Үй тричилик",
+		baby: "Балдар дүйнөсү",
 		sport: "Спорттук жабдуулар",
     other: "Башкалар",
   };
@@ -297,6 +299,7 @@ const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
   repair: {img: repairToolsImg},
   animal: {img: animalImg},
   tehno: {img: tehnoImg},
+	baby: {img: babyImg},
   sport: { img: sportImg},
   other: {img: othersImg},
 };
@@ -314,6 +317,7 @@ const [plusAddressModalOpen, setPlusAddressModalOpen] = useState(false);
 		{ img: jobImg, label: "Жумуш", key: "jobs", bgClass: "bg-color" },
 		{ img: sportImg, label: "Спорттук жабдуулар", key: "sport", bgClass: "bg-color big-info" },
 		{ img: farmImg, label: "Дыйкан чарба", key: "farm", bgClass: "bg-color big-info" },
+		{ img: babyImg, label: "Балдар дүйнөсү", key: "baby", bgClass: "bg-color big-info" },
 		{ img: PersonalImg, label: "Жекке буйумдар", key: "Personal", bgClass: "bg-color big-info" },
 		{ img: othersImg, label: "Башкалар", key: "othera", bgClass: "bg-color" },   
   ];
