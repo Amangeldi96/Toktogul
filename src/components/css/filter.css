@@ -264,6 +264,117 @@
 
 
 
+/* НЕГИЗГИ КОНТЕЙНЕР */
+.sticky-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  z-index: 3000;
+  /* Астыңкы padding 0 кылынды, боштукту азайтуу үчүн */
+  padding: 8px 15px 0px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  transition: transform 0.3s ease-in-out, opacity 0.2s ease;
+  pointer-events: auto;
+}
+
+/* Жашыруу (Өйдө чыгып кетет) */
+.sticky-wrapper.hide {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Көрсөтүү */
+.sticky-wrapper.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ПОИСК ЖАНА КАТЕГОРИЯ ОРТОСУНДАГЫ БОШТУК */
+.sticky-wrapper .top-row {
+  margin-bottom: 10px !important; /* Поисктун астындагы боштукту алдык */
+}
+
+.categories-scroll.mini-version {
+  /* margin-top жана padding-top минималдуу кылынды */
+  padding: 2px 0px 10px; 
+  margin-top: 2px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* КАТЕГОРИЯ КАРТАСЫ */
+.categories-scroll.mini-version .cat-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 190px;
+  height: 50px;
+  border-radius: 10px !important;
+  padding: 0 12px 0 0;
+  gap: 12px;
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: 0px 1px 12px 0px rgba(34, 60, 80, 0.1) !important;
+}
+
+/* ИКОНКА ЖАНА СҮРӨТ (БУРЧТАРЫ ТИК) */
+.categories-scroll.mini-version .icon {
+  width: 55px;
+  height: 50px;
+  background-color: #e9eff5;
+  border-radius: 10px ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.categories-scroll.mini-version .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* СҮРӨТТҮН БУРЧТАРЫ ТИК */
+  border-radius: 0px !important;
+}
+
+/* ТЕКСТТЕР */
+.categories-scroll.mini-version .bottom {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.categories-scroll.mini-version .label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.categories-scroll.mini-version .count {
+  font-size: 12px;
+  color: #8c97a8;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Башкы контейнер */
 .fixed-footer-container {

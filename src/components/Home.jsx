@@ -216,28 +216,44 @@ const handleFilterSelectAddress = (address) => {
 
 
 
-const [isScrollingDown, setIsScrollingDown] = useState(false);
+// Коддун башында (State бөлүгүндө) ушул эки өзгөрмө тең болушу керек:
+const [showHeader, setShowHeader] = useState(false);
+const [isScrollingDown, setIsScrollingDown] = useState(false); // Бул жерди кошуңуз
 const [lastScrollY, setLastScrollY] = useState(0);
 
 useEffect(() => {
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
 
-    // Эгер 10px-ден ашык жылса гана иштесин (сезимталдуулук үчүн)
-    if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+    if (Math.abs(currentScrollY - lastScrollY) < 5) return;
 
-    if (currentScrollY > lastScrollY && currentScrollY > 50) {
-      setIsScrollingDown(true); // Төмөн түшкөндө жашыруу
+    // 1. Хедер үчүн логика (Лалафо стили)
+    if (currentScrollY > 150 && currentScrollY < lastScrollY) {
+      setShowHeader(true);
     } else {
-      setIsScrollingDown(false); // Өйдө чыкканда көрсөтүү
+      setShowHeader(false);
     }
-    
+
+    // 2. Плюс баскычы жана Меню үчүн логика (isScrollingDown)
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsScrollingDown(true); // Төмөн түшкөндө true
+    } else {
+      setIsScrollingDown(false); // Өйдө чыкканда же башында false
+    }
+
     setLastScrollY(currentScrollY);
   };
 
   window.addEventListener("scroll", handleScroll);
   return () => window.removeEventListener("scroll", handleScroll);
-}, [lastScrollY]); // Бул жерде lastScrollY болушу шарт!
+}, [lastScrollY]);
+
+
+
+
+
+
+
 
 
 
@@ -935,6 +951,40 @@ const filteredAds = useMemo(() => {
       <div key={msg.id} className="hom-error">{msg.msg}</div>
     ))}
   </div>
+
+	<div className={`sticky-wrapper ${showHeader ? "show" : "hide"}`}>
+  <div className="top-row">
+    <div className="search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="6.2" stroke="#556783" strokeWidth="1.6" />
+        <path d="M21 21l-4.35-4.35" stroke="#556783" strokeWidth="1.6" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Жарнама издөө..."
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+      />
+    </div>
+    <div className="btn-filter" onClick={() => setFilterModalOpen(true)}>Фильтр</div>
+  </div>
+
+  {/* Категориялар сүйрү (pill) форматта болушу үчүн кошумча класс коштук */}
+  <div className="categories-scroll mini-version">
+    {categories.map((cat, i) => (
+      <div
+        className={`cat-card ${cat.bgClass} ${selectedCategory === cat.key ? "selected" : ""}`}
+        key={i}
+        onClick={() => handleCategoryClick(cat.key)}
+      >
+        <div className="icon">
+          <img src={cat.img} alt={cat.label} />
+        </div>
+        <div className="label">{cat.label}</div>
+      </div>
+    ))}
+  </div>
+</div>
 
   {/* ===== Верхний поиск и фильтр ===== */}
   <div className="top-row">
