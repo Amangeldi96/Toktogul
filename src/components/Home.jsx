@@ -218,36 +218,42 @@ const handleFilterSelectAddress = (address) => {
 
 // Коддун башында (State бөлүгүндө) ушул эки өзгөрмө тең болушу керек:
 const [showHeader, setShowHeader] = useState(false);
-const [isScrollingDown, setIsScrollingDown] = useState(false); // Бул жерди кошуңуз
-const [lastScrollY, setLastScrollY] = useState(0);
+const [isScrollingDown, setIsScrollingDown] = useState(false);
+const lastScrollY = useRef(0); // useState ордуна useRef колдонуу маанилүү!
+const ticking = useRef(false);
 
 useEffect(() => {
   const handleScroll = () => {
-    const currentScrollY = window.scrollY;
+    if (!ticking.current) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const diff = currentScrollY - lastScrollY.current;
 
-    if (Math.abs(currentScrollY - lastScrollY) < 5) return;
+        // 1. Плюс баскычы үчүн (Төмөн скролл - expanded: true)
+        // currentScrollY > 50 шарты баскыч эң өйдөдө кичинекей турушу үчүн
+        if (currentScrollY > 50 && diff > 5) {
+          setIsScrollingDown(true);
+        } else if (diff < -5) {
+          setIsScrollingDown(false);
+        }
 
-    // 1. Хедер үчүн логика (Лалафо стили)
-    if (currentScrollY > 150 && currentScrollY < lastScrollY) {
-      setShowHeader(true);
-    } else {
-      setShowHeader(false);
+        // 2. Хедер үчүн (Өйдө скроллдо гана чыгат)
+        if (currentScrollY > 150 && diff < -10) {
+          setShowHeader(true);
+        } else if (diff > 5 || currentScrollY <= 150) {
+          setShowHeader(false);
+        }
+
+        lastScrollY.current = currentScrollY;
+        ticking.current = false;
+      });
+      ticking.current = true;
     }
-
-    // 2. Плюс баскычы жана Меню үчүн логика (isScrollingDown)
-    if (currentScrollY > lastScrollY && currentScrollY > 50) {
-      setIsScrollingDown(true); // Төмөн түшкөндө true
-    } else {
-      setIsScrollingDown(false); // Өйдө чыкканда же башында false
-    }
-
-    setLastScrollY(currentScrollY);
   };
 
-  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("scroll", handleScroll, { passive: true });
   return () => window.removeEventListener("scroll", handleScroll);
-}, [lastScrollY]);
-
+}, []); // Бош массив - useEffect бир эле жолу иштейт
 
 
 
