@@ -1,5 +1,6 @@
 // === React ===
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 // === Стили ===
 import "./css/styles.css";
 import "./css/style.css";
@@ -167,7 +168,7 @@ export default function Home() {
   // ===== User/Auth =====
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  const [selectedTab, setSelectedTab] = useState(null);
+  const [selectedTab, setSelectedTab] = useState("home");
 
   // ===== Ads =====
   const [allAds, setAllAds] = useState([]);
@@ -207,6 +208,10 @@ const handleFilterSelectAddress = (address) => {
   setSelectedAddress(address);       // негизги фильтр иштеши үчүн
   setFilterAddressOpen(false);
 };
+const navigate = useNavigate();
+
+
+
 
 
 
@@ -1028,7 +1033,8 @@ const filteredAds = useMemo(() => {
 </div>
 
   {/* ===== Основной контент ===== */}
-  <main className="content">
+<main className="content">
+  {selectedTab === "home" && (
     <div className="cards" id="cards">
       {loadingAds ? (
         Array.from({ length: 2 }).map((_, colIndex) => (
@@ -1054,67 +1060,56 @@ const filteredAds = useMemo(() => {
             {col.map(ad => (
               <div key={ad.id} className="card">
 
-								
-<div className="img">
-  {ad.images && ad.images[0] ? (
-    ad.images[0].type === "video" ? (
-      <div
-        className="video-thumbnail"
-        onClick={() => {
-          handleView(ad.id);       // Views count логика
-          openGallery(ad.images, 0); // Галерея ачуу
-        }}
-      >
-        <img
-          src={ad.images[0].thumbnail}  // Thumbnail жок болсо placeholder
-          className="card-img"
-          alt="Видео placeholder"
-        />
-        <div className="play-overlay">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 12L3 18.9671C3 21.2763 5.53435 22.736 7.59662 21.6145L10.7996 19.8727M3 8L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L14.0026 18.131"
-              stroke="#3b2f98"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-      </div>
-    ) : (
-      <img
-        src={ad.images[0]?.url || (typeof ad.images[0] === "string" ? ad.images[0] : CanvasImg)}
-        className="card-img"
-        alt={ad.descText || "Фото объявления"}
-        onClick={() => {
-          handleView(ad.id);
-          openGallery(ad.images, 0);
-        }}
-      />
-    )
-  ) : null}
-</div>
-
-
-
+                <div className="img">
+                  {ad.images && ad.images[0] ? (
+                    ad.images[0].type === "video" ? (
+                      <div
+                        className="video-thumbnail"
+                        onClick={() => {
+                          handleView(ad.id);
+                          openGallery(ad.images, 0);
+                        }}
+                      >
+                        <img
+                          src={ad.images[0].thumbnail}
+                          className="card-img"
+                          alt="Видео placeholder"
+                        />
+                        <div className="play-overlay">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M3 12L3 18.9671C3 21.2763 5.53435 22.736 7.59662 21.6145L10.7996 19.8727M3 8L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L14.0026 18.131"
+                              stroke="#3b2f98"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={ad.images[0]?.url || CanvasImg}
+                        className="card-img"
+                        alt={ad.descText || "Фото объявления"}
+                        onClick={() => {
+                          handleView(ad.id);
+                          openGallery(ad.images, 0);
+                        }}
+                      />
+                    )
+                  ) : null}
+                </div>
 
                 <div className="body">
                   <div className="price">{formatPrice(ad.price)}</div>
-                    {/* Категория */}
-  <div className="sub">
-    {categoryLabels[ad.category] || ad.category}
-  </div>
-
-  {/* Адрес */}
-  {ad.address && (
-<div className="address">
-  📍 {addressLabels[ad.address] || ad.address}
-</div>
-  )}
+                  <div className="sub">
+                    {categoryLabels[ad.category] || ad.category}
+                  </div>
+                  {ad.address && (
+                    <div className="address">
+                      📍 {addressLabels[ad.address] || ad.address}
+                    </div>
+                  )}
                   <div className="title">{ad.desc || "Жарнама тууралу маалымат жок"}</div>
 
                   <div className="phone">
@@ -1154,18 +1149,15 @@ const filteredAds = useMemo(() => {
                       <span className="view-count">{ad.views}</span>
                     </div>
                     <div className="right-actions">
-                    <button
-  type="button"
-  className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
-  onClick={() => toggleLike(ad)}
->
-
-
-                        <svg className="like" viewBox="0 0 24 24" fill="none">
-                          <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" />
+                      <button
+                        type="button"
+                        className={`icon-btn heart ${ad.likedBy?.includes(user?.uid) ? "active" : ""}`}
+                        onClick={() => toggleLike(ad)}
+                      >
+                        <svg className="like" viewBox="0 0 24 24">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                       </button>
-                      <span className="like-count">{ad.likes || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -1175,7 +1167,9 @@ const filteredAds = useMemo(() => {
         ))
       )}
     </div>
-  </main>
+  )}
+</main>
+
 
 
     {/* ===== Модалка создания объявления (Плюс кнопка) ===== */}
@@ -1525,8 +1519,17 @@ const filteredAds = useMemo(() => {
   </div>
 
   {/* Төмөнкү меню - скролл болгондо жашырылат */}
-  <div className={`bottom-nav ${isScrollingDown ? "nav-hide" : "nav-show"}`}>
-    <div className={`nav-item ${selectedTab === "home" ? "active" : ""}`} onClick={() => setSelectedTab("home")}>
+    <div className={`bottom-nav ${isScrollingDown ? "nav-hide" : "nav-show"}`}>
+      <div
+        className={`nav-item ${selectedTab === "home" ? "active" : ""}`}
+        onClick={() => {
+        setSelectedCategory("");
+        setSearchQuery("");
+        setFilterPrice({ min: "", max: "" });
+        setSelectedTab("home");
+				navigate("/");
+        }}
+      >
       <svg viewBox="0 0 24 24" fill="none">
         <path fillRule="evenodd" clipRule="evenodd" d="M2.5192 7.82274C2 8.77128 2 9.91549 2 12.2039V13.725C2 17.6258 2 19.5763 3.17157 20.7881C4.34315 22 6.22876 22 10 22H14C17.7712 22 19.6569 22 20.8284 20.7881C22 19.5763 22 17.6258 22 13.725V12.2039C22 9.91549 22 8.77128 21.4808 7.82274C20.9616 6.87421 20.0131 6.28551 18.116 5.10812L16.116 3.86687C14.1106 2.62229 13.1079 2 12 2C10.8921 2 9.88939 2.62229 7.88403 3.86687L5.88403 5.10813C3.98695 6.28551 3.0384 6.87421 2.5192 7.82274ZM11.25 18C11.25 18.4142 11.5858 18.75 12 18.75C12.4142 18.75 12.75 18.4142 12.75 18V15C12.75 14.5858 12.4142 14.25 12 14.25C11.5858 14.25 11.25 14.5858 11.25 15V18Z"></path>
       </svg>
@@ -1582,6 +1585,8 @@ const filteredAds = useMemo(() => {
 				onClose={() => setSelectedTab(null)}  
 				/>
       )}
+
+			
     </div>
 
 
