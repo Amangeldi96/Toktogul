@@ -172,7 +172,98 @@
 
 
 
-/*Nav menu*/
+/* Контейнер */
+.category-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Select */
+.category-select select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  font-weight: 600;
+  background: #fff;
+  appearance: none; /* браузердин default стрелкасын алып салат */
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.category-select select:hover {
+  border-color: #eaf7ff;
+  background: #faf5fc;
+}
+
+.category-select select:focus {
+  border-color: #e9f1ff;
+  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
+  outline: none;
+}
+
+/* Жаңы стрелка */
+.category-select .arrow {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  font-size: 14px;
+  color: #666;
+  transition: color 0.25s ease;
+}
+
+.category-select:hover .arrow {
+  color: #f8fbff;
+}
+
+
+
+/**/
+
+
+/* Контейнер */
+.price-row {
+  display: flex;
+  gap: 14px;
+}
+
+/* Ар бир input-group */
+.price-row .input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label */
+.price-row .input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* Input */
+.price-row .input-group input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #fff0f0;
+  font-size: 15px;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.price-row .input-group input:hover {
+  border-color: #ffffff;
+  background: #f5fbfc;
+}
+
+
+
+
+
+
 
 /* Башкы контейнер */
 .fixed-footer-container {
@@ -308,7 +399,8 @@
 
 /* СКРОЛЛ БОЛГОНДОГУ АБАЛ (EXPANDED) */
 .custom-fab.expanded {
-  width: 220px; /* Текстке жараша созулат */
+  width: 180px;
+	height: 50px;
   border-radius: 50px;
   bottom: 25px;
 }
@@ -356,102 +448,3 @@
   height: 100%;
   pointer-events: none; /* Бул жерди басууга болбойт */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-/* Контейнер */
-.category-select {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* Select */
-.category-select select {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 2px solid #ddd;
-  font-size: 15px;
-  font-weight: 600;
-  background: #fff;
-  appearance: none; /* браузердин default стрелкасын алып салат */
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.category-select select:hover {
-  border-color: #eaf7ff;
-  background: #faf5fc;
-}
-
-.category-select select:focus {
-  border-color: #e9f1ff;
-  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
-  outline: none;
-}
-
-/* Жаңы стрелка */
-.category-select .arrow {
-  position: absolute;
-  right: 14px;
-  pointer-events: none;
-  font-size: 14px;
-  color: #666;
-  transition: color 0.25s ease;
-}
-
-.category-select:hover .arrow {
-  color: #f8fbff;
-}
-
-
-
-/**/
-
-
-/* Контейнер */
-.price-row {
-  display: flex;
-  gap: 14px;
-}
-
-/* Ар бир input-group */
-.price-row .input-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* Label */
-.price-row .input-group label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #444;
-}
-
-/* Input */
-.price-row .input-group input {
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #fff0f0;
-  font-size: 15px;
-  background: #fff;
-  transition: all 0.25s ease;
-}
-
-.price-row .input-group input:hover {
-  border-color: #ffffff;
-  background: #f5fbfc;
-}
-
