@@ -723,37 +723,45 @@ setFormData((prev) => {
 
     e.target.value = null;
   };
-// ===== Жарнама берүү =====
-const createAd = async () => {
-  if (!formData.phone || !formData.category || !formData.desc)
-    return showError("Бардык талааларды толтуруңуз!");
-  if (!isValidKyrgyzPhone(formData.phone))
-    return showError("Телефон номерди туура толтурунуз(мисалы: 0700604604)");
-  if (!user) return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
 
+	
+// ===== Жарнама берүү (Оңдолгон жана Коопсуз вариант) =====
+const createAd = async () => {
+  // 1. Биринчи кезекте "Loading" текшерүү - бул кайра-кайра иштеп кетүүдөн сактайт
+  if (loading) return; 
+
+  // 2. Валидациялар
+  if (!formData.phone || !formData.category || !formData.desc) {
+    return showError("Бардык талааларды толтуруңуз!");
+  }
+  if (!isValidKyrgyzPhone(formData.phone)) {
+    return showError("Телефон номерди туура толтурунуз (мисалы: 0700604604)");
+  }
+  if (!user) {
+    return showError("Жарнама берүү үчүн аккаунт менен кириңиз!");
+  }
+
+  // 3. Процессти баштоо жана "Эшикти кулпулоо"
   setLoading(true);
 
   try {
     console.log("👉 createAd башталды");
-    console.log("Формадагы маалыматтар:", formData);
 
+    // Администраторлорду текшерүү
     const adminEmails = ["Amangeldi-9696@mail.ru", "smagilov91@gmail.com"];
-    const isAdmin =
-      user.email && adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+    const isAdmin = user.email && adminEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
-    console.log("Колдонуучу:", user.email, "isAdmin:", isAdmin);
-
+    // Колдонуучунун документтин окуу (Firestore Read - 1 даана)
     const userRef = db.collection("users").doc(user.uid);
     const userDoc = await userRef.get();
-    console.log("User документ:", userDoc.exists ? userDoc.data() : "Документ жок");
-
-    // 👇 Сүрөттөрдү текшерүү
+    
+    // Сүрөттөрдү даярдоо
     const images = (formData.images || []).filter(img => img && img.url && img.public_id);
-    console.log("📦 Firestore'го сакталчу сүрөттөр:", images);
 
+    // Сактала турган маалыматтын объектиси
     const adData = {
       ...formData,
-      images, // ар бир элемент { url, public_id, type }
+      images, 
       price: formData.price ? Number(formData.price) : 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       likes: 0,
@@ -763,26 +771,24 @@ const createAd = async () => {
       userEmail: user.email
     };
 
-    console.log("Firestore'го сакталчу adData:", adData);
-
-    // Admin жана pending логикасы
+    // --- Логикалык бөлүм ---
     if (isAdmin) {
-      console.log("👉 Admin жарнама кошууда");
+      // Админ болсо түз эле "ads" коллекциясына
       await db.collection("ads").add(adData);
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
     } else if (!userDoc.exists || !userDoc.data().hasFreeAd) {
-      console.log("👉 FreeAd логикасы иштеп жатат");
+      // Эгер биринчи акысыз жарнамасы болсо
       await db.collection("ads").add(adData);
+      // Колдонуучуга "бесплатный жарнамасын колдонду" деп белги коюу
       await userRef.set({ hasFreeAd: true }, { merge: true });
       showSuccess("Жарнамаңыз ийгиликтүү жарыяланды!");
     } else {
-      console.log("👉 PendingAds логикасы иштеп жатат");
+      // Эгер акысыз жарнамасы түгөнсө, текшерүүгө (pending) кетет
       await db.collection("pendingAds").add({ ...adData, status: "pending" });
       showSuccess("Жарнама админге жөнөтүлдү.");
     }
 
-    console.log("👉 Жарнама ийгиликтүү сакталды");
-
+    // 4. Форманы тазалоо жана жабуу
     setFormData({
       phone: "",
       category: "",
@@ -800,6 +806,7 @@ const createAd = async () => {
     console.error("❌ Жарнама түзүүдө ката:", err.message, err);
     showError("Жарнама түзүүдө ката кетти!");
   } finally {
+    // 5. АЯГЫНДА: Loading абалын өчүрүү (ийгиликтүү болсо да, ката болсо да иштейт)
     setLoading(false);
     console.log("👉 createAd аяктады");
   }
