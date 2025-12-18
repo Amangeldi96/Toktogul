@@ -3,30 +3,36 @@ import firebase from "firebase/compat/app";
 import { db } from "./Firebase";
 
 const SevenDaysAds = ({ onLoad }) => {
-  const [allAds, setAllAds] = useState([]);
-  const [allAdsOriginal, setAllAdsOriginal] = useState([]);
-
   useEffect(() => {
-    const now = Date.now();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
     const deleteOldAds = async () => {
-      const oldAdsSnapshot = await db
-        .collection("ads")
-        .where(
-          "timestamp",
-          "<",
-          firebase.firestore.Timestamp.fromMillis(now - sevenDays),
-        )
-        .get();
+      try {
+        const now = Date.now();
+        const sevenDaysInMillis = 7 * 24 * 60 * 60 * 1000;
+        // 7 күн мурунку убакытты Firestore Timestamp форматына айландыруу
+        const cutoffDate = firebase.firestore.Timestamp.fromMillis(now - sevenDaysInMillis);
 
-      if (!oldAdsSnapshot.empty) {
-        const batch = db.batch();
-        oldAdsSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
+        const oldAdsSnapshot = await db
+          .collection("ads")
+          .where("timestamp", "<", cutoffDate)
+          .get();
+
+        if (!oldAdsSnapshot.empty) {
+          const batch = db.batch();
+          oldAdsSnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          console.log(`${oldAdsSnapshot.size} эски жарнамалар өчүрүлдү.`);
+        }
+      } catch (error) {
+        console.error("Өчүрүүдө ката кетти:", error);
       }
     };
 
+    // Алгач эскилерди тазалайбыз
+    deleteOldAds();
+
+    // Жаңы жарнамаларды угуу (Real-time listener)
     const unsubscribe = db
       .collection("ads")
       .orderBy("timestamp", "desc")
@@ -36,16 +42,13 @@ const SevenDaysAds = ({ onLoad }) => {
           ...doc.data(),
         }));
 
-        setAllAds(ads);
-        setAllAdsOriginal(ads);
-
-        // Передаём наверх
         if (onLoad) onLoad(ads);
+      }, (error) => {
+        console.error("Сайтты жүктөөдө ката:", error);
       });
 
-    deleteOldAds();
     return () => unsubscribe();
-  }, []);
+  }, [onLoad]); // onLoad өзгөрсө кайра иштетүү
 
   return null;
 };
