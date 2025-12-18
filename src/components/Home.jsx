@@ -39,6 +39,7 @@ import PersonalImg from "./img/13.png";
 import babyImg from "./img/15.jpeg";
 import othersImg from "./img/12.jpeg";
 import CanvasImg from "./img/Canvas.svg";
+import logoImg from "./img/001.jpg";
 // === Firebase ===
 import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./Firebase";
@@ -259,6 +260,44 @@ useEffect(() => {
   window.addEventListener("scroll", handleScroll, { passive: true });
   return () => window.removeEventListener("scroll", handleScroll);
 }, []); // Бош массив - useEffect бир эле жолу иштейт
+
+
+
+
+
+const [videoThumbs, setVideoThumbs] = React.useState({});
+
+
+const generateVideoThumbnail = (videoUrl, adId) => {
+  if (videoThumbs[adId]) return;
+
+  const video = document.createElement("video");
+  video.src = videoUrl;
+  video.crossOrigin = "anonymous";
+  video.muted = true;
+  video.playsInline = true;
+
+  video.addEventListener("loadeddata", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const thumb = canvas.toDataURL("image/jpeg");
+
+    setVideoThumbs((prev) => ({
+      ...prev,
+      [adId]: thumb,
+    }));
+  });
+};
+
+
+
+
+
 
 
 
@@ -1061,48 +1100,70 @@ const filteredAds = useMemo(() => {
 
 								
 <div className="img">
-  {ad.images && ad.images[0] ? (
-    ad.images[0].type === "video" ? (
-      <div
-        className="video-thumbnail"
-        onClick={() => {
-          handleView(ad.id);       // Views count логика
-          openGallery(ad.images, 0); // Галерея ачуу
-        }}
-      >
-        <img
-          src={ad.images[0].thumbnail}  // Thumbnail жок болсо placeholder
-          className="card-img"
-          alt="Видео placeholder"
-        />
-        <div className="play-overlay">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 12L3 18.9671C3 21.2763 5.53435 22.736 7.59662 21.6145L10.7996 19.8727M3 8L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L14.0026 18.131"
-              stroke="#3b2f98"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+  {(() => {
+    const items = Array.isArray(ad?.images) ? ad.images : [];
+    const first = items[0];
+
+    // 📹 Видео
+    if (first?.type === "video") {
+      const thumb =
+        first.thumbnail ||
+        videoThumbs[ad.id] ||
+        logoImg;
+
+      // thumbnail жок болсо — генерациялайбыз
+      if (!first.thumbnail && !videoThumbs[ad.id]) {
+        generateVideoThumbnail(first.url, ad.id);
+      }
+
+      return (
+        <div
+          className="thumb-wrapper"
+          onClick={() => {
+            handleView(ad.id);
+            openGallery(items, 0);
+          }}
+        >
+          <img
+            src={thumb}
+            className="card-img"
+            alt="Видео"
+            onError={(e) => (e.currentTarget.src = logoImg)}
+          />
+
+          <div className="play-overlay">
+            <svg viewBox="0 0 24 24" width="48" height="48">
+              <path d="M8 5v14l11-7z" fill="#fff" />
+            </svg>
+          </div>
         </div>
-      </div>
-    ) : (
+      );
+    }
+
+    // 🖼 Фото же fallback
+    const imageSrc =
+      typeof first === "string"
+        ? first
+        : first?.url || logoImg;
+
+    return (
       <img
-        src={ad.images[0]?.url || (typeof ad.images[0] === "string" ? ad.images[0] : CanvasImg)}
+        src={imageSrc}
         className="card-img"
-        alt={ad.descText || "Фото объявления"}
+        alt={ad?.descText || "Фото объявления"}
+        onError={(e) => (e.currentTarget.src = logoImg)}
         onClick={() => {
           handleView(ad.id);
-          openGallery(ad.images, 0);
+          if (items.length > 0) {
+            openGallery(items, 0);
+          }
         }}
       />
-    )
-  ) : null}
+    );
+  })()}
 </div>
+
+
 
 
 
