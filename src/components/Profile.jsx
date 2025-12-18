@@ -26,6 +26,26 @@ export default function Profile({ onClose }) {
 
   const auth = firebase.auth();
 
+
+
+	const getPasswordStrength = (pwd) => {
+  if (!pwd) return { score: 0, label: "", color: "transparent" };
+  let score = 0;
+  if (pwd.length > 6) score++; // Узундугу
+  if (/[A-Z]/.test(pwd)) score++; // Чоң тамга
+  if (/[0-9]/.test(pwd)) score++; // Сандар
+  if (/[^A-Za-z0-9]/.test(pwd)) score++; // Атайын символдор (!@#$%^&*)
+
+  if (score <= 1) return { score: 25, label: "Өтө оңой", color: "#ff4d4d" }; // Кызыл
+  if (score === 2) return { score: 50, label: "Орточо", color: "#ffa500" };  // Сары
+  if (score === 3) return { score: 75, label: "Жакшы", color: "#2db7f5" };   // Көк
+  return { score: 100, label: "Күчтүү", color: "#52c41a" };                  // Жашыл
+};
+
+const strength = getPasswordStrength(password);
+
+
+
   // ===== Админ функциялары =====
   const approveAd = async (id) => {
     const adRef = db.collection("pendingAds").doc(id);
@@ -376,13 +396,26 @@ const rejectAd = async (id) => {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                     />
-                    <button
-                      type="button"
-                      className="prf-password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
+                  <button
+  type="button"
+  className="prf-password-toggle"
+  onClick={() => setShowPassword(!showPassword)}
+  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+>
+  {showPassword ? (
+    // Көз жабык (Чийилген)
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>
+  ) : (
+    // Көз ачык
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  )}
+</button>
                   </div>
 
                   <input
@@ -398,61 +431,126 @@ const rejectAd = async (id) => {
                 </div>
               )}
 
-              {tab === "signup" && (
-                <div className="prf-field">
-                  <input
-                    type="text"
-                    placeholder="Аты-жөнүңүз"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
+{tab === "signup" && (
+  <div className="prf-field">
+    <input
+      type="text"
+      placeholder="Аты-жөнүңүз"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    />
+    <input
+      type="email"
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
 
-                  <div className="prf-password-wrapper">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Сыр сөз"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="prf-password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
+    {/* Биринчи Сыр сөз */}
+    <div className="prf-password-wrapper">
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Сыр сөз"
+    value={password}
+    className="password-input-dynamic"
+    style={{
+      // Эгер пароль жазылса, бордердин түсү күчүнө жараша өзгөрөт
+      // Ошондой эле бир аз көлөкө (shadow) кошсо болот, эффект жакшыраак көрүнөт
+      borderColor: password ? strength.color : "#e0e0e0",
+      boxShadow: password ? `0 0 5px ${strength.color}22` : "none"
+    }}
+    onChange={(e) => setPassword(e.target.value)}
+  />
 
-                  <div className="prf-password-wrapper">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Сыр сөздү кайталаңыз"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="prf-password-toggle"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
+  {/* Инпуттун ичиндеги тексттик индикатор */}
+  {password && (
+    <span className="strength-label-inside" style={{ color: strength.color }}>
+      {strength.label}
+    </span>
+  )}
+      <button
+        type="button"
+        className="prf-password-toggle"
+        onClick={() => setShowPassword(!showPassword)}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        {showPassword ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        )}
+      </button>
+    </div>
 
-                  <input
-                    type="button"
-                    className="prf-btn"
-                    value="Катталуу"
-                    onClick={signup}
-                  />
-                </div>
-              )}
+   {/* Сыр сөздү кайталоо */}
+<div className="prf-password-wrapper">
+  <input
+    type={showConfirmPassword ? "text" : "password"}
+    placeholder="Сыр сөздү кайталаңыз"
+    value={confirmPassword}
+    className="password-input-dynamic" // Сиздин жаңы классыңыз
+    style={{
+      // Логика: Эгер кайталоо жазыла баштаса жана негизги паролго окшош болбосо - КЫЗЫЛ, окшош болсо - ЖАШЫЛ
+      borderColor: confirmPassword 
+        ? (password === confirmPassword ? "#52c41a" : "#ff4d4d") 
+        : "#e0e0e0",
+      boxShadow: (confirmPassword && password !== confirmPassword) 
+        ? "0 0 5px rgba(255, 77, 77, 0.2)" 
+        : "none"
+    }}
+    onChange={(e) => setConfirmPassword(e.target.value)}
+  />
+
+  {/* Паролдор окшош эмес болсо чыгуучу текст */}
+  {confirmPassword && password !== confirmPassword && (
+    <span className="strength-label-inside" style={{ color: "#ff4d4d", fontSize: "10px" }}>
+      дал келбейт
+    </span>
+  )}
+
+  {/* Паролдор толук окшош болсо чыгуучу иконка (кааласаңыз) */}
+  {confirmPassword && password === confirmPassword && (
+    <span className="strength-label-inside" style={{ color: "#52c41a" }}>
+      ✓
+    </span>
+  )}
+
+  <button
+    type="button"
+    className="prf-password-toggle"
+    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+  >
+    {showConfirmPassword ? (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+    ) : (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    )}
+  </button>
+</div>
+
+    {/* Каттоо баскычы */}
+    <input
+      type="button"
+      className="prf-btn"
+      value="Катталуу"
+      onClick={signup}
+      style={{ marginTop: "10px" }}
+    />
+  </div>
+)}
 
               {tab === "reset" && (
                 <div className="prf-field">

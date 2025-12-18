@@ -395,3 +395,47 @@ padding: 1.5rem;
 * {
   -ms-overflow-style: none;
 }
+
+
+
+
+/**/
+
+/* Пароль жазылган контейнерге position: relative кошуу керек */
+.prf-password-wrapper {
+  position: relative;
+  margin-bottom: 20px; /* Инпуттардын ортосундагы туруктуу аралык */
+}
+
+.password-input-dynamic {
+  width: 100%;
+  padding: 12px 100px 12px 15px; /* Оң жагынан текст жана иконка үчүн орун калтыруу */
+  border: 2px solid #e0e0e0; /* Демейки боз бордер */
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Инпуттун ичиндеги оң жактагы текст (Өтө оңой, Күчтүү ж.б.) */
+.strength-label-inside {
+  position: absolute;
+  right: 45px; /* Көздүн иконкасынын жанында */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+  text-transform: lowercase;
+}
+
+/* Көз иконкасынын баскычы */
+.prf-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
