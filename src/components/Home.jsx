@@ -39,7 +39,7 @@ import PersonalImg from "./img/13.png";
 import babyImg from "./img/15.jpeg";
 import othersImg from "./img/12.jpeg";
 import CanvasImg from "./img/Canvas.svg";
-import logoImg from "./img/001.jpg";
+import logoImg from "./img/2025.jpg";
 // === Firebase ===
 import { doc, getDoc, setDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./Firebase";
