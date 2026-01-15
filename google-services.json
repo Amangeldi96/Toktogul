@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "994223338100",
+    "project_id": "toktogul-b4bc8",
+    "storage_bucket": "toktogul-b4bc8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994223338100:android:fb72f16cb4bd52a01e5721",
+        "android_client_info": {
+          "package_name": "com.example.toktogul_reklama"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "994223338100-fhusmtmrrtc0640b1tkalpmg2rc52nju.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3BVNc12Gg-FReDL2JvvQSHygPh27c_3Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "994223338100-fhusmtmrrtc0640b1tkalpmg2rc52nju.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

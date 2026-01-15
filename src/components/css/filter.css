@@ -1,0 +1,593 @@
+.filter-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+.filter-box {
+  width: 90%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+}
+
+.filter-option {
+  width: 100%;
+  padding: 12px;
+  background: #f3f4f6;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.cat-list {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 10px;
+  margin-bottom: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.cat-list.show {
+  display: flex;
+}
+
+/* стиль отдельных пунктов */
+.cat-list label {
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.cat-list label:hover {
+  background: #f5f5f5;
+}
+
+/* ⭐ Красивый тонкий скролл как на lalafo */
+.cat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cat-list::-webkit-scrollbar-track {
+  background: #f2f2f2;
+  border-radius: 10px;
+}
+
+.cat-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.cat-list::-webkit-scrollbar-thumb:hover {
+  background: #9e9e9e;
+}
+
+.price-block {
+  display: flex;
+  gap: 10px;
+}
+
+.price-block input {
+  flex: 1; /* растягиваем на всю доступную ширину */
+  min-width: 80px; /* минимум, чтобы было удобно на мобиле */
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+  box-sizing: border-box;
+}
+
+.filter-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.reset-btn {
+  flex: 1;
+  padding: 10px;
+  background: #eee;
+  border: none;
+  border-radius: 8px;
+}
+
+.apply-btn {
+  flex: 1;
+  padding: 10px;
+  background: #708090;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+}
+
+.no-ads {
+  text-align: center;
+  padding: 30px;
+  font-size: 18px;
+  color: #555;
+}
+
+/* Для фильтр-модалки */
+.small-modal {
+  max-height: 120vh;
+  height: 60vh;
+  width: 90%;
+  margin: auto;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.small-modal input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-group {
+  max-height: 80px;
+  max-width: 180px;
+}
+.gr {
+  max-width: 100%;
+}
+
+/* Конец для фильтр-модалки */
+
+.placeholder img.gal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-filter {
+  color: #4929b4;
+}
+
+
+
+
+
+
+
+
+/* Контейнер */
+.category-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Select */
+.category-select select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  font-weight: 600;
+  background: #fff;
+  appearance: none; /* браузердин default стрелкасын алып салат */
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.category-select select:hover {
+  border-color: #eaf7ff;
+  background: #faf5fc;
+}
+
+.category-select select:focus {
+  border-color: #e9f1ff;
+  box-shadow: 0 0 0 3px rgba(37,117,252,0.2);
+  outline: none;
+}
+
+/* Жаңы стрелка */
+.category-select .arrow {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  font-size: 14px;
+  color: #666;
+  transition: color 0.25s ease;
+}
+
+.category-select:hover .arrow {
+  color: #f8fbff;
+}
+
+
+
+/**/
+
+
+/* Контейнер */
+.price-row {
+  display: flex;
+  gap: 14px;
+}
+
+/* Ар бир input-group */
+.price-row .input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label */
+.price-row .input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* Input */
+.price-row .input-group input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #fff0f0;
+  font-size: 15px;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.price-row .input-group input:hover {
+  border-color: #ffffff;
+  background: #f5fbfc;
+}
+
+
+
+
+
+
+/* НЕГИЗГИ КОНТЕЙНЕР */
+.sticky-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  z-index: 30;
+  /* Астыңкы padding 0 кылынды, боштукту азайтуу үчүн */
+  padding: 8px 15px 0px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  transition: transform 0.3s ease-in-out, opacity 0.2s ease;
+  pointer-events: auto;
+}
+
+/* Жашыруу (Өйдө чыгып кетет) */
+.sticky-wrapper.hide {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Көрсөтүү */
+.sticky-wrapper.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ПОИСК ЖАНА КАТЕГОРИЯ ОРТОСУНДАГЫ БОШТУК */
+.sticky-wrapper .top-row {
+  margin-bottom: 10px !important; /* Поисктун астындагы боштукту алдык */
+}
+
+.categories-scroll.mini-version {
+  /* margin-top жана padding-top минималдуу кылынды */
+  padding: 2px 0px 10px; 
+  margin-top: 2px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* КАТЕГОРИЯ КАРТАСЫ */
+.categories-scroll.mini-version .cat-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 190px;
+  height: 50px;
+  border-radius: 10px !important;
+  padding: 0 12px 0 0;
+  gap: 12px;
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: 0px 1px 12px 0px rgba(34, 60, 80, 0.1) !important;
+}
+
+/* ИКОНКА ЖАНА СҮРӨТ (БУРЧТАРЫ ТИК) */
+.categories-scroll.mini-version .icon {
+  width: 55px;
+  height: 50px;
+  background-color: #e9eff5;
+  border-radius: 10px ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.categories-scroll.mini-version .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* СҮРӨТТҮН БУРЧТАРЫ ТИК */
+  border-radius: 0px !important;
+}
+
+/* ТЕКСТТЕР */
+.categories-scroll.mini-version .bottom {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.categories-scroll.mini-version .label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+	margin-top: 0;
+}
+
+.categories-scroll.mini-version .count {
+  font-size: 12px;
+  color: #8c97a8;
+	z-index: 4;
+}
+
+/* Поисктун сырткы контейнери */
+/* 2. ИЗДӨӨ ТИЛКЕСИНИН КОНТЕЙНЕРИ (Узундугу ушул жерден өзгөрөт) */
+.sticky-wrapper .search {
+  flex: 1;
+  background: #f1f2f7;
+  padding: 4px 18px;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 3. ИЧИНДЕГИ ТЕКСТ ЖАЗУУЧУ ЖЕР (INPUT) */
+.sticky-wrapper .search input {
+  width: 100%;        /* Контейнердин ичин толук ээлейт */
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;    /* Тексттин өлчөмү */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Башкы контейнер */
+/* ================= PROMO FAB ================= */
+.custom-fab {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  /* Transform аркылуу борборлоштуруу жана масштабды башкаруу */
+  transform: translateX(-50%) translateZ(0); 
+  width: 60px;
+  height: 60px;
+  background: #4929b4;
+  border: 3px solid #a495d8;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  /* Анимацияны бир калыпта кылуу (cubic-bezier маанилүү) */
+  transition: 
+    width 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+    height 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+    bottom 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    background-color 0.3s ease;
+    
+  /* GPU-ну иштетүү үчүн */
+  backface-visibility: hidden;
+}
+
+.promo-btn-container:not(.promo-show) {
+  transform: translateX(-50%) scaleX(0.22);
+}
+
+
+.promo-btn-container.promo-show {
+  width: 280px;
+}
+
+/* ===== PROMO TEXT ===== */
+.btn-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  white-space: nowrap;
+
+  transition:
+    opacity 0.25s ease 0.15s,
+    transform 0.3s ease 0.15s;
+}
+
+.promo-btn-container.promo-show .btn-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+
+/* ================= CUSTOM FAB ================= */
+.custom-fab {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  background: #4929b4;
+  border: 3px solid #a495d8;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    bottom 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, height, bottom;
+}
+
+/* СКРОЛЛ БОЛГОНДО */
+.custom-fab.expanded {
+  width: 180px;
+  height: 50px;
+  bottom: 25px;
+}
+
+/* ===== CONTENT ===== */
+.fab-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plus-icon {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  opacity: 1;
+  transform: scale(1);
+
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.custom-fab.expanded .plus-icon {
+  opacity: 0;
+  transform: scale(0.2) rotate(90deg);
+}
+
+/* ===== TEXT ===== */
+.fab-text {
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  white-space: nowrap;
+  position: absolute;
+
+  opacity: 0;
+  transform: scale(0.7);
+  pointer-events: none;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.custom-fab.expanded .fab-text {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+
+/* Менюну жашыруу */
+/* МЕНЮНУН БАЗАЛЫК АБАЛЫ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 75px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  z-index: 9;
+  
+  /* АНИМАЦИЯ ҮЧҮН МААНЫЛҮҮ: */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  transform: translateY(0); /* Баштапкы абалы - көрүнүп турат */
+  opacity: 1;
+}
+
+/* СКРОЛЛ КЫЛГАНДА ЖАШЫРУУ */
+.bottom-nav.nav-hide {
+  transform: translateY(100%); /* Төмөн көздөй толук чыгып кетет */
+  opacity: 0;
+  pointer-events: none; /* Жашыруун турганда басылбашы керек */
+}
+
+/* КАЙРА КӨРСӨТҮҮ (Эгер керек болсо) */
+.bottom-nav.nav-show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Ар бир меню элементи 20% орун алат */
+.nav-item {
+  text-align: center;
+  font-size: 12px;
+  color: #4929b4;
+  width: 20%; /* 5 элемент (4 меню + 1 боштук) * 20% = 100% */
+  cursor: pointer;
+}
+
+/* БОШТУК (Placeholder) - Плюстун ордун сактап турат */
+.nav-placeholder {
+  width: 20%; 
+  height: 100%;
+  pointer-events: none; /* Бул жерди басууга болбойт */
+}

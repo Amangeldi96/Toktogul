@@ -1,0 +1,441 @@
+/* Настройки шрифта Inter */
+@import url('https://www.google.com/search?q=https://fonts.googleapis.com/css2%3Ffamily%3DInter:wght%40400%3B600%3B700%26display%3Dswap');
+
+/* Основной контейнер модального окна */
+.prf-modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(0, 0, 0, 0.6);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 10000;
+font-family: 'Inter', sans-serif;
+}
+
+.prf-modal-content {
+background: #ffffff;
+padding: 2.5rem 2rem;
+border-radius: 12px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+width: 100%;
+max-width: 400px;
+position: relative;
+text-align: center;
+overflow-y: auto;
+}
+
+
+
+.prf-close-btn {
+  position: absolute;   /* ← модалдын ичинде бурчуна бекитилет */
+  top: 10px;
+  right: 10px;
+
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 999;        /* модалдын үстүндө */
+}
+
+.prf-close-btn:hover {
+  color: #333;
+}
+
+
+
+
+
+/* Табы (Переключатель) */
+.prf-tabs {
+display: flex;
+position: relative;
+margin-bottom: 2rem;
+background: #f1f5f9;
+border-radius: 8px;
+padding: 4px;
+}
+
+.prf-tab {
+flex: 1;
+padding: 0.75rem 0;
+cursor: pointer;
+z-index: 2;
+transition: color 0.3s;
+font-weight: 600;
+color: #4a5568;
+text-align: center;
+}
+
+.prf-tab:hover {
+color: #ffffff;
+}
+.prf-tab:active {
+color: #ffffff;
+}
+
+.prf-active {
+color: #fff;
+}
+
+.prf-shape {
+position: absolute;
+top: 4px;
+height: calc(100% - 8px);
+width: 50%;
+background-color: #4c51bf; /* Индиго */
+border-radius: 6px;
+transition: left 0.3s ease-in-out;
+z-index: 1;
+}
+
+/* Поля формы и кнопки */
+.prf-field {
+display: flex;
+flex-direction: column;
+gap: 1rem;
+}
+
+.prf-input, .prf-field input[type="email"], .prf-field input[type="password"], .prf-field input[type="text"] {
+padding: 0.75rem 1rem;
+border: 1px solid #e2e8f0;
+border-radius: 8px;
+transition: border-color 0.2s, box-shadow 0.2s;
+width: 100%;
+box-sizing: border-box;
+}
+
+.prf-input:focus, .prf-field input[type="email"]:focus, .prf-field input[type="password"]:focus, .prf-field input[type="text"]:focus {
+border-color: #4c51bf;
+box-shadow: 0 0 0 2px rgba(76, 81, 191, 0.2);
+outline: none;
+}
+
+.prf-btn {
+padding: 0.75rem;
+background-color: #4c51bf;
+color: white;
+border: none;
+border-radius: 8px;
+font-weight: 600;
+cursor: pointer;
+transition: background-color 0.2s, transform 0.1s;
+}
+
+.prf-btn:hover {
+background-color: #8b8ad1;
+}
+
+.prf-btn:active {
+transform: scale(0.99);
+}
+
+.prf-link {
+color: #4c51bf;
+cursor: pointer;
+font-size: 0.9rem;
+text-align: center;
+margin-top: -0.5rem;
+transition: opacity 0.2s;
+}
+
+.prf-link:hover {
+opacity: 0.8;
+}
+
+/* Переключение видимости пароля */
+.prf-password-wrapper {
+position: relative;
+width: 100%;
+}
+
+.prf-password-wrapper input {
+padding-right: 3rem;
+}
+
+.prf-password-toggle {
+position: absolute;
+right: 10px;
+top: 50%;
+transform: translateY(-50%);
+background: none;
+border: none;
+cursor: pointer;
+padding: 5px;
+line-height: 1;
+font-size: 1.25rem;
+color: #6b7280;
+}
+
+.prf-password-toggle:hover {
+color: #697483;
+}
+
+.prf-buttons {
+  display: flex;
+  gap: 0.6rem; /* маленький аккуратный отступ */
+	justify-content: center;
+}
+
+
+/* Сообщения */
+.prf-message {
+padding: 0.75rem;
+border-radius: 8px;
+margin-bottom: 1.5rem;
+font-size: 0.95rem;
+font-weight: 600;
+text-align: left;
+}
+
+.prf-error {
+background-color: #fee2e2;
+color: #ef4444;
+border: 1px solid #fca5a5;
+}
+
+.prf-success {
+background-color: #d1fae5;
+color: #059669;
+border: 1px solid #a7f3d0;
+}
+
+/* Карточка профиля */
+.prf-profile-card {
+padding: 1.5rem;
+background-color: #f7f9fd;
+border-radius: 8px;
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.prf-profile-greeting {
+font-size: 1.25rem;
+font-weight: 700;
+margin-bottom: 0.5rem;
+color: #1a202c;
+}
+
+.prf-user-id-display {
+font-size: 0.8rem;
+color: #718096;
+word-break: break-all;
+margin-bottom: 1rem;
+}
+
+.prf-logout-btn {
+background-color: #f56565;
+}
+
+.prf-logout-btn:hover {
+background-color: #e53e3e;
+}
+
+.prf-loading {
+font-size: 1.1rem;
+color: #4c51bf;
+margin-top: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 500px) {
+.prf-modal-content {
+margin: 1rem;
+padding: 1.5rem;
+}
+}
+
+
+.user-ads-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 100px auto 80px; /* үстү жакта header, асты жакта footer калсын */
+  padding: 15px;
+}
+
+.center-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  display: none; /* башында жашыруун */
+}
+
+
+
+
+/* Админ панель модалканын ичинде */
+.admin-panel {
+  position: fixed;          /* экранга бекитүү */
+  top: 50%;                 /* вертикалдык борбор */
+  left: 50%;                /* горизонталдык борбор */
+  transform: translate(-50%, -50%); /* так ортого жылдырат */
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3); /* көлөкө */
+  z-index: 5000;            /* үстүндө турушу үчүн */
+  width: 350px;             /* модалканын туурасы */
+  max-height: 80vh;         /* экрандан ашпашы үчүн */
+  overflow-y: auto;         /* мазмун көп болсо скролл */
+}
+
+.admin-panel h2 {
+  margin-bottom: 10px;
+  color: #6a0dad; /* фиолетовый тема */
+}
+
+.admin-panel p {
+  font-size: 14px;
+  color: #333;
+}
+
+
+/**/
+.admin-ads-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-ad-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 14px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  display: block; /* Биринчи көрүүдө жашырылбайт, ads.length == 0 болсо чыкпайт */
+}
+
+.admin-ad-img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-ad-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.admin-ad-desc {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.admin-ad-user {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.admin-ad-btns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-ad-btns button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+}
+
+.admin-ad-btns .approve {
+  background: #4CAF50;
+}
+
+.admin-ad-btns .reject {
+  background: #FF4242;
+}
+
+.no-ads-text {
+  padding: 20px 0;
+  text-align: center;
+  color: #777;
+}
+
+
+/**/
+
+.prf-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  max-height: 80vh;       /* экрандан ашпайт */
+  overflow-y: auto;       /* мазмун көп болсо скролл чыгат */
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* IE/Edge */
+* {
+  -ms-overflow-style: none;
+}
+
+
+
+
+/**/
+
+/* Пароль жазылган контейнерге position: relative кошуу керек */
+.prf-password-wrapper {
+  position: relative;
+  margin-bottom: 20px; /* Инпуттардын ортосундагы туруктуу аралык */
+}
+
+.password-input-dynamic {
+  width: 100%;
+  padding: 12px 100px 12px 15px; /* Оң жагынан текст жана иконка үчүн орун калтыруу */
+  border: 2px solid #e0e0e0; /* Демейки боз бордер */
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Инпуттун ичиндеги оң жактагы текст (Өтө оңой, Күчтүү ж.б.) */
+.strength-label-inside {
+  position: absolute;
+  right: 45px; /* Көздүн иконкасынын жанында */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+  text-transform: lowercase;
+}
+
+/* Көз иконкасынын баскычы */
+.prf-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
